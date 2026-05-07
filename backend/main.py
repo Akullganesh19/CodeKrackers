@@ -50,11 +50,18 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     lifespan=lifespan,
+    root_path="/api" if os.environ.get("VERCEL") else "",
     docs_url="/docs",
     redoc_url="/redoc",
     version="2.1.0",
     description="AI-powered national cybersecurity infrastructure for vishing & smishing defense.",
 )
+
+@app.middleware("http")
+async def diagnostic_logging(request: Request, call_next):
+    logger.info("INCOMING REQUEST", path=request.url.path, method=request.method, root_path=request.scope.get("root_path"))
+    response = await call_next(request)
+    return response
 
 # ─── Rate Limiter ───
 app.state.limiter = limiter

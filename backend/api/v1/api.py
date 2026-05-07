@@ -22,6 +22,10 @@ from backend.api.v1.endpoints import (
 
 api_router = APIRouter()
 
+@api_router.get("/health", tags=["system"])
+def health_check():
+    return {"status": "healthy", "version": "2.1.0", "environment": "vercel"}
+
 api_router.include_router(login.router, tags=["auth"])
 api_router.include_router(users.router, prefix="/users", tags=["users"])
 api_router.include_router(threats.router, prefix="/threats", tags=["threats"])

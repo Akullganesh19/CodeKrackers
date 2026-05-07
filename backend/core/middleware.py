@@ -371,7 +371,7 @@ class RAPSMiddleware(BaseHTTPMiddleware):
 
         # Check for CRLF injection in headers
         for hname, hvalue in request.headers.items():
-            if re.search(r"[\r\n%0d%0a]", hvalue, re.IGNORECASE):
+            if any(p in hvalue.lower() for p in ("%0d%0a", "%0a%0d", "\r\n")):
                 attack_indicators.append("crlf_header_injection")
                 risk_score += 30
                 break

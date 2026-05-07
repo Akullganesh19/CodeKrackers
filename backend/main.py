@@ -17,7 +17,8 @@ from backend.core.middleware import (
     RAPSMiddleware,
 )
 from backend.core.limiter import limiter
-from backend.db.session import get_db
+from backend.db.session import get_db, engine
+from backend.db.base import Base
 from backend.services.canary_service import plant_seed_tokens
 from backend.core.logger import setup_logging, get_logger
 
@@ -28,6 +29,13 @@ logger = get_logger("vas.main")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    # ─── Initialize Database ───
+    try:
+        Base.metadata.create_all(bind=engine)
+        logger.info("Database initialized successfully")
+    except Exception as e:
+        logger.error("Database initialization failed", error=str(e))
+
     logger.info("VAS Defense System starting up...")
     logger.info("Database URL configured", database_snippet=settings.DATABASE_URL[:30] + "...")
     logger.info("Service integrations", groq_ai="ACTIVE" if settings.GROQ_API_KEY else "DISABLED", twilio="ACTIVE" if settings.TWILIO_ACCOUNT_SID else "DISABLED")

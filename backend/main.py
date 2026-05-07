@@ -44,10 +44,13 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("VAS Defense System shutting down...")
 
 
+import os
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     lifespan=lifespan,
+    root_path="/api" if os.environ.get("VERCEL") else "",
     docs_url="/docs",
     redoc_url="/redoc",
     version="2.1.0",

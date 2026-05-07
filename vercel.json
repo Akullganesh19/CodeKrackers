@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "name": "vas-system",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "installCommand": "npm install",
+  "buildCommand": "npm run build",
+  "ignore": [
+    "backend/**",
+    "mobile/**",
+    "OpenMythos/**"
+  ],
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://vas-backend-free.onrender.com/api/v1"
+  }
+}

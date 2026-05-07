@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     )
 
     # ─── Application ───
-    API_V1_STR: str = "/api/v1"
+    API_V1_STR: str = "/v1"
     PROJECT_NAME: str = "VAS System - Vishing & Smishing Detection"
     VERSION: str = "2.1.0"
     DEBUG: bool = False

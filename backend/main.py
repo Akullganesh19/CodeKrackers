@@ -57,12 +57,6 @@ app = FastAPI(
     description="AI-powered national cybersecurity infrastructure for vishing & smishing defense.",
 )
 
-@app.middleware("http")
-async def diagnostic_logging(request: Request, call_next):
-    logger.info("INCOMING REQUEST", path=request.url.path, method=request.method, root_path=request.scope.get("root_path"))
-    response = await call_next(request)
-    return response
-
 # ─── Rate Limiter ───
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)

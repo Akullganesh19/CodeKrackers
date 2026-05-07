@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     DEBUG: bool = False
 
     # ─── Database ───
-    DATABASE_URL: str = "sqlite:///./vas.db"
+    DATABASE_URL: str = "sqlite:////tmp/vas.db" if Path("/var/task").exists() else "sqlite:///./vas.db"
     POSTGRES_USER: str = "postgres"
     POSTGRES_PASSWORD: str = ""
     POSTGRES_HOST: str = "localhost"

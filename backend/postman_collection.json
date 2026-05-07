@@ -1,0 +1,130 @@
+{
+	"info": {
+		"_postman_id": "vas-system-v2",
+		"name": "VAS System API v2",
+		"description": "API for Vishing & Smishing Detection, Legal Compliance, and Analytics",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{"key": "username", "value": "user@example.com", "type": "text"},
+								{"key": "password", "value": "user123", "type": "text"}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/login/access-token",
+							"host": ["{{base_url}}"],
+							"path": ["login", "access-token"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Threats",
+			"item": [
+				{
+					"name": "Create Threat",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}", "type": "text"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"smishing\",\n    \"source_number\": \"+91 99887 76655\",\n    \"content\": \"Urgent: Your account will be suspended. Click here to verify: http://bit.ly/scam-link\",\n    \"severity\": \"high\",\n    \"confidence_score\": 0.95\n}",
+							"options": {"raw": {"language": "json"}}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/threats/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "threats", ""]
+						}
+					}
+				},
+				{
+					"name": "Get Threats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}", "type": "text"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/threats/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "threats", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Legal",
+			"item": [
+				{
+					"name": "Generate FIR",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}", "type": "text"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/legal/generate-fir/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "legal", "generate-fir", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Analytics",
+			"item": [
+				{
+					"name": "Dashboard Summary",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}", "type": "text"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/analytics/dashboard-summary",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "analytics", "dashboard-summary"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [""]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [""]
+			}
+		}
+	],
+	"variable": [
+		{"key": "base_url", "value": "http://localhost:8000", "type": "string"},
+		{"key": "token", "value": "your_jwt_token_here", "type": "string"}
+	]
+}

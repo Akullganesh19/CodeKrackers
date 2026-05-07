@@ -1,0 +1,15 @@
+# Nitro Enclave Python Dependencies
+# These are installed INSIDE the enclave container at build time.
+# The enclave has no network access at runtime, so all packages
+# must be baked into the EIF image.
+
+# ─── Core ───
+cryptography>=41.0.0
+
+# ─── ML Inference (optional — keyword fallback used if unavailable) ───
+# Uncomment these for production transformer-based detection:
+# torch>=2.0.0
+# transformers>=4.30.0
+# scikit-learn>=1.3.0
+# numpy>=1.24.0
+# scipy>=1.10.0

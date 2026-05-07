@@ -103,6 +103,9 @@ class APIAnomalyDetector:
         headers = request_info.get("headers", {})
         ts = request_info.get("timestamp", time.time())
 
+        if np is None:
+            return None # Return None if numpy is not available
+
         features = np.zeros(N_FEATURES)
         idx = 0
 

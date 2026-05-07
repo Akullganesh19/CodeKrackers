@@ -13,7 +13,10 @@ import json
 import time
 import hashlib
 import logging
-import numpy as np
+try:
+    import numpy as np
+except ImportError:
+    np = None
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Any
 from collections import defaultdict, deque
@@ -291,8 +294,11 @@ def compute_adversarial_robustness_score(
         # Score clean prediction
         try:
             clean_pred = model_predict_fn(sample)
-            if isinstance(clean_pred, (list, np.ndarray)):
+            if isinstance(clean_pred, list):
+                clean_pred = clean_pred.index(max(clean_pred))
+            elif np is not None and isinstance(clean_pred, np.ndarray):
                 clean_pred = int(np.argmax(clean_pred))
+            
             if clean_pred == true_label:
                 correct_clean += 1
         except Exception:
@@ -305,8 +311,11 @@ def compute_adversarial_robustness_score(
                 if adv_sample == sample:
                     continue
                 adv_pred = model_predict_fn(adv_sample)
-                if isinstance(adv_pred, (list, np.ndarray)):
+                if isinstance(adv_pred, list):
+                    adv_pred = adv_pred.index(max(adv_pred))
+                elif np is not None and isinstance(adv_pred, np.ndarray):
                     adv_pred = int(np.argmax(adv_pred))
+                
                 if adv_pred == true_label:
                     correct_adversarial += 1
                     break  # One successful evasion is enough

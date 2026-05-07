@@ -1,0 +1,11 @@
+backend/
+mobile/
+OpenMythos/
+.git/
+node_modules/
+.venv/
+venv/
+env/
+*.db
+*.sqlite3
+vas.db

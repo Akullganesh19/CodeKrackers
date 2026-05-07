@@ -36,7 +36,7 @@ const M = {
 /* ──────────────────────────────────────────────
    HEAD — Rounded 'clean' aesthetic
  ────────────────────────────────────────────── */
-function Head({ cur, gesture }: { cur: React.MutableRefObject<{x:number;y:number}>, gesture: string | null }) {
+function Head({ cur, gesture = null }: { cur: React.RefObject<{x:number;y:number}> | React.MutableRefObject<{x:number;y:number}>, gesture?: string | null }) {
   const g = useRef<THREE.Group>(null)
   const eyeLight = useRef<THREE.PointLight>(null)
   const sy = useRef<Spring>({ value: 0, vel: 0 })
@@ -137,7 +137,7 @@ function Neck() {
 /* ──────────────────────────────────────────────
    TORSO — Rounded smooth chest
  ────────────────────────────────────────────── */
-function Torso({ cur }: { cur: React.MutableRefObject<{x:number;y:number}> }) {
+function Torso({ cur }: { cur: React.RefObject<{x:number;y:number}> | React.MutableRefObject<{x:number;y:number}> }) {
   const g = useRef<THREE.Group>(null)
   const sy = useRef<Spring>({ value: 0, vel: 0 })
 
@@ -181,7 +181,7 @@ function Torso({ cur }: { cur: React.MutableRefObject<{x:number;y:number}> }) {
 /* ──────────────────────────────────────────────
    ARM — side: -1 = left, +1 = right
  ────────────────────────────────────────────── */
-function Arm({ side, cur, gesture }: { side: -1 | 1; cur: React.MutableRefObject<{x:number;y:number}>; gesture: string | null }) {
+function Arm({ side, cur, gesture = null }: { side: -1 | 1; cur: React.RefObject<{x:number;y:number}> | React.MutableRefObject<{x:number;y:number}>; gesture?: string | null }) {
   const shoulderG = useRef<THREE.Group>(null)
   const elbowG    = useRef<THREE.Group>(null)
   const wristG    = useRef<THREE.Group>(null)
@@ -319,7 +319,7 @@ function BaseRing() {
 /* ──────────────────────────────────────────────
    CAMERA DRIFT
 ────────────────────────────────────────────── */
-function CameraDrift({ cur }: { cur: React.MutableRefObject<{x:number;y:number}> }) {
+function CameraDrift({ cur }: { cur: React.RefObject<{x:number;y:number}> | React.MutableRefObject<{x:number;y:number}> }) {
   const cx = useRef<Spring>({ value: 0, vel: 0 })
   const cy = useRef<Spring>({ value: 0.9, vel: 0 })
 
@@ -336,7 +336,7 @@ function CameraDrift({ cur }: { cur: React.MutableRefObject<{x:number;y:number}>
 /* ──────────────────────────────────────────────
    EXPORTED CANVAS
 ────────────────────────────────────────────── */
-export default function RobotScene({ cursorRef, gesture }: { cursorRef: React.MutableRefObject<{x:number;y:number}>; gesture: string | null }) {
+export default function RobotScene({ cursorRef, gesture = null }: { cursorRef: React.RefObject<{x:number;y:number}> | React.MutableRefObject<{x:number;y:number}>; gesture?: string | null }) {
   return (
     <Canvas
       camera={{ position: [0, 0.9, 5], fov: 38 }}

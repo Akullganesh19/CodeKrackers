@@ -19,12 +19,19 @@ import os
 import time
 import json
 import logging
-import pickle
-import hashlib
-import numpy as np
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from collections import defaultdict, deque
+try:
+    import numpy as np
+except ImportError:
+    np = None
+
+try:
+    from sklearn.ensemble import IsolationForest
+except ImportError:
+    IsolationForest = None
+
 from datetime import datetime
 
 logger = logging.getLogger("vas.anomaly_detector")

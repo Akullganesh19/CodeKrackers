@@ -1,0 +1,21 @@
+{
+  "type": "web_service",
+  "name": "vas-frontend-free",
+  "ownerId": "tea-d7eivm9kh4rs738ckang",
+  "repo": "https://github.com/Akullganesh19/codekrackers",
+  "branch": "main",
+  "serviceDetails": {
+    "env": "node",
+    "plan": "free",
+    "envSpecificDetails": {
+      "buildCommand": "npm install && npm run build",
+      "startCommand": "npm run start"
+    },
+    "envVars": [
+      {
+        "key": "NEXT_PUBLIC_API_URL",
+        "value": "https://vas-backend-free.onrender.com/api/v1"
+      }
+    ]
+  }
+}

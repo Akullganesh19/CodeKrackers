@@ -49,6 +49,7 @@ def validate_password_strength(password: str) -> tuple[bool, str]:
 
 def create_access_token(
     subject: Union[str, Any],
+    role: Optional[str] = None,
     expires_delta: Optional[timedelta] = None,
     scopes: Optional[list[str]] = None,
 ) -> str:
@@ -62,6 +63,8 @@ def create_access_token(
         "iat": now,
         "jti": secrets.token_hex(16),  # Unique token ID for revocation
     }
+    if role:
+        to_encode["role"] = role
     if scopes:
         to_encode["scopes"] = scopes
 

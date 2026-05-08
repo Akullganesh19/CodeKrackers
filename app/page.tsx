@@ -44,14 +44,14 @@ function AnimatedCounter({ value, suffix = '' }: { value: number; suffix?: strin
 function SectionTag({ number, text }: { number: string; text: string }) {
   return (
     <motion.div
-      initial={{ opacity: 0, x: -20 }}
+      initial={{ opacity: 0, x: -10 }}
       whileInView={{ opacity: 1, x: 0 }}
       viewport={{ once: true }}
-      className="flex items-center gap-4 mb-8"
+      className="flex items-center gap-3 mb-8 bg-[#7c3aed]/10 w-fit px-4 py-1.5 border-l-2 border-[#7c3aed]"
     >
-      <span className="font-mono text-[0.55rem] text-[#a78bfa]/60 uppercase tracking-[0.4em]">{number}</span>
-      <div className="h-[1px] w-8 bg-gradient-to-r from-[#7c3aed]/40 to-transparent" />
-      <span className="font-mono text-[0.55rem] text-[#64748b] uppercase tracking-[0.4em]">{text}</span>
+      <span className="font-mono text-[0.6rem] text-[#a78bfa] font-bold">{number}</span>
+      <div className="h-[12px] w-[1px] bg-[#7c3aed]/30" />
+      <span className="font-mono text-[0.5rem] text-[#94a3b8] uppercase tracking-[0.4em] font-bold">{text}</span>
     </motion.div>
   )
 }
@@ -60,9 +60,15 @@ function SectionTag({ number, text }: { number: string; text: string }) {
    FLOATING ORB DECORATION
 ────────────────────────────────────────────── */
 function FloatingOrb({ className, color }: { className?: string; color: string }) {
+  const [duration, setDuration] = useState(5)
+
+  useEffect(() => {
+    setDuration(4 + Math.random() * 3)
+  }, [])
+
   return (
     <div className={`absolute rounded-full blur-[120px] animate-pulse ${className}`}
-      style={{ background: color, animationDuration: `${4 + Math.random() * 3}s` }}
+      style={{ background: color, animationDuration: `${duration}s` }}
     />
   )
 }
@@ -145,13 +151,19 @@ export default function LandingPage() {
   return (
     <main className="relative min-h-screen bg-obsidian overflow-x-hidden selection:bg-[#7c3aed]/30 selection:text-white">
 
+      {/* Grainy Texture for World-Class Feel */}
+      <div className="fixed inset-0 z-0 pointer-events-none opacity-[0.03]">
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#06060e] to-obsidian" />
+      </div>
+
       {/* ═══════════════════════════════════════════
          HERO SECTION
          ═══════════════════════════════════════════ */}
       <motion.section style={{ opacity: heroOpacity, scale: heroScale }} className="relative min-h-screen flex flex-col items-center justify-center px-6 md:px-10">
 
         {/* Background Orbs */}
-        <FloatingOrb className="top-[-10%] left-[-5%] w-[60%] h-[60%]" color="rgba(124,58,237,0.12)" />
+        <FloatingOrb className="top-[-10%] left-[-5%] w-[60%] h-[60%] blur-[200px] opacity-40" color="rgba(124,58,237,0.2)" />
         <FloatingOrb className="bottom-[-10%] right-[-5%] w-[50%] h-[50%]" color="rgba(10,239,255,0.06)" />
         <FloatingOrb className="top-[40%] right-[20%] w-[30%] h-[30%]" color="rgba(124,58,237,0.06)" />
 
@@ -163,12 +175,10 @@ export default function LandingPage() {
         }`}>
           <div className="max-w-[1500px] mx-auto px-6 md:px-10 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-4 group">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#7c3aed] to-[#6d28d9] flex items-center justify-center shadow-lg shadow-[#7c3aed]/20 group-hover:shadow-[#7c3aed]/40 transition-all duration-300">
-                <span className="font-space font-black text-white text-sm">◈</span>
+            <div className="w-8 h-8 border-2 border-[#7c3aed]/40 flex items-center justify-center transition-all group-hover:border-[#7c3aed]">
+              <span className="font-space font-black text-[#7c3aed] text-xs">S</span>
               </div>
-              <span className="font-space font-bold text-xl tracking-tight glow-cyber">VSDP</span>
-              <div className="h-4 w-[1px] bg-[rgba(124,58,237,0.2)] hidden sm:block" />
-              <span className="font-mono text-[0.45rem] text-[#64748b] uppercase tracking-[0.4em] mt-0.5 hidden sm:block">National Cybersecurity Command</span>
+            <span className="font-space font-bold text-2xl tracking-tighter text-white glow-cyber">SENTINEL</span>
             </Link>
 
             <div className="hidden lg:flex items-center gap-10">
@@ -217,12 +227,12 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.8 }}
-            className="font-space text-[14vw] md:text-[12vw] lg:text-[10vw] leading-[0.85] font-black tracking-[-0.04em] uppercase"
+            className="font-space text-[12vw] md:text-[11vw] leading-[0.75] font-black tracking-[-0.06em] uppercase text-white"
           >
-            <span className="block bg-gradient-to-r from-[#c4b5fd] via-[#a78bfa] to-[#7c3aed] bg-clip-text text-transparent drop-shadow-[0_0_40px_rgba(167,139,250,0.5)]">
+            <span className="block opacity-95">
               Cyber
             </span>
-            <span className="block bg-gradient-to-r from-[#0aefff] via-[#22d3ee] to-[#06b6d4] bg-clip-text text-transparent drop-shadow-[0_0_40px_rgba(10,239,255,0.4)]">
+            <span className="block text-[#7c3aed] drop-shadow-[0_0_20px_rgba(124,58,237,0.4)]">
               Defense
             </span>
           </motion.h1>

@@ -30,6 +30,10 @@ class Settings(BaseSettings):
     POSTGRES_PORT: str = "5432"
     POSTGRES_DB: str = "vas_db"
 
+    # ─── Redis ───
+    REDIS_URL: str = "redis://localhost:6379/0"
+    OTP_EXPIRE_SECONDS: int = 300  # 5 minutes
+
     # ─── Security ───
     SECRET_KEY: str = "change-me-in-production-use-a-secure-random-key"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
@@ -43,6 +47,14 @@ class Settings(BaseSettings):
     TWILIO_ACCOUNT_SID: Optional[str] = None
     TWILIO_AUTH_TOKEN: Optional[str] = None
     TWILIO_PHONE_NUMBER: Optional[str] = None
+
+    # ─── SendGrid ───
+    SENDGRID_API_KEY: Optional[str] = None
+    FROM_EMAIL: str = "noreply@vsdp.gov.in"
+
+    # ─── reCAPTCHA ───
+    RECAPTCHA_SECRET_KEY: Optional[str] = None
+    RECAPTCHA_SITE_KEY: Optional[str] = None
 
     # ─── Honeypot.is ───
     HONEYPOT_IS_API_KEY: Optional[str] = None

@@ -3,6 +3,12 @@
 import { motion } from 'framer-motion'
 import { ReactNode } from 'react'
 
+const Corner = ({ className }: { className?: string }) => (
+  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className={`absolute ${className} opacity-30 group-hover:opacity-100 transition-all duration-500`}>
+    <path d="M0 0H8V2H2V8H0V0Z" fill="currentColor" />
+  </svg>
+)
+
 interface MetricCardProps {
   label: string
   value: number | string
@@ -53,10 +59,23 @@ export default function MetricCard({ label, value, suffix, trend, isPositive, co
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass-card p-8 flex flex-col gap-6 relative overflow-hidden group"
+      className="relative p-8 flex flex-col gap-6 overflow-hidden group bg-[#0b0b18]/60 border border-[rgba(124,58,237,0.1)] hover:border-[rgba(124,58,237,0.4)] transition-all duration-500 rounded-none shadow-2xl"
     >
+      {/* Technical Corners */}
+      <Corner className="top-2 left-2 text-[#a78bfa]" />
+      <Corner className="top-2 right-2 rotate-90 text-[#a78bfa]" />
+      <Corner className="bottom-2 left-2 -rotate-90 text-[#a78bfa]" />
+      <Corner className="bottom-2 right-2 rotate-180 text-[#a78bfa]" />
+
+      {/* Scanning Line Animation */}
+      <motion.div
+        animate={{ y: ['-150%', '300%'] }}
+        transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+        className="absolute inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#7c3aed]/20 to-transparent z-0"
+      />
+
       {/* Subtle glow on hover */}
-      <div className={`absolute -inset-2 bg-gradient-to-r from-transparent via-transparent to-transparent group-hover:via-[${color === 'cyber' ? '#7c3aed' : color === 'neon' ? '#0aefff' : color === 'alert' ? '#ff2056' : color === 'amber' ? '#f59e0b' : '#10b981'}]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-3xl`} />
+      <div className={`absolute -inset-10 bg-[radial-gradient(circle_at_50%_0%,${color === 'cyber' ? '#7c3aed' : '#0aefff'},transparent_50%)] opacity-0 group-hover:opacity-10 transition-opacity duration-700 blur-3xl`} />
 
       {/* Top row */}
       <div className="flex items-center justify-between">

@@ -110,3 +110,15 @@ def get_current_officer_or_admin(
             detail="Officer or admin privileges required",
         )
     return current_user
+
+
+def get_current_token_payload(token: str = Depends(reusable_oauth2)) -> dict:
+    """Decodes JWT and returns raw payload for refresh flow."""
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except (JWTError, ValidationError):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Could not validate credentials",
+        )

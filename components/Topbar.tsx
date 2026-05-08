@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Bell, Search, Settings, Wifi } from 'lucide-react'
+import { Bell, Search, Settings, Wifi, Shield, Lock } from 'lucide-react'
+import Link from 'next/link'
 
 export default function Topbar({ title }: { title: string }) {
   const [time, setTime] = useState('')
@@ -46,6 +47,12 @@ export default function Topbar({ title }: { title: string }) {
             <span className="font-mono text-[0.45rem] text-[#0aefff] uppercase tracking-[0.2em] font-semibold">Secure Link</span>
           </div>
 
+          {/* User Clearance */}
+          <div className="hidden lg:flex items-center gap-3 px-4 py-2 rounded-lg bg-[rgba(124,58,237,0.04)] border border-[rgba(124,58,237,0.08)]">
+            <Lock size={12} className="text-[#a78bfa]" />
+            <span className="font-mono text-[0.45rem] text-[#a78bfa] uppercase tracking-[0.2em] font-semibold">L4 Clearance</span>
+          </div>
+
           {/* Clock */}
           <div className="font-mono text-[0.6rem] text-[#94a3b8] tracking-widest tabular-nums">
             {time} <span className="text-[#475569]">UTC+5:30</span>
@@ -58,9 +65,9 @@ export default function Topbar({ title }: { title: string }) {
           </button>
 
           {/* Settings */}
-          <button className="w-9 h-9 rounded-lg bg-[rgba(16,16,31,0.6)] border border-[rgba(124,58,237,0.1)] flex items-center justify-center hover:border-[rgba(124,58,237,0.25)] transition-all group">
+          <Link href="/settings" className="w-9 h-9 rounded-lg bg-[rgba(16,16,31,0.6)] border border-[rgba(124,58,237,0.1)] flex items-center justify-center hover:border-[rgba(124,58,237,0.25)] transition-all group">
             <Settings size={15} className="text-[#64748b] group-hover:text-[#94a3b8] group-hover:rotate-90 transition-transform duration-500" />
-          </button>
+          </Link>
         </div>
       </div>
     </header>

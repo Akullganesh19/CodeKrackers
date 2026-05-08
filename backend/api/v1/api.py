@@ -18,6 +18,7 @@ from backend.api.v1.endpoints import (
     spam,
     childlock,
     enclave,
+    auth,
 )
 
 api_router = APIRouter()
@@ -27,6 +28,7 @@ def health_check():
     return {"status": "healthy", "version": "2.1.0", "environment": "vercel"}
 
 api_router.include_router(login.router, tags=["auth"])
+api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
 api_router.include_router(users.router, prefix="/users", tags=["users"])
 api_router.include_router(threats.router, prefix="/threats", tags=["threats"])
 api_router.include_router(detection.router, prefix="/detect", tags=["detection"])

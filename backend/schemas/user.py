@@ -10,7 +10,7 @@ class UserBase(BaseModel):
     email: Optional[EmailStr] = None
     is_active: Optional[bool] = True
     full_name: Optional[str] = Field(None, min_length=1, max_length=256)
-    role: Optional[UserRole] = UserRole.CITIZEN
+    role: Optional[UserRole] = UserRole.USER
 
 
 class UserCreate(UserBase):

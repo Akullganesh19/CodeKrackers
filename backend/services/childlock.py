@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional
 
 from sqlalchemy.orm import Session
 
-from backend.models.childlock import ChildProfile, ChildActivityLog, ChildLockMode
+from backend.models.orm import ChildProfile, ChildActivityLog, ChildLockMode
 
 logger = logging.getLogger("vas.childlock")
 
@@ -37,7 +37,7 @@ INAPPROPRIATE_KEYWORDS = [
 
 def check_call_allowed(
     db: Session,
-    child_profile_id: int,
+    child_profile_id: str,
     phone_number: str,
 ) -> Dict[str, Any]:
     """
@@ -118,7 +118,7 @@ def check_call_allowed(
 
 def check_sms_allowed(
     db: Session,
-    child_profile_id: int,
+    child_profile_id: str,
     phone_number: str,
     content: str,
 ) -> Dict[str, Any]:
@@ -213,7 +213,7 @@ def check_sms_allowed(
 
 
 def _log_activity(
-    db: Session, profile_id: int, event: str,
+    db: Session, profile_id: str, event: str,
     phone: str, reason: str, content: Optional[str] = None,
 ):
     log = ChildActivityLog(

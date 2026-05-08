@@ -1,173 +1,380 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
+import {
+  ShieldAlert,
+  ShieldCheck,
+  Search,
+  AlertTriangle,
+  ChevronRight,
+  ExternalLink,
+  Database,
+  Cpu,
+  BarChart3,
+  Loader2
+} from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, AlertTriangle, CheckCircle2, Zap, RefreshCw, ArrowRight, Shield, FileScan } from 'lucide-react'
 
-export default function SMSScanner() {
-  const [input, setInput] = useState('')
+export default function SMSScannerPage() {
+  const [mounted, setMounted] = useState(false)
+  const [text, setText] = useState('')
   const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<null | 'SCAM' | 'SAFE'>(null)
+  const [result, setResult] = useState<null | {
+    isScam: boolean;
+    confidence: number;
+    riskFactors: string[];
+    recommendation: string;
+    tags: string[];
+  }>(null)
 
-  const handleAnalyze = () => {
-    if (!input) return
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const handleAnalyze = async () => {
+    if (!text.trim()) return
+
     setLoading(true)
     setResult(null)
-    setTimeout(() => {
-      setLoading(false)
-      const isScam = input.toLowerCase().includes('block') || input.toLowerCase().includes('update') || input.toLowerCase().includes('http')
-      setResult(isScam ? 'SCAM' : 'SAFE')
-    }, 1500)
+
+    try {
+      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+      const response = await fetch('http://localhost:8000/api/analytics/scan', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ text })
+      });
+      
+      console.log("Response Status:", response.status);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Server Error:", errorText);
+        alert(`Server Error (${response.status}): ${errorText}`);
+        return;
+      }
+      
+      const data = await response.json();
+      console.log("Scanner Data Received:", data);
+      
+      // Ensure we have valid data before setting result
+      if (data && typeof data.isScam !== 'undefined') {
+        setResult(data);
+      } else {
+        console.error("Malformed backend response", data);
+        alert("Server error: Malformed response from AI engine.");
+      }
+    } catch (error) {
+      console.error("Connection Error:", error);
+      alert(`Connection failed: Make sure the backend is running on port 8000.\nDetails: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setLoading(false);
+    }
   }
 
-  const loadSample = (type: 'SCAM' | 'SAFE') => {
-    const samples = {
-      SCAM: "URGENT: Your SBI account will be blocked in 24hrs. Update KYC now: http://sbi-kyc-update.xyz/verify",
-      SAFE: "Your OTP for SBI NetBanking is 847291. Valid 10 min. Do not share with anyone. -SBI"
+  const loadSample = (type: 'scam' | 'safe') => {
+    if (type === 'scam') {
+      setText('URGENT: Your SBI account will be blocked in 24hrs. Update KYC now: http://sbi-kyc-update.xyz/verify')
+    } else {
+      setText('Your OTP for SBI NetBanking is 847291. Valid 10 min. Do not share with anyone. -SBI')
     }
-    setInput(samples[type])
-    setResult(null)
   }
+
+  const handleReportToCybercrime = async () => {
+    if (!result) return;
+    try {
+      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+      const response = await fetch('http://localhost:8000/api/blacklist/report', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+          identifier: text.substring(0, 50) + "...", // Hashed in backend usually, or identifier of sender
+          type: "phone",
+          reason: "User reported Smishing: " + result.recommendation
+        })
+      });
+      if (response.ok) {
+        alert("🚨 REPORTED: Scam details sent to the Cybercrime branch and number blacklisted.");
+      } else {
+        alert("Failed to report scam.");
+      }
+    } catch (e) {
+      alert("Connectivity error.");
+    }
+  }
+
+  const handleBlockchainLog = async () => {
+    if (!result) return;
+    try {
+      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+      const url = new URL('http://localhost:8000/api/zk/sealed-report');
+      url.searchParams.append('report_data', JSON.stringify({ content: text, analysis: result }));
+      
+      const response = await fetch(url.toString(), {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      const data = await response.json();
+      if (response.ok) {
+        alert(`⛓️ BLOCKCHAIN LOGGED: Receipt: ${data.report_hash.substring(0, 16)}... Evidence is now immutable.`);
+      } else {
+        alert("Blockchain logging failed.");
+      }
+    } catch (e) {
+      alert("Connectivity error.");
+    }
+  }
+
+  if (!mounted) return (
+    <div className="min-h-screen bg-bg flex flex-col items-center justify-center gap-6">
+      <div className="w-12 h-12 border-2 border-accent/20 border-t-accent rounded-full animate-spin" />
+      <div className="font-mono text-[0.6rem] text-accent uppercase tracking-[0.5em] animate-pulse">Initializing_AI_Scanner...</div>
+    </div>
+  )
 
   return (
-    <div className="flex min-h-screen bg-obsidian text-text-primary">
+    <div className="flex min-h-screen bg-bg text-white">
       <Sidebar />
-      <main className="flex-1 ml-[260px]">
+      <main className="flex-1 ml-[240px]">
         <Topbar title="SMS Smishing Scanner" />
-        <div className="p-12 max-w-[1200px] mx-auto space-y-12">
-          {/* Header */}
-          <div className="space-y-4 text-center">
-            <div className="section-tag justify-center">Real-time Analysis</div>
-            <h1 className="font-space text-4xl tracking-tighter uppercase">SMS Smishing Scanner</h1>
-            <p className="font-mono text-[0.5rem] text-[#64748b] uppercase tracking-[0.4em]">
-              Powered by DistilBERT fine-tuned on Indian scam SMS datasets
+
+        <div className="p-8 max-w-[1200px] mx-auto space-y-12">
+          {/* Header Section */}
+          <div className="space-y-2 text-center md:text-left">
+            <h1 className="font-space text-4xl font-black uppercase italic tracking-tight">
+              SMS SMISHING SCANNER
+            </h1>
+            <p className="font-mono text-sm text-muted/80 font-medium">
+              Powered by <span className="text-accent">BERT/DistilBERT</span> fine-tuned on Indian scam SMS datasets
             </p>
           </div>
 
           {/* Scanner Card */}
-          <div className="max-w-3xl mx-auto space-y-8">
-            <div className="glass-card p-10 space-y-8">
-              <div className="space-y-5">
-                <label className="font-mono text-[0.5rem] text-[#a78bfa] uppercase tracking-[0.4em]">Paste SMS to Analyze</label>
-                <div className="relative">
-                  <textarea
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    className="w-full h-48 bg-[rgba(16,16,31,0.6)] border border-[rgba(124,58,237,0.1)] p-6 rounded-lg font-mono text-sm text-white focus:border-[rgba(124,58,237,0.3)] focus:outline-none focus:ring-2 focus:ring-[rgba(124,58,237,0.08)] transition-all resize-none placeholder:text-[#475569]"
-                    placeholder="Paste suspicious SMS here..."
-                  />
-                  <div className="absolute bottom-4 right-5 font-mono text-[0.45rem] text-[#475569] uppercase tracking-widest">
-                    {input.length} chars
-                  </div>
+          <div className="vsdp-card max-w-[700px] mx-auto overflow-hidden">
+            <div className="p-8 space-y-6">
+              <div className="flex justify-between items-center">
+                <label className="font-mono text-xs font-bold text-cyan-400 uppercase tracking-widest flex items-center gap-2">
+                  <Search size={14} /> PASTE SMS TO ANALYZE
+                </label>
+                <div className="font-mono text-[10px] text-muted uppercase">
+                  v2.4.0 Live
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-4">
-                <button onClick={() => loadSample('SCAM')}
-                  className="flex-1 btn-ghost-cyber border-[rgba(255,32,86,0.2)] text-[#ff2056] hover:bg-[rgba(255,32,86,0.04)] py-4 text-[0.55rem] flex items-center justify-center gap-2">
-                  <AlertTriangle size={14} /> Load Scam Sample
+              <div className="relative group">
+                <textarea
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  placeholder="Paste suspicious SMS here..."
+                  className="w-full bg-surface/50 border border-white/10 rounded-lg p-5 font-mono text-sm min-height-[140px] focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder:text-white/10 resize-none h-40"
+                />
+                <div className="absolute bottom-4 right-4 font-mono text-[10px] text-muted/50 italic">
+                  {text.length} characters
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={() => loadSample('scam')}
+                  className="px-4 py-2 rounded border border-red-500/30 text-red-400 font-mono text-[0.65rem] uppercase tracking-wider hover:bg-red-500/10 transition-colors flex items-center gap-2"
+                >
+                  <AlertTriangle size={12} /> Load Scam Sample
                 </button>
-                <button onClick={() => loadSample('SAFE')}
-                  className="flex-1 btn-ghost-cyber border-[rgba(16,185,129,0.2)] text-[#10b981] hover:bg-[rgba(16,185,129,0.04)] py-4 text-[0.55rem] flex items-center justify-center gap-2">
-                  <CheckCircle2 size={14} /> Load Safe Sample
+                <button
+                  onClick={() => loadSample('safe')}
+                  className="px-4 py-2 rounded border border-green-500/30 text-green-400 font-mono text-[0.65rem] uppercase tracking-wider hover:bg-green-500/10 transition-colors flex items-center gap-2"
+                >
+                  <ShieldCheck size={12} /> Load Safe Sample
                 </button>
               </div>
 
-              <button onClick={handleAnalyze} disabled={loading || !input}
-                className="btn-cyber w-full py-5 text-[0.55rem] flex items-center justify-center gap-3 disabled:opacity-50">
-                {loading ? <RefreshCw className="animate-spin" size={16} /> : <Zap size={16} />}
-                {loading ? 'Analyzing with BERT model...' : 'Analyze SMS →'}
+              <button
+                onClick={handleAnalyze}
+                disabled={loading || !text.trim()}
+                className="w-full bg-cyan-500 hover:bg-cyan-400 disabled:bg-muted/20 disabled:text-muted/50 text-bg font-black uppercase tracking-widest py-4 rounded-md transition-all flex items-center justify-center gap-3 active:scale-[0.98]"
+              >
+                {loading ? 'Processing...' : 'ANALYZE SMS →'}
               </button>
             </div>
 
-            {/* Result */}
-            <AnimatePresence mode="wait">
-              {result && (
+            {/* Loading Overlay */}
+            <AnimatePresence>
+              {loading && (
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className={`glass-card p-10 space-y-8 border-l-2 ${result === 'SCAM' ? 'border-[#ff2056]' : 'border-[#10b981]'}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 bg-bg/80 backdrop-blur-sm flex flex-col items-center justify-center space-y-6"
                 >
-                  <div className="flex flex-col md:flex-row justify-between items-start gap-8">
-                    <div className="space-y-4">
-                      <div className={`inline-flex items-center gap-3 px-5 py-3 rounded-lg font-space font-bold text-lg ${
-                        result === 'SCAM'
-                          ? 'bg-[rgba(255,32,86,0.1)] border border-[rgba(255,32,86,0.2)] text-[#ff2056]'
-                          : 'bg-[rgba(16,185,129,0.1)] border border-[rgba(16,185,129,0.2)] text-[#10b981]'
-                      }`}>
-                        {result === 'SCAM' ? <AlertTriangle size={20} /> : <CheckCircle2 size={20} />}
-                        {result === 'SCAM' ? 'SMISHING DETECTED' : 'SAFE — NO THREAT'}
-                      </div>
-                      <div className="space-y-2">
-                        <div className="font-mono text-[0.5rem] text-[#64748b] uppercase tracking-widest">
-                          Confidence: <span className={result === 'SCAM' ? 'text-[#ff2056]' : 'text-[#10b981]'}>{result === 'SCAM' ? '94.2%' : '97.8%'}</span>
-                        </div>
-                        <div className="h-1.5 w-64 bg-[rgba(16,16,31,0.6)] rounded-full overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: result === 'SCAM' ? '94.2%' : '97.8%' }}
-                            transition={{ duration: 1 }}
-                            className={`h-full rounded-full ${result === 'SCAM' ? 'bg-[#ff2056]' : 'bg-[#10b981]'}`}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2">
-                      {result === 'SCAM' ? (
-                        <>
-                          <span className="chip chip-alert">Suspicious URL</span>
-                          <span className="chip chip-alert">Urgency Language</span>
-                          <span className="chip chip-alert">KYC Keyword</span>
-                        </>
-                      ) : (
-                        <>
-                          <span className="chip chip-lime">Verified Sender</span>
-                          <span className="chip chip-lime">Standard Format</span>
-                          <span className="chip chip-lime">No Malware Link</span>
-                        </>
-                      )}
+                  <div className="relative w-20 h-20">
+                    <Loader2 className="w-20 h-20 text-cyan-400 animate-spin" />
+                    <motion.div
+                      animate={{ top: ['0%', '100%', '0%'] }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                      className="absolute left-0 w-full h-0.5 bg-cyan-400/50 shadow-[0_0_10px_#22d3ee]"
+                    />
+                  </div>
+                  <div className="text-center space-y-2">
+                    <p className="font-mono text-cyan-400 text-xs font-bold tracking-[0.2em] uppercase animate-pulse">
+                      Analyzing with BERT model...
+                    </p>
+                    <div className="flex gap-1 justify-center">
+                      {[0, 1, 2].map((i) => (
+                        <motion.div
+                          key={i}
+                          animate={{ scale: [1, 1.5, 1] }}
+                          transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.2 }}
+                          className="w-1 h-1 bg-cyan-400 rounded-full"
+                        />
+                      ))}
                     </div>
                   </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-                  <div className="pt-8 border-t border-[rgba(124,58,237,0.06)] flex flex-col md:flex-row justify-between items-center gap-8">
-                    <p className="font-mono text-[0.55rem] text-[#64748b] italic">
-                      {result === 'SCAM'
-                        ? '🚨 DO NOT click any links. Report immediately to cybercrime.gov.in'
-                        : '✅ This SMS appears legitimate based on neural classification.'}
-                    </p>
-                    <div className="flex gap-4">
-                      {result === 'SCAM' ? (
-                        <>
-                          <button className="btn-danger-cyber text-[0.5rem] py-3 px-6">🚨 Report</button>
-                          <button className="btn-ghost-cyber text-[0.5rem] py-3 px-6">⛓️ Log Ledger</button>
-                        </>
-                      ) : (
-                        <button className="btn-ghost-cyber text-[0.5rem] py-3 px-6">Mark as Trusted</button>
-                      )}
-                    </div>
+            {/* Result Panel */}
+            <AnimatePresence>
+              {result && !loading && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  className="border-t border-white/5 bg-white/[0.01]"
+                >
+                  <div className="p-8 space-y-8">
+                    {result.isScam ? (
+                      <div className="space-y-6">
+                        <div className="flex items-center gap-4">
+                          <div className="bg-red-500/10 border border-red-500/30 px-6 py-3 rounded-md text-red-500 font-space font-bold uppercase tracking-widest flex items-center gap-3 text-lg">
+                            <ShieldAlert size={24} /> ⚠️ SMISHING DETECTED
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="flex justify-between font-mono text-[0.65rem] uppercase tracking-widest text-muted">
+                            <span>Scam Confidence</span>
+                            <span>{result.confidence}%</span>
+                          </div>
+                          <div className="h-2 w-full bg-surface rounded-full overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${result.confidence}%` }}
+                              transition={{ duration: 1, ease: "easeOut" }}
+                              className="h-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          <div className="font-mono text-[0.6rem] text-muted uppercase tracking-widest font-bold">Risk Factors</div>
+                          <div className="flex flex-wrap gap-2">
+                            {(result.riskFactors || []).map((factor, i) => (
+                              <span key={i} className="node-chip-red text-[0.65rem]">[{factor}]</span>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="p-4 bg-red-500/5 border-l-2 border-red-500 rounded-r-md">
+                          <p className="text-red-300 text-sm font-medium">{result.recommendation}</p>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-4 pt-4">
+                          <button 
+                            onClick={handleReportToCybercrime}
+                            className="btn-danger flex items-center justify-center gap-2 text-xs uppercase font-bold tracking-widest"
+                          >
+                            🚨 Report to Cybercrime Portal
+                          </button>
+                          <button 
+                            onClick={handleBlockchainLog}
+                            className="btn-ghost flex items-center justify-center gap-2 text-xs uppercase font-bold tracking-widest border-white/10 text-white/70"
+                          >
+                            ⛓️ Log on Blockchain
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        <div className="bg-green-500/5 border border-green-500/30 px-6 py-3 rounded-md text-green-500 font-space font-bold uppercase tracking-widest flex items-center gap-3 text-lg">
+                          <ShieldCheck size={24} /> ✅ SAFE — NO THREAT DETECTED
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="flex justify-between font-mono text-[0.65rem] uppercase tracking-widest text-muted">
+                            <span>Legitimacy Confidence</span>
+                            <span>{result.confidence}%</span>
+                          </div>
+                          <div className="h-2 w-full bg-surface rounded-full overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${result.confidence}%` }}
+                              transition={{ duration: 1, ease: "easeOut" }}
+                              className="h-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                          {(result.tags || []).map((tag, i) => (
+                            <span key={i} className="node-chip-green text-[0.65rem]">[{tag}]</span>
+                          ))}
+                        </div>
+
+                        <p className="text-green-300/80 text-sm italic">{result.recommendation}</p>
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
 
-          {/* How It Works */}
-          <div className="grid md:grid-cols-3 gap-6 pt-8">
-            {[
-              { step: '01', title: 'Tokenization', desc: 'Text tokenized → DistilBERT model inference' },
-              { step: '02', title: 'Feature Scan', desc: 'URL patterns, urgency keywords, sender ID analyzed' },
-              { step: '03', title: 'Risk Score', desc: 'Risk score computed — SAFE/DANGER in under 300ms' },
-            ].map((s, i) => (
-              <div key={i} className="glass-card p-8 space-y-5 relative group">
-                <div className="font-space text-5xl text-white/[0.02] group-hover:text-[#a78bfa]/5 transition-colors absolute top-5 right-6">{s.step}</div>
-                <h3 className="font-space text-lg tracking-tight uppercase text-[#a78bfa]">{s.title}</h3>
-                <p className="font-mono text-[0.5rem] text-[#64748b] uppercase tracking-[0.2em] leading-loose">{s.desc}</p>
-              </div>
-            ))}
+          {/* How it Works Section */}
+          <div className="space-y-8">
+            <div className="flex items-center gap-6">
+              <h2 className="font-space text-2xl font-black uppercase italic italic">HOW IT WORKS</h2>
+              <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6">
+              {[
+                {
+                  title: 'Step 1: NLP Processing',
+                  desc: 'Text is tokenized and processed through a DistilBERT model inference engine.',
+                  icon: Cpu,
+                  tag: 'TOKENIZATION'
+                },
+                {
+                  title: 'Step 2: Heuristic Analysis',
+                  desc: 'URL patterns, urgency keywords, and sender ID are cross-referenced with threat databases.',
+                  icon: Database,
+                  tag: 'PATTERN MATCH'
+                },
+                {
+                  title: 'Step 3: Scoring',
+                  desc: 'A multi-vector risk score is computed to classify the SMS in under 300ms.',
+                  icon: BarChart3,
+                  tag: 'INFERENCE'
+                }
+              ].map((step, i) => (
+                <div key={i} className="vsdp-card p-8 group hover:translate-y-[-4px]">
+                  <div className="font-mono text-[0.6rem] text-accent font-bold tracking-widest mb-4">[{step.tag}]</div>
+                  <div className="p-3 bg-accent/5 border border-accent/20 rounded-lg w-fit mb-6 group-hover:bg-accent/10 transition-colors">
+                    <step.icon className="text-accent" size={24} />
+                  </div>
+                  <h3 className="font-space text-lg font-bold mb-3 uppercase tracking-tight">{step.title}</h3>
+                  <p className="font-mono text-xs text-muted leading-relaxed">{step.desc}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </main>

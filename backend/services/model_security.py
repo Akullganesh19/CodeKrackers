@@ -24,7 +24,7 @@ from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
-from backend.models.model_version import ModelVersion, ModelInferenceLog
+from backend.models import ModelVersion, ModelInferenceLog
 
 logger = logging.getLogger("vas.model_security")
 

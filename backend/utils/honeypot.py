@@ -18,6 +18,10 @@ class EinsteinBot:
 
     async def generate_response(self, input_text: str) -> str:
         try:
+            # Check if client exists
+            if not groq_client:
+                return "Oh dear, my hearing aid is buzzing. What did you say?"
+                
             completion = groq_client.chat.completions.create(
                 model="llama3-8b-8192",
                 messages=[
@@ -27,6 +31,7 @@ class EinsteinBot:
             )
             return completion.choices[0].message.content
         except Exception as e:
+            print(f"Honeypot Error: {e}")
             return "Oh dear, my internet is acting up again. What did you say?"
 
 einstein_bot = EinsteinBot()

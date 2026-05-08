@@ -20,8 +20,8 @@ from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
-from ..models.canary import CanaryToken
-from ..core.config import settings
+from backend.models.orm import CanaryTrap as CanaryToken
+from backend.core.config import settings
 
 logger = logging.getLogger("vas.canary_service")
 

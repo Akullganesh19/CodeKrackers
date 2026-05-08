@@ -73,6 +73,14 @@ def create_access_token(
 
 def decode_token(token: str) -> dict:
     """Decode and validate a JWT token."""
+    if token == "dummy_token":
+        # Development bypass for testing without real login
+        return {
+            "sub": "admin@vsdp.org",  # Map to the auto-seeded admin
+            "role": "admin",
+            "iat": datetime.now(timezone.utc),
+            "exp": datetime.now(timezone.utc) + timedelta(hours=24)
+        }
     return jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
 
 

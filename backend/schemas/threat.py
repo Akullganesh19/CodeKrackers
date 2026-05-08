@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from backend.models.threat import ThreatSeverity, ThreatType
+from backend.models import ThreatSeverity, ThreatType
 
 
 class ThreatBase(BaseModel):

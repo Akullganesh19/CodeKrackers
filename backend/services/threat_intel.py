@@ -6,8 +6,7 @@ import re
 from typing import Any, Dict, List, Optional
 
 from sqlalchemy.orm import Session
-
-from backend.models.blacklist import BlacklistEntry, BlacklistType
+from backend.models.orm import Blacklist as BlacklistEntry, BlacklistType
 
 logger = logging.getLogger("vas.intel")
 

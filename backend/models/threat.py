@@ -1,57 +1,56 @@
-"""Threat model with enriched metadata, indexing, and audit trail."""
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Enum, JSON, Text, Index
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
-import enum
+import uuid
+from datetime import datetime
+from typing import Optional, List, Dict, Any
+from pydantic import BaseModel
+from enum import Enum
 
-from backend.db.base_class import Base, TimestampMixin
-
-
-class ThreatType(str, enum.Enum):
+# Enums for threat fields (matching SQLAlchemy model enums)
+class ThreatType(str, Enum):
     SMISHING = "smishing"
     VISHING = "vishing"
-    CRYPTO_SCAM = "crypto_scam"
+    AI_VOICE = "ai_voice"
+    URL_FRAUD = "url_fraud"
+    OTP_FRAUD = "otp_fraud"
 
-
-class ThreatSeverity(str, enum.Enum):
+class ThreatSeverity(str, Enum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
 
+class ThreatStatus(str, Enum):
+    detected = "detected"
+    blocked = "blocked"
+    flagged = "flagged"
+    honeypot = "honeypot"
+    fir_filed = "fir_filed"
+    resolved = "resolved"
 
-class ThreatStatus(str, enum.Enum):
-    DETECTED = "detected"
-    CONFIRMED = "confirmed"
-    INVESTIGATING = "investigating"
-    RESOLVED = "resolved"
-    FALSE_POSITIVE = "false_positive"
+# Base schema for common threat attributes
+class ThreatBase(BaseModel):
+    user_id: uuid.UUID
+    type: ThreatType
+    severity: ThreatSeverity
+    status: ThreatStatus = ThreatStatus.detected
+    raw_content: Optional[str] = None
+    risk_score: float
+    confidence: Optional[float] = None
+    caller_id: Optional[str] = None
+    sender_id: Optional[str] = None
+    suspicious_urls: Optional[List[str]] = None
+    ipc_sections: Optional[List[Dict[str, str]]] = None
+    is_reported: bool = False
+    evidence_hash: Optional[str] = None
+    extra_info: Optional[Dict[str, Any]] = None
 
+    class Config:
+        from_attributes = True
 
-class Threat(TimestampMixin, Base):
-    id = Column(Integer, primary_key=True, index=True)
-    type = Column(Enum(ThreatType), nullable=False, index=True)
-    source_number = Column(String(64), index=True, nullable=False)
-    content = Column(Text, nullable=True)  # SMS text or call transcript
-    severity = Column(Enum(ThreatSeverity), default=ThreatSeverity.MEDIUM, index=True)
-    status = Column(Enum(ThreatStatus), default=ThreatStatus.DETECTED, index=True)
-    confidence_score = Column(Float, nullable=False, default=0.0)
-    timestamp = Column(DateTime(timezone=True), server_default=func.now(), index=True)
-    metadata_json = Column(JSON, nullable=True)
+# Schema for creating a new threat
+class ThreatCreate(ThreatBase):
+    pass
 
-    # Attribution
-    owner_id = Column(Integer, ForeignKey("user.id"), nullable=False, index=True)
-    owner = relationship("User", back_populates="threats")
-
-    # Evidence chain
-    evidence = relationship("Evidence", back_populates="threat", uselist=False)
-
-    # Composite indexes for common queries
-    __table_args__ = (
-        Index("ix_threat_type_severity", "type", "severity"),
-        Index("ix_threat_timestamp_type", "timestamp", "type"),
-        Index("ix_threat_owner_status", "owner_id", "status"),
-    )
-
-    def __repr__(self) -> str:
-        return f"<Threat(id={self.id}, type={self.type}, severity={self.severity}, score={self.confidence_score})>"
+# Schema for returning threat details
+class ThreatResponse(ThreatBase):
+    id: uuid.UUID
+    detected_at: datetime

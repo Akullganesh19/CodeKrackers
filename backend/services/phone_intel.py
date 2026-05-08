@@ -10,7 +10,7 @@ from phonenumbers import carrier, geocoder, timezone as pn_tz, number_type
 from phonenumbers.phonenumberutil import PhoneNumberType
 from sqlalchemy.orm import Session
 
-from backend.models.intel import PhoneLookup, UserConsent
+from backend.models import PhoneLookup, UserConsent
 
 logger = logging.getLogger("vas.phone_intel")
 

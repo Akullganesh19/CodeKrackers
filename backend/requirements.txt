@@ -1,74 +1,21 @@
-# FastAPI & Server
-fastapi>=0.115.6,<1.0.0
-uvicorn[standard]>=0.34.0,<0.35.0
-gunicorn>=22.0.0,<23.0.0
-uvloop>=0.19.0,<0.20.0
-
-# Database
-sqlalchemy>=2.0.36,<3.0.0
-alembic>=1.14.0,<2.0.0
-psycopg2-binary>=2.9.9,<3.0.0
-
-# Data Validation
-pydantic>=2.10.3,<3.0.0
-pydantic-settings>=2.7.0,<3.0.0
-email-validator>=2.2.0,<3.0.0
-
-# Authentication & Security
-bcrypt==4.0.1
-passlib[bcrypt]==1.7.4
-python-jose[cryptography]>=3.3.0,<4.0.0
-python-multipart>=0.0.18,<0.0.19
-slowapi>=0.1.9,<0.2.0
-python-ulid>=0.1.3
-structlog>=24.1.0,<25.0.0
-
-# AI Engine (Groq — free tier)
-groq>=0.11.0,<0.12.0
-
-# Phone Intelligence (open-source, no API key needed)
-phonenumbers>=9.0.0,<10.0.0
-
-# Twilio (honeypot voice only — optional)
-twilio>=9.4.1,<10.0.0
-
-# ML / AI (optional — for local model inference)
-scikit-learn>=1.6.0,<2.0.0
-
-# Data Processing
-pandas>=2.2.3,<3.0.0
-numpy>=2.2.0,<3.0.0
-
-# File Handling & Utilities
-aiofiles>=24.1.0,<25.0.0
-python-magic>=0.4.27,<0.5.0
-geoip2>=4.8.1,<5.0.0
-
-# PDF Generation
-reportlab>=4.2.5,<5.0.0
-qrcode>=7.4.2,<8.0.0
-
-# Task Queue
-celery>=5.4.0,<6.0.0
-kombu>=5.4.2,<6.0.0
-flower>=2.0.1,<3.0.0
-
-# HTTP Client
-httpx>=0.28.1,<0.29.0
-
-# Redis
-redis>=5.2.1,<6.0.0
-
-# Development Tools
-pytest>=8.3.4,<9.0.0
-pytest-asyncio>=0.24.0,<0.25.0
-black>=24.10.0,<25.0.0
-flake8>=7.1.1,<8.0.0
-mypy>=1.13.0,<2.0.0
-
-# ML / AI Dependencies (optional)
-transformers>=4.47.0,<5.0.0
-torch>=2.5.1,<3.0.0
-torchaudio>=2.5.1,<3.0.0
-librosa>=0.10.2,<0.11.0
-scikit-learn>=1.6.0,<2.0.0
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+sqlalchemy[asyncio]
+aiomysql
+python-multipart
+python-jose[cryptography]
+passlib[bcrypt]
+httpx
+reportlab
+apscheduler
+openai-whisper
+transformers
+torch
+pandas
+scikit-learn
+librosa
+scipy
+aiosqlite
+python-dotenv

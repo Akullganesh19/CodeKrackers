@@ -1,120 +1,95 @@
-from contextlib import asynccontextmanager
-from typing import AsyncGenerator
-import logging
-
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from slowapi import _rate_limit_exceeded_handler
-from slowapi.errors import RateLimitExceeded
+from .core.database import engine, Base
+from .api import auth, analytics, call, fir, evidence, honeypot
+from .scheduler import setup_scheduler
+import uvicorn
+import asyncio
+from sqlalchemy import select
+from .core.database import engine, Base, AsyncSessionLocal
+from .core.security import get_password_hash
+from .models.orm import User
 
-from backend.api.v1.api import api_router
-from backend.core.config import settings
-from backend.core.ws import manager
-from backend.core.middleware import (
-    SecurityHeadersMiddleware,
-    AuditLogMiddleware,
-    InputSanitizationMiddleware,
-    RAPSMiddleware,
-)
-from backend.core.limiter import limiter
-from backend.db.session import get_db, engine
-from backend.db.base import Base
-from backend.services.canary_service import plant_seed_tokens
-from backend.core.logger import setup_logging, get_logger
-
-# ─── Logging ───
-setup_logging(json_logs=False) # Switch to True in production for ELK/Datadog
-logger = get_logger("vas.main")
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    # ─── Initialize Database ───
-    try:
-        Base.metadata.create_all(bind=engine)
-        logger.info("Database initialized successfully")
-    except Exception as e:
-        logger.error("Database initialization failed", error=str(e))
-
-    logger.info("VAS Defense System starting up...")
-    logger.info("Database URL configured", database_snippet=settings.DATABASE_URL[:30] + "...")
-    logger.info("Service integrations", groq_ai="ACTIVE" if settings.GROQ_API_KEY else "DISABLED", twilio="ACTIVE" if settings.TWILIO_ACCOUNT_SID else "DISABLED")
-
-    # ─── Seed Canary Tokens on Startup ───
-    try:
-        db = next(get_db())
-        plant_seed_tokens(db)
-        db.close()
-    except Exception as e:
-        logger.warning("Could not seed canary tokens (DB may not be ready)", error=str(e))
-
-    yield
-    logger.info("VAS Defense System shutting down...")
-
-
-import os
-
+# Initialize FastAPI App
 app = FastAPI(
-    title=settings.PROJECT_NAME,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json",
-    lifespan=lifespan,
-    root_path="/api" if os.environ.get("VERCEL") else "",
-    docs_url="/docs",
-    redoc_url="/redoc",
-    version="2.1.0",
-    description="AI-powered national cybersecurity infrastructure for vishing & smishing defense.",
+    title="VSDP - Vishing & Smishing Defense Platform",
+    description="Cybersecurity backend for AI-driven scam detection and forensic reporting.",
+    version="2.0.0"
 )
 
-# ─── Rate Limiter ───
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+# CORS Configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:3001",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# ─── Security Middleware Stack (order matters: outermost runs first) ───
-app.add_middleware(InputSanitizationMiddleware)   # 1. Basic WAF pattern blocking
-app.add_middleware(RAPSMiddleware)                # 2. RASP - real-time attack detection & blocking
-app.add_middleware(AuditLogMiddleware)            # 3. Immutable audit logging
-app.add_middleware(SecurityHeadersMiddleware)     # 4. Response header hardening
+# Include Routers
+app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
+app.include_router(analytics.router, prefix="/api/analytics", tags=["analytics"])
+app.include_router(call.router, prefix="/api/call", tags=["call"])
+app.include_router(fir.router, prefix="/api/fir", tags=["fir"])
+app.include_router(evidence.router, prefix="/api/evidence", tags=["evidence"])
+app.include_router(honeypot.router, prefix="/api/honeypot", tags=["honeypot"])
 
-# ─── CORS ───
-if settings.BACKEND_CORS_ORIGINS:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
-        allow_credentials=True,
-        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allow_headers=["Authorization", "Content-Type", "X-Request-ID"],
-        expose_headers=["X-Request-ID", "X-Response-Time"],
-    )
+# New Original Routers
+from .api import blacklist, canary, childlock, enclave, export, intel, legal, model_guard, openclaw, spam, threats, users, zk_privacy
+app.include_router(blacklist.router, prefix="/api/blacklist", tags=["blacklist"])
+app.include_router(canary.router, prefix="/api/canary", tags=["canary"])
+app.include_router(childlock.router, prefix="/api/childlock", tags=["childlock"])
+app.include_router(enclave.router, prefix="/api/enclave", tags=["enclave"])
+app.include_router(export.router, prefix="/api/export", tags=["export"])
+app.include_router(intel.router, prefix="/api/intel", tags=["intel"])
+app.include_router(legal.router, prefix="/api/legal", tags=["legal"])
+app.include_router(model_guard.router, prefix="/api/model_guard", tags=["model_guard"])
+app.include_router(openclaw.router, prefix="/api/openclaw", tags=["openclaw"])
+app.include_router(spam.router, prefix="/api/spam", tags=["spam"])
+app.include_router(threats.router, prefix="/api/threats", tags=["threats"])
+app.include_router(users.router, prefix="/api/users", tags=["users"])
+app.include_router(zk_privacy.router, prefix="/api/zk", tags=["zk_privacy"])
 
-# ─── WebSocket ───
-@app.websocket("/ws/threats")
-async def websocket_endpoint(websocket: WebSocket) -> None:
-    await manager.connect(websocket)
-    try:
-        while True:
-            await websocket.receive_text()
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
-
-# ─── Routes ───
-app.include_router(api_router, prefix=settings.API_V1_STR)
-
+@app.on_event("startup")
+async def startup_event():
+    """
+    Actions to perform when the server starts:
+    1. Create database tables (if they don't exist).
+    2. Start the background scheduler.
+    """
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    
+    # Auto-seed admin user if not exists
+    async with AsyncSessionLocal() as db:
+        result = await db.execute(select(User).where(User.email == "admin@vsdp.org"))
+        if not result.scalar_one_or_none():
+            admin = User(
+                email="admin@vsdp.org",
+                hashed_password=get_password_hash("admin123"),
+                full_name="System Administrator",
+                role="admin",
+                rbac_level=4
+            )
+            db.add(admin)
+            await db.commit()
+            print("Auto-seeded admin user: admin@vsdp.org / admin123")
+    
+    # setup_scheduler()
+    print("VSDP Backend Startup Complete (Scheduler Disabled for Demo).")
 
 @app.get("/")
-def root() -> dict:
+async def root():
     return {
-        "system": "VAS Intelligence Portal",
-        "version": "2.1.0",
-        "status": "operational",
-        "docs": "/docs",
-        "defense_layers": ["smishing", "vishing", "honeypot", "legal", "analytics"],
+        "status": "VSDP Backend Operational",
+        "version": "2.0.0",
+        "documentation": "/docs"
     }
 
-
-@app.get("/health")
-def health_check() -> dict:
-    return {
-        "status": "healthy",
-        "ai_engine": "groq-llama3",
-        "defense_active": True,
-    }
+if __name__ == "__main__":
+    uvicorn.run("backend.main:app", host="0.0.0.0", port=8000, reload=True)

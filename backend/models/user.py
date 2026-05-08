@@ -8,11 +8,11 @@ from backend.db.base_class import Base, TimestampMixin
 
 
 class UserRole(str, enum.Enum):
-    USER = "user"
-    PREMIUM = "premium"
+    CITIZEN = "citizen"
+    BANK = "bank"
     OFFICER = "officer"
     ADMIN = "admin"
-    SUPER_ADMIN = "super"
+    SUPER_ADMIN = "superadmin"
 
 
 class User(TimestampMixin, Base):
@@ -22,7 +22,7 @@ class User(TimestampMixin, Base):
     phone_number = Column(String(20), unique=True, index=True, nullable=True)
     hashed_password = Column(String(1024), nullable=False)
     is_active = Column(Boolean(), default=True, nullable=False)
-    role = Column(Enum(UserRole), default=UserRole.USER, nullable=False, index=True)
+    role = Column(Enum(UserRole), default=UserRole.CITIZEN, nullable=False, index=True)
 
     # Security tracking
     failed_login_attempts = Column(Integer, default=0, nullable=False)

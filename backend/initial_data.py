@@ -47,7 +47,7 @@ def init_db() -> None:
             email="user@example.com",
             hashed_password=security.get_password_hash("User@1234"),
             full_name="Anirudh Sharma",
-            role=UserRole.USER,
+            role=UserRole.CITIZEN,
         )
         db.add(user)
         db.commit()

@@ -72,7 +72,7 @@ export default function Sidebar() {
     const connect = () => {
       const token = typeof window !== 'undefined' ? localStorage.getItem('vsdp_token') : null
       const wsBaseUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000'
-      const wsUrl = `${wsBaseUrl}/api/v1/ws/notifications?token=${token}`
+      const wsUrl = `${wsBaseUrl}/ws/threats?token=${token}`
       
       socket = new WebSocket(wsUrl)
 

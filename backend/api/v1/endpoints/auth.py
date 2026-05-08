@@ -42,6 +42,7 @@ class UserRegister(BaseModel):
     password: str
     phone_number: Optional[str] = None
     role: str = "citizen"
+    captcha_token: Optional[str] = None
 
 @router.post("/send")
 @limiter.limit(settings.RATE_LIMIT_AUTH)

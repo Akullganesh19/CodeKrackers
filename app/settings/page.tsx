@@ -37,7 +37,7 @@ export default function SettingsPage() {
       <main className="flex-1 flex flex-col min-w-0 relative">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(124,58,237,0.05),transparent_50%)]" />
         
-        <Topbar />
+        <Topbar title="Operations Command" />
 
         <div className="flex-1 p-8 md:p-12 relative z-10 overflow-y-auto">
           <div className="max-w-6xl mx-auto space-y-12">

@@ -13,7 +13,7 @@ const RBAC_CONFIG: Record<string, string[]> = {
 
 const encoder = new TextEncoder()
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const token = request.cookies.get('vsdp_token')?.value
   const { pathname } = request.nextUrl
 
@@ -51,7 +51,7 @@ export async function middleware(request: NextRequest) {
   return NextResponse.next()
 }
 
-// Only run middleware on dashboard paths
+// Only run proxy on dashboard paths
 export const config = {
   matcher: ['/dashboard/:path*'],
 }

@@ -2,12 +2,11 @@
 Analytics endpoints with real aggregation queries and trend analysis.
 """
 
-import json
 import logging
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,7 +18,6 @@ from backend.models.orm import (
     ThreatType,
     User,
 )
-from backend.utils.ai import client as groq_client
 
 logger = logging.getLogger("vas.analytics")
 router = APIRouter()
@@ -224,145 +222,3 @@ async def get_hourly_trend(
         )
 
     return data
-
-
-@router.post("/scan-voice")
-async def scan_voice(body: dict, db: AsyncSession = Depends(deps.get_db)):
-    """Analyze call transcript for vishing threats using AI."""
-    transcript = body.get("transcript", "")
-    if not transcript:
-        raise HTTPException(status_code=400, detail="Transcript is required")
-
-    try:
-        completion = groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        "You are a Vishing (Voice Scam) Detection Expert. "
-                        "Analyze the transcript and return JSON: {"
-                        "risk_score: 0.0-1.0, verdict: 'SAFE'|'CAUTION'|'SCAM', "
-                        "analysis: 'short explanation', tags: [list]}"
-                    ),
-                },
-                {"role": "user", "content": transcript},
-            ],
-            response_format={"type": "json_object"},
-        )
-        result = json.loads(completion.choices[0].message.content)
-    except Exception as e:
-        logger.error(f"Groq Error: {e}")
-        # Heuristic fallback
-        scam_keywords = ["bank", "otp", "police", "arrest", "kyc", "card", "blocked"]
-        hits = sum(1 for k in scam_keywords if k in transcript.lower())
-        result = {
-            "risk_score": min(hits * 0.2, 0.9),
-            "verdict": "SCAM" if hits > 1 else "CAUTION" if hits > 0 else "SAFE",
-            "analysis": "Heuristic analysis due to AI timeout.",
-            "tags": ["heuristic_scan"],
-        }
-
-    # Log as threat if suspicious
-    if result["risk_score"] > 0.4:
-        threat = Threat(
-            type=ThreatType.VISHING,
-            severity=(
-                ThreatSeverity.CRITICAL
-                if result["risk_score"] > 0.85
-                else (
-                    ThreatSeverity.HIGH
-                    if result["risk_score"] > 0.7
-                    else ThreatSeverity.MEDIUM
-                )
-            ),
-            raw_content=transcript,
-            risk_score=result["risk_score"],
-            confidence=0.85,
-            extra_info=result,
-        )
-        db.add(threat)
-        await db.commit()
-
-    return result
-
-
-@router.post("/scan-vishing")
-async def scan_vishing(body: dict, db: AsyncSession = Depends(deps.get_db)):
-    return await scan_voice(body, db)
-
-
-@router.post("/scan")
-async def scan_sms(
-    body: dict,
-    db: AsyncSession = Depends(deps.get_db),
-) -> Any:
-    """Analyze SMS content for smishing threats using AI."""
-    text = body.get("text", "")
-    if not text:
-        raise HTTPException(status_code=400, detail="Text is required")
-
-    try:
-        completion = groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        "You are a Smishing (SMS Scam) Detection Expert "
-                        "specializing in Indian fraud. "
-                        "Analyze the SMS and return JSON: {"
-                        "  isScam: boolean, "
-                        "  confidence: number (0-100), "
-                        "  riskFactors: string[], "
-                        "  recommendation: string, "
-                        "  tags: string[]"
-                        "}"
-                    ),
-                },
-                {"role": "user", "content": text},
-            ],
-            response_format={"type": "json_object"},
-        )
-        result = json.loads(completion.choices[0].message.content)
-    except Exception as e:
-        logger.error(f"Groq SMS Error: {e}")
-        # Heuristic fallback
-        from backend.services.threat_intel import calculate_threat_score
-
-        intel = calculate_threat_score(text, "Unknown", db)
-        is_scam = intel["composite_score"] > 0.4
-        result = {
-            "isScam": is_scam,
-            "confidence": int(intel["composite_score"] * 100),
-            "riskFactors": [k for k, v in intel["engines"].items() if v > 0.2],
-            "recommendation": (
-                "Be cautious of links and requests for sensitive data."
-                if is_scam
-                else "Message seems safe, but always verify sender ID."
-            ),
-            "tags": ["heuristic_scan"],
-        }
-
-    # Log as threat if suspicious
-    if result["isScam"] and result["confidence"] > 40:
-        threat = Threat(
-            type=ThreatType.SMISHING,
-            severity=(
-                ThreatSeverity.CRITICAL
-                if result["confidence"] > 85
-                else (
-                    ThreatSeverity.HIGH
-                    if result["confidence"] > 70
-                    else ThreatSeverity.MEDIUM
-                )
-            ),
-            raw_content=text,
-            risk_score=result["confidence"] / 100.0,
-            confidence=result["confidence"] / 100.0,
-            extra_info=result,
-        )
-        db.add(threat)
-        await db.commit()
-
-    return result

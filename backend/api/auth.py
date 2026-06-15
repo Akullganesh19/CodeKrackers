@@ -139,9 +139,7 @@ async def verify_otp(
         )
 
     redis_key = f"otp:{otp_verify.identifier}"
-    stored_code = (
-        redis_client.get(redis_key) if redis_client else otp_verify.code
-    )  # Mock pass if redis down for demo
+    stored_code = redis_client.get(redis_key) if redis_client else None
 
     if not stored_code or otp_verify.code != stored_code:
         if user:
@@ -149,9 +147,7 @@ async def verify_otp(
             if user.failed_login_attempts >= security.MAX_LOGIN_ATTEMPTS:
                 user.locked_until = security.get_lockout_time()
             db.commit()
-        logger.warning(
-            f"Auth failure: Invalid OTP attempt for {otp_verify.identifier}"
-        )
+        logger.warning(f"Auth failure: Invalid OTP attempt for {otp_verify.identifier}")
         raise HTTPException(
             status_code=400, detail="Invalid or expired verification code"
         )

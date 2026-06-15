@@ -4,6 +4,7 @@ import os
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "VSDP - Vishing & Smishing Defense Platform"
+    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "production")
     
     # Database
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./vsdp.db")

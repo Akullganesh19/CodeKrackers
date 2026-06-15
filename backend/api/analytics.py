@@ -143,16 +143,20 @@ async def get_hourly_trend(
     now = datetime.now(timezone.utc)
     start_time = now - timedelta(hours=hours)
 
-    # Fetch all relevant threats in one go
+    # Fetch all relevant threats in one go, sorted by detected_at
     query = (
         select(Threat.detected_at, Threat.type)
         .filter(Threat.detected_at >= start_time)
+        .order_by(Threat.detected_at)
     )
     result = await db.execute(query)
     threats = result.all()
 
     # Build the response by iterating over the requested sliding windows
     data = []
+    ptr = 0
+    num_threats = len(threats)
+
     for i in range(hours, 0, -1):
         hour_start = now - timedelta(hours=i)
         hour_end = now - timedelta(hours=i - 1)
@@ -160,17 +164,25 @@ async def get_hourly_trend(
         smishing_count = 0
         vishing_count = 0
 
-        for t_detected_at, t_type in threats:
-            # Ensure t_detected_at is timezone-aware for comparison if it's not
-            if t_detected_at.tzinfo is None:
-                t_detected_at = t_detected_at.replace(tzinfo=timezone.utc)
+        while ptr < num_threats:
+            t_detected_at, t_type = threats[ptr]
 
-            if hour_start <= t_detected_at < hour_end:
+            # Ensure t_detected_at is timezone-aware for comparison
+            t_dt = t_detected_at.replace(tzinfo=timezone.utc) if t_detected_at.tzinfo is None else t_detected_at
+
+            if t_dt < hour_start:
+                ptr += 1
+                continue
+            if t_dt < hour_end:
                 type_val = t_type.value if hasattr(t_type, 'value') else t_type
                 if type_val == ThreatType.SMISHING.value:
                     smishing_count += 1
                 elif type_val == ThreatType.VISHING.value:
                     vishing_count += 1
+                ptr += 1
+                continue
+            # If t_dt >= hour_end, it belongs to a future window
+            break
 
         data.append({
             "hour": hour_start.strftime("%H:%M"),

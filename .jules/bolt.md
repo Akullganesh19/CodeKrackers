@@ -1,0 +1,3 @@
+## 2025-05-15 - Optimizing Analytics Trends (N+1 Query Resolution)
+**Learning:** Consolidating multiple database queries into a single query significantly improves performance, but one must be careful to preserve the original semantics (e.g., sliding windows vs. calendar hours) and ensure database agnosticism by performing aggregation in Python if SQL-level grouping becomes dialect-specific or complex to reconcile with the intended logic.
+**Action:** Always verify if optimization changes the returned data's semantics. Prefer single-query-with-Python-aggregation over dialect-specific SQL functions for better portability and correctness unless data volume is extremely large.

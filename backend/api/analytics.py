@@ -135,30 +135,47 @@ async def get_hourly_trend(
     hours: int = Query(12, ge=1, le=48),
     current_user: User = Depends(deps.get_current_active_user),
 ) -> Any:
-    """Hourly threat trend for the last N hours."""
+    """
+    Hourly threat trend for the last N hours.
+    Optimized: Replaced 2*N sequential queries with a single query + Python aggregation.
+    Preserves sliding window logic and is database-agnostic.
+    """
     now = datetime.now(timezone.utc)
-    data = []
+    start_time = now - timedelta(hours=hours)
 
+    # Fetch all relevant threats in one go
+    query = (
+        select(Threat.detected_at, Threat.type)
+        .filter(Threat.detected_at >= start_time)
+    )
+    result = await db.execute(query)
+    threats = result.all()
+
+    # Build the response by iterating over the requested sliding windows
+    data = []
     for i in range(hours, 0, -1):
         hour_start = now - timedelta(hours=i)
         hour_end = now - timedelta(hours=i - 1)
-
-        smishing_res = await db.execute(
-            select(func.count(Threat.id))
-            .filter(Threat.type == ThreatType.SMISHING, Threat.detected_at.between(hour_start, hour_end))
-        )
-        smishing = smishing_res.scalar() or 0
         
-        vishing_res = await db.execute(
-            select(func.count(Threat.id))
-            .filter(Threat.type == ThreatType.VISHING, Threat.detected_at.between(hour_start, hour_end))
-        )
-        vishing = vishing_res.scalar() or 0
+        smishing_count = 0
+        vishing_count = 0
+
+        for t_detected_at, t_type in threats:
+            # Ensure t_detected_at is timezone-aware for comparison if it's not
+            if t_detected_at.tzinfo is None:
+                t_detected_at = t_detected_at.replace(tzinfo=timezone.utc)
+
+            if hour_start <= t_detected_at < hour_end:
+                type_val = t_type.value if hasattr(t_type, 'value') else t_type
+                if type_val == ThreatType.SMISHING.value:
+                    smishing_count += 1
+                elif type_val == ThreatType.VISHING.value:
+                    vishing_count += 1
 
         data.append({
             "hour": hour_start.strftime("%H:%M"),
-            "smishing": smishing,
-            "vishing": vishing,
+            "smishing": smishing_count,
+            "vishing": vishing_count,
         })
 
     return data

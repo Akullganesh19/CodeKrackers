@@ -126,29 +126,46 @@ def get_hourly_trend(
     hours: int = Query(12, ge=1, le=48),
     current_user: User = Depends(deps.get_current_active_user),
 ) -> Any:
-    """Hourly threat trend for the last N hours."""
+    """
+    Hourly threat trend for the last N hours.
+    Optimized: Replaced 2*N sequential queries with a single query + Python aggregation.
+    Preserves sliding window logic and is database-agnostic.
+    """
     now = datetime.now(timezone.utc)
-    data = []
+    start_time = now - timedelta(hours=hours)
 
+    # Fetch all relevant threats in one go
+    threats = (
+        db.query(Threat.timestamp, Threat.type)
+        .filter(Threat.timestamp >= start_time)
+        .all()
+    )
+
+    # Build the response by iterating over the requested sliding windows
+    data = []
     for i in range(hours, 0, -1):
         hour_start = now - timedelta(hours=i)
         hour_end = now - timedelta(hours=i - 1)
 
-        smishing = (
-            db.query(Threat)
-            .filter(Threat.type == ThreatType.SMISHING, Threat.timestamp.between(hour_start, hour_end))
-            .count()
-        )
-        vishing = (
-            db.query(Threat)
-            .filter(Threat.type == ThreatType.VISHING, Threat.timestamp.between(hour_start, hour_end))
-            .count()
-        )
+        smishing_count = 0
+        vishing_count = 0
+
+        for t_timestamp, t_type in threats:
+            # Ensure t_timestamp is timezone-aware for comparison if it's not
+            if t_timestamp.tzinfo is None:
+                t_timestamp = t_timestamp.replace(tzinfo=timezone.utc)
+
+            if hour_start <= t_timestamp < hour_end:
+                type_val = t_type.value if hasattr(t_type, 'value') else t_type
+                if type_val == ThreatType.SMISHING.value:
+                    smishing_count += 1
+                elif type_val == ThreatType.VISHING.value:
+                    vishing_count += 1
 
         data.append({
             "hour": hour_start.strftime("%H:%M"),
-            "smishing": smishing,
-            "vishing": vishing,
+            "smishing": smishing_count,
+            "vishing": vishing_count,
         })
 
     return data

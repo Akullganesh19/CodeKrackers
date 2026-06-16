@@ -13,8 +13,8 @@ from backend.api import deps
 from backend.core import security
 from backend.core.config import settings
 from backend.core.limiter import limiter
-from backend.models import User
-from backend.schemas.token import Token
+from backend.models.orm import User
+from backend.models.schemas import Token
 
 logger = logging.getLogger("vas.auth")
 router = APIRouter()

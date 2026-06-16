@@ -410,3 +410,11 @@ class SpamLog(Base):
     action_taken = Column(Enum(SpamAction))
     reason = Column(String(255))
     created_at = Column(DateTime, server_default=func.now())
+
+class ThreatStatus(str, enum.Enum):
+    detected = "detected"
+    blocked = "blocked"
+    flagged = "flagged"
+    honeypot = "honeypot"
+    fir_filed = "fir_filed"
+    resolved = "resolved"

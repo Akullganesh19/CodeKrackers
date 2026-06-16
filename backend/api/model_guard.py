@@ -20,7 +20,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from backend.api import deps
-from backend.models import ModelVersion, ModelInferenceLog, User, UserRole
+from backend.models.orm import ModelVersion, ModelInferenceLog, User, UserRole
 from backend.services.model_security import (
     register_model,
     verify_model_integrity,

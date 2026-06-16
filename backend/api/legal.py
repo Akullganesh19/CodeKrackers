@@ -8,8 +8,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from backend.api import deps
-from backend.models import Evidence, FIR, FIRStatus, Threat, User, UserRole
-from backend.schemas.legal import FIR as FIRSchema, FIRCreate
+from backend.models.orm import Evidence, FIR, FIRStatus, Threat, User, UserRole
+from backend.models.orm import FIR as FIRSchema, FIRCreate
 from backend.utils.pdf import generate_fir_pdf
 
 logger = logging.getLogger("vas.legal")

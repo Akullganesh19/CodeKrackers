@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
-from backend.models import SpamReport, SpamFilter, SpamLog, SpamAction, SpamType, Blacklist as BlacklistEntry, BlacklistType, User
+from backend.models.orm import SpamReport, SpamFilter, SpamLog, SpamAction, SpamType, Blacklist as BlacklistEntry, BlacklistType, User
 from backend.services.phone_intel import analyze_phone_number
 from backend.services.ai_deep_scan import ai_deep_scan
 from backend.services.notifier import send_threat_alert

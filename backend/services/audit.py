@@ -6,7 +6,7 @@ from typing import Any, Optional
 
 from sqlalchemy.orm import Session
 
-from backend.models.audit import AuditLog
+from backend.models.orm import AuditLog
 
 logger = logging.getLogger("vas.audit")
 

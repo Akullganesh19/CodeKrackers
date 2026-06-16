@@ -12,7 +12,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from backend.api import deps
-from backend.models import Threat, User
+from backend.models.orm import Threat, User
 
 logger = logging.getLogger("vas.export")
 router = APIRouter()

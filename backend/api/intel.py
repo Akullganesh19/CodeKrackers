@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from backend.api import deps
-from backend.models import User, DeviceInfo, PhoneLookup, UserConsent
+from backend.models.orm import User, DeviceInfo, PhoneLookup, UserConsent
 from backend.services.phone_intel import lookup_phone_number, check_user_consent
 
 logger = logging.getLogger("vas.intel")

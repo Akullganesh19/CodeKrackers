@@ -17,7 +17,7 @@ from typing import Optional
 from fastapi import APIRouter, Request, Depends, HTTPException, Query
 
 from backend.api import deps
-from backend.models import User, UserRole
+from backend.models.orm import User, UserRole
 from backend.core.zk_privacy import (
     PIIProtector,
     ZKThreatProof,

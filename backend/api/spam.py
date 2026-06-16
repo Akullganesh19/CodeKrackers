@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from backend.api import deps
-from backend.models import User, SpamFilter, SpamReport, SpamLog, SpamType
+from backend.models.orm import User, SpamFilter, SpamReport, SpamLog, SpamType
 from backend.services.spam_shield import check_spam
 
 logger = logging.getLogger("vas.spam_api")

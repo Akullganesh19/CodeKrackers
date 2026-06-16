@@ -9,8 +9,8 @@ from sqlalchemy.orm import Session
 
 from backend.api import deps
 from backend.core.ws import manager
-from backend.models import Threat, ThreatStatus, User, UserRole
-from backend.schemas.threat import Threat as ThreatSchema, ThreatCreate
+from backend.models.orm import Threat, ThreatStatus, User, UserRole
+from backend.models.orm import Threat as ThreatSchema, ThreatCreate
 
 logger = logging.getLogger("vas.threats")
 router = APIRouter()

@@ -1,4 +1,5 @@
 from .orm import (
+    ThreatStatus,
     Base,
     User,
     Threat,
@@ -30,4 +31,3 @@ from .orm import (
     SpamType,
     SpamAction
 )
-from .threat import ThreatStatus

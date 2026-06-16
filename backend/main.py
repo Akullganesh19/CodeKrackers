@@ -42,6 +42,9 @@ app.include_router(honeypot.router, prefix="/api/honeypot", tags=["honeypot"])
 # New Original Routers
 from .api import blacklist, canary, childlock, enclave, export, intel, legal, model_guard, openclaw, spam, threats, users, zk_privacy
 app.include_router(blacklist.router, prefix="/api/blacklist", tags=["blacklist"])
+
+# Initialize cross-system intelligence connections
+import backend.services.user_intelligence
 app.include_router(canary.router, prefix="/api/canary", tags=["canary"])
 app.include_router(childlock.router, prefix="/api/childlock", tags=["childlock"])
 app.include_router(enclave.router, prefix="/api/enclave", tags=["enclave"])

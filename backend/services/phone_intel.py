@@ -2,15 +2,17 @@
 Phone number intelligence service — 100% open-source, no paid APIs.
 Uses Google's libphonenumber (phonenumbers) for offline analysis.
 """
+
 import logging
 from typing import Any, Dict, Optional
 
 import phonenumbers
-from phonenumbers import carrier, geocoder, timezone as pn_tz, number_type
+from phonenumbers import carrier, geocoder, number_type
+from phonenumbers import timezone as pn_tz
 from phonenumbers.phonenumberutil import PhoneNumberType
 from sqlalchemy.orm import Session
 
-from backend.models import PhoneLookup, UserConsent
+from backend.models.orm import PhoneLookup, UserConsent
 
 logger = logging.getLogger("vas.phone_intel")
 
@@ -22,7 +24,7 @@ NUMBER_TYPE_MAP = {
     PhoneNumberType.TOLL_FREE: ("toll_free", 0.3),
     PhoneNumberType.PREMIUM_RATE: ("premium_rate", 0.6),
     PhoneNumberType.SHARED_COST: ("shared_cost", 0.3),
-    PhoneNumberType.VOIP: ("voip", 0.8),          # VoIP = HIGH scam signal
+    PhoneNumberType.VOIP: ("voip", 0.8),  # VoIP = HIGH scam signal
     PhoneNumberType.PERSONAL_NUMBER: ("personal", 0.2),
     PhoneNumberType.PAGER: ("pager", 0.4),
     PhoneNumberType.UAN: ("uan", 0.2),
@@ -31,15 +33,24 @@ NUMBER_TYPE_MAP = {
 
 # ─── Indian telecom circle mapping ───
 INDIAN_CIRCLES = {
-    "11": "Delhi", "22": "Mumbai", "33": "Kolkata", "44": "Chennai",
-    "40": "Hyderabad", "80": "Bangalore", "79": "Ahmedabad", "20": "Pune",
-    "141": "Jaipur", "522": "Lucknow", "512": "Kanpur", "120": "Noida",
+    "11": "Delhi",
+    "22": "Mumbai",
+    "33": "Kolkata",
+    "44": "Chennai",
+    "40": "Hyderabad",
+    "80": "Bangalore",
+    "79": "Ahmedabad",
+    "20": "Pune",
+    "141": "Jaipur",
+    "522": "Lucknow",
+    "512": "Kanpur",
+    "120": "Noida",
     "124": "Gurugram",
 }
 
 # ─── Known scam area codes (international) ───
 HIGH_RISK_COUNTRIES = {
-    "NG": ("Nigeria", 0.7),   # 419 scams
+    "NG": ("Nigeria", 0.7),  # 419 scams
     "GH": ("Ghana", 0.5),
     "CI": ("Ivory Coast", 0.5),
     "PH": ("Philippines", 0.3),
@@ -85,15 +96,21 @@ def analyze_phone_number(phone_raw: str) -> Dict[str, Any]:
         result["is_possible"] = phonenumbers.is_possible_number(parsed)
 
         if not result["is_valid"] and not result["is_possible"]:
-            result["risk_assessment"]["fraud_indicators"].append("Invalid phone number format")
+            result["risk_assessment"]["fraud_indicators"].append(
+                "Invalid phone number format"
+            )
             result["risk_assessment"]["score"] = "high"
             result["risk_assessment"]["base_risk"] = 0.7
             return result
 
         # Formatting
         result["country_code"] = phonenumbers.region_code_for_number(parsed)
-        result["national_format"] = phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.NATIONAL)
-        result["international_format"] = phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.INTERNATIONAL)
+        result["national_format"] = phonenumbers.format_number(
+            parsed, phonenumbers.PhoneNumberFormat.NATIONAL
+        )
+        result["international_format"] = phonenumbers.format_number(
+            parsed, phonenumbers.PhoneNumberFormat.INTERNATIONAL
+        )
 
         # Carrier
         carrier_name = carrier.name_for_number(parsed, "en")
@@ -119,7 +136,9 @@ def analyze_phone_number(phone_raw: str) -> Dict[str, Any]:
 
         # VoIP detection
         if result["carrier"]["is_voip"]:
-            fraud_indicators.append("VoIP number - commonly used by scammers to hide identity")
+            fraud_indicators.append(
+                "VoIP number - commonly used by scammers to hide identity"
+            )
             base_risk = max(base_risk, 0.8)
 
         # Premium rate
@@ -141,7 +160,9 @@ def analyze_phone_number(phone_raw: str) -> Dict[str, Any]:
 
         # Unknown carrier
         if not carrier_name:
-            fraud_indicators.append("Carrier not identified - possible virtual/spoofed number")
+            fraud_indicators.append(
+                "Carrier not identified - possible virtual/spoofed number"
+            )
             base_risk = max(base_risk, 0.4)
 
         # Determine score label
@@ -161,7 +182,9 @@ def analyze_phone_number(phone_raw: str) -> Dict[str, Any]:
         return result
 
     except phonenumbers.NumberParseException as e:
-        result["risk_assessment"]["fraud_indicators"].append(f"Cannot parse number: {str(e)}")
+        result["risk_assessment"]["fraud_indicators"].append(
+            f"Cannot parse number: {str(e)}"
+        )
         result["risk_assessment"]["score"] = "high"
         result["risk_assessment"]["base_risk"] = 0.8
         return result

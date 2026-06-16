@@ -1,18 +1,19 @@
 """
 User management endpoints with password policy and RBAC.
 """
+
 import logging
 from typing import Any, List
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from backend.api import deps
 from backend.core import security
-from backend.models import User, UserRole
-from backend.schemas.user import UserCreate, User as UserSchema
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from backend.models.orm import User, UserRole
+from backend.models.schemas import UserCreate, UserSchema
 
 logger = logging.getLogger("vas.users")
 router = APIRouter()
@@ -46,7 +47,7 @@ async def create_user(
         email=user_in.email,
         hashed_password=security.get_password_hash(user_in.password),
         full_name=user_in.full_name,
-        role=user_in.role or UserRole.USER,
+        role=user_in.role or UserRole.CITIZEN,
     )
     db.add(user)
     await db.commit()

@@ -21,7 +21,10 @@ export default function Sidebar() {
     const [isExpiringSoon, setIsExpiringSoon] = useState(false);
 
     useEffect(() => {
-        fetch('/api/analytics/safety-score')
+        const token = typeof window !== 'undefined' ? localStorage.getItem('vsdp_token') : null;
+        fetch('/api/analytics/safety-score', {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : undefined
+        })
             .then(res => res.json())
             .then(data => {
                 setSafetyData(data);

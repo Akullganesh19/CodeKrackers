@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.api import deps
 from backend.models.orm import FIR, Threat, User, Blacklist, BlacklistType, ThreatType, ThreatSeverity
 from backend.utils.ai import client as groq_client
+from backend.core.event_bus import bus  # noqa
 import json
 import os
 
@@ -167,6 +168,7 @@ async def get_hourly_trend(
 async def scan_voice(body: dict, db: AsyncSession = Depends(deps.get_db)):
     """Analyze call transcript for vishing threats using AI."""
     transcript = body.get("transcript", "")
+    user_id = body.get("user_id")
     if not transcript:
         raise HTTPException(status_code=400, detail="Transcript is required")
 
@@ -202,8 +204,14 @@ async def scan_voice(body: dict, db: AsyncSession = Depends(deps.get_db)):
             confidence=0.85,
             extra_info=result
         )
+        if user_id:
+            threat.user_id = user_id
+
         db.add(threat)
         await db.commit()
+        await db.refresh(threat)
+        logger.info(f"SYNAPSE: Emitting 'threat.detected' event for user {user_id}")
+        await bus.emit("threat.detected", threat=threat, user_id=user_id, db=db)
 
     return result
 
@@ -218,6 +226,7 @@ async def scan_sms(
 ) -> Any:
     """Analyze SMS content for smishing threats using AI."""
     text = body.get("text", "")
+    user_id = body.get("user_id")
     if not text:
         raise HTTPException(status_code=400, detail="Text is required")
 
@@ -268,7 +277,13 @@ async def scan_sms(
             confidence=result["confidence"] / 100.0,
             extra_info=result
         )
+        if user_id:
+            threat.user_id = user_id
+
         db.add(threat)
         await db.commit()
+        await db.refresh(threat)
+        logger.info(f"SYNAPSE: Emitting 'threat.detected' event for user {user_id}")
+        await bus.emit("threat.detected", threat=threat, user_id=user_id, db=db)
 
     return result

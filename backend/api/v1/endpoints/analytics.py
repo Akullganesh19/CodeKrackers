@@ -18,6 +18,17 @@ logger = logging.getLogger("vas.analytics")
 router = APIRouter()
 
 
+@router.get("/safety-score")
+def get_safety_score(
+    current_user: User = Depends(deps.get_current_active_user),
+) -> Any:
+    """Return the user's current safety score and scams avoided."""
+    return {
+        "safety_score": current_user.safety_score,
+        "scams_avoided": current_user.scams_avoided,
+    }
+
+
 @router.get("/dashboard-summary")
 def get_dashboard_summary(
     db: Session = Depends(deps.get_db),

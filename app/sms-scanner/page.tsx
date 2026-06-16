@@ -29,19 +29,77 @@ export default function SMSScannerPage() {
     tags: string[];
   }>(null)
 
+  // Oracle: Predictive State
+  const [predictedResult, setPredictedResult] = useState<null | {
+    isScam: boolean;
+    confidence: number;
+    riskFactors: string[];
+    recommendation: string;
+    tags: string[];
+  }>(null)
+  const [predictedText, setPredictedText] = useState('')
+
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
   }, [])
 
+  // Oracle: Next-Action Prediction Engine
+  // Analyzes user text in background while they type/read
+  React.useEffect(() => {
+    if (!text.trim() || text === predictedText) return;
+
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    const timer = setTimeout(async () => {
+      try {
+        const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const response = await fetch(`${apiUrl}/api/analytics/scan`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text }),
+          signal
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data && typeof data.isScam !== 'undefined' && !signal.aborted) {
+            setPredictedResult(data);
+            setPredictedText(text); // Save the exact text we predicted
+          }
+        }
+      } catch {
+        // Silent fail for prediction
+      }
+    }, 600); // 600ms debounce
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [text, predictedText]);
+
   const handleAnalyze = async () => {
     if (!text.trim()) return
+
+    // Oracle: Use pre-computed result if available and text matches
+    if (predictedResult && predictedText === text) {
+      setResult(predictedResult);
+      return;
+    }
 
     setLoading(true)
     setResult(null)
 
     try {
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/api/analytics/scan`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -88,7 +146,8 @@ export default function SMSScannerPage() {
     if (!result) return;
     try {
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/blacklist/report', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/api/blacklist/report`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -114,7 +173,8 @@ export default function SMSScannerPage() {
     if (!result) return;
     try {
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const url = new URL('http://localhost:8000/api/zk/sealed-report');
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const url = new URL(`${apiUrl}/api/zk/sealed-report`);
       url.searchParams.append('report_data', JSON.stringify({ content: text, analysis: result }));
       
       const response = await fetch(url.toString(), {

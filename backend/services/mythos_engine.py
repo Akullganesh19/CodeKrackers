@@ -42,7 +42,7 @@ class MythosForensicEngine:
         Performs a 'Deep Recurrence' analysis on the threat metadata.
         This simulates the model 'thinking' about the intent over multiple loops.
         """
-        logger.info(f"Mythos Engine: Starting 16-loop latent analysis on metadata...")
+        logger.info("Mythos Engine: Starting 16-loop latent analysis on metadata...")
         
         # Simulate input tensor
         # In a real setup, we'd tokenize the content

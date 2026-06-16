@@ -20,7 +20,6 @@ class EventBus:
                         cb(*args, **kwargs)
                 except Exception as e:
                     import logging
-                    logging.getLogger("vas.event_bus").error(f"Error in event listener for {event_name}: {e}")
+                    logging.getLogger("vas.event_bus").error(f"Error in event listener for {event_name}: {e}")  # noqa
 
-# Global event bus instance
 bus = EventBus()

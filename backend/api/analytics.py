@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.api import deps
 from backend.models.orm import FIR, Threat, User, Blacklist, BlacklistType, ThreatType, ThreatSeverity
 from backend.utils.ai import client as groq_client
-from backend.core.event_bus import bus
+from backend.core.event_bus import bus  # noqa
 import json
 import os
 
@@ -210,8 +210,6 @@ async def scan_voice(body: dict, db: AsyncSession = Depends(deps.get_db)):
         db.add(threat)
         await db.commit()
         await db.refresh(threat)
-
-        # Emit cross-system intelligence event
         logger.info(f"SYNAPSE: Emitting 'threat.detected' event for user {user_id}")
         await bus.emit("threat.detected", threat=threat, user_id=user_id, db=db)
 
@@ -285,8 +283,6 @@ async def scan_sms(
         db.add(threat)
         await db.commit()
         await db.refresh(threat)
-
-        # Emit cross-system intelligence event
         logger.info(f"SYNAPSE: Emitting 'threat.detected' event for user {user_id}")
         await bus.emit("threat.detected", threat=threat, user_id=user_id, db=db)
 

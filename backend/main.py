@@ -6,9 +6,13 @@ from .scheduler import setup_scheduler
 import uvicorn
 import asyncio
 from sqlalchemy import select
-from .core.database import engine, Base, AsyncSessionLocal
+from .core.database import engine, Base, AsyncSessionLocal, SessionLocal
 from .core.security import get_password_hash
 from .models.orm import User
+from .core.event_bus import event_bus
+import logging
+
+logger = logging.getLogger("vas.main")
 
 # Initialize FastAPI App
 app = FastAPI(
@@ -55,6 +59,22 @@ app.include_router(threats.router, prefix="/api/threats", tags=["threats"])
 app.include_router(users.router, prefix="/api/users", tags=["users"])
 app.include_router(zk_privacy.router, prefix="/api/zk", tags=["zk_privacy"])
 
+async def handle_spam_blocked(user_id: int, **kwargs):
+    """
+    Event listener: Increments user's scams_avoided count when spam is blocked.
+    Demonstrates Synapse loosely coupled intelligence across systems.
+    """
+    try:
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(select(User).where(User.id == user_id))
+            user = result.scalar_one_or_none()
+            if user:
+                user.scams_avoided = (user.scams_avoided or 0) + 1
+                await db.commit()
+                logger.info(f"SYNAPSE: Gamification updated. User {user_id} scams_avoided incremented to {user.scams_avoided}.")
+    except Exception as e:
+        logger.error(f"SYNAPSE ERROR: Failed to increment scams avoided for user {user_id}: {e}")
+
 @app.on_event("startup")
 async def startup_event():
     """
@@ -62,6 +82,8 @@ async def startup_event():
     1. Create database tables (if they don't exist).
     2. Start the background scheduler.
     """
+    # Subscribe to decoupled system events
+    event_bus.subscribe('spam.blocked', handle_spam_blocked)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     

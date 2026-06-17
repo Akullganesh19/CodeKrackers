@@ -114,7 +114,9 @@ async def verify_otp(
         )
 
     redis_key = f"otp:{otp_verify.identifier}"
-    stored_code = redis_client.get(redis_key) if redis_client else otp_code # Mock pass if redis down for demo
+    # In a real setup, we would rely on redis. If redis is down, we must deny, or have a secure fallback.
+    # We cannot use an undefined `otp_code` here.
+    stored_code = redis_client.get(redis_key) if redis_client else None
 
     if not stored_code or otp_verify.code != stored_code:
         if user:

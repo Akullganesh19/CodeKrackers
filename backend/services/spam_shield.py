@@ -15,6 +15,7 @@ from backend.services.phone_intel import analyze_phone_number
 from backend.services.ai_deep_scan import ai_deep_scan
 from backend.services.notifier import send_threat_alert
 from backend.core.config import settings
+from backend.core.event_bus import event_bus
 
 logger = logging.getLogger("vas.spam")
 
@@ -235,7 +236,6 @@ def _result(
         spam_score=round(score, 4),
         action_taken=action,
         reason=reason_str,
-        content_snippet=(content or "")[:200],
     )
     db.add(log)
     db.commit()
@@ -243,11 +243,15 @@ def _result(
     if action == SpamAction.BLOCK:
         logger.warning("SPAM_BLOCKED phone=%s score=%.2f reason=%s", phone, score, reason_str[:80])
         
+        # Trigger event for decoupled gamification/metrics updates
+        event_bus.publish('spam.blocked', user_id=user_id)
+
         # Trigger real-time notification to the user's phone
         user = db.query(User).filter(User.id == user_id).first()
-        if user and user.phone_number:
+        phone_num = getattr(user, 'phone', None) or getattr(user, 'phone_number', None)
+        if user and phone_num:
             send_threat_alert(
-                phone_number=user.phone_number,
+                phone_number=phone_num,
                 threat_type="Smishing/Malicious SMS",
                 score=score,
                 original_sender=phone

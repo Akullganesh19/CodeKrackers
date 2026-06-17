@@ -5,7 +5,6 @@ import logging
 from typing import Any, List
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
 
 from backend.api import deps
 from backend.core import security

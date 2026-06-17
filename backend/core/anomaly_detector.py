@@ -15,7 +15,6 @@ Features extracted per request:
   - Time of day (hour) deviation
   - User-agent entropy (unusual vs common)
 """
-import os
 import time
 import json
 import logging

@@ -28,7 +28,7 @@ def get_consent_status(
     """Get current user's consent status."""
     consent = (
         db.query(UserConsent)
-        .filter(UserConsent.user_id == current_user.id, UserConsent.is_revoked == False)
+        .filter(UserConsent.user_id == current_user.id, UserConsent.is_revoked is False)
         .order_by(UserConsent.consent_given_at.desc())
         .first()
     )
@@ -74,7 +74,7 @@ def grant_consent(
     # Revoke any existing consent first
     existing = (
         db.query(UserConsent)
-        .filter(UserConsent.user_id == current_user.id, UserConsent.is_revoked == False)
+        .filter(UserConsent.user_id == current_user.id, UserConsent.is_revoked is False)
         .all()
     )
     for old in existing:
@@ -128,7 +128,7 @@ def revoke_consent(
     """Revoke all data collection consent immediately."""
     consents = (
         db.query(UserConsent)
-        .filter(UserConsent.user_id == current_user.id, UserConsent.is_revoked == False)
+        .filter(UserConsent.user_id == current_user.id, UserConsent.is_revoked is False)
         .all()
     )
     for c in consents:

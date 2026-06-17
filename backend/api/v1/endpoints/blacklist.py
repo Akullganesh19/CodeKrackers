@@ -2,9 +2,9 @@
 Blacklist management and threat intelligence endpoints.
 """
 import logging
-from typing import Any, List
+from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from backend.api import deps
@@ -95,7 +95,7 @@ def list_blacklist(
         query = query.filter(BlacklistEntry.type == bl_type)
 
     if current_user.role not in {UserRole.ADMIN, UserRole.OFFICER, UserRole.SUPER_ADMIN}:
-        query = query.filter(BlacklistEntry.is_verified == True)
+        query = query.filter(BlacklistEntry.is_verified is True)
 
     entries = query.order_by(BlacklistEntry.confidence.desc()).offset(skip).limit(limit).all()
     return [

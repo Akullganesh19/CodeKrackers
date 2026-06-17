@@ -1,17 +1,15 @@
 """Security middleware for request sanitization, audit logging, header hardening, and RASP."""
 import re
 import time
-import json
 import logging
 import hashlib
-from typing import Optional, List, Tuple, Set
+from typing import Optional, List, Tuple
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response, JSONResponse
 from starlette.status import HTTP_403_FORBIDDEN
 
-from .config import settings
-from .anomaly_detector import get_anomaly_detector, APIAnomalyDetector
+from .anomaly_detector import get_anomaly_detector
 
 logger = logging.getLogger("vas.security")
 

@@ -2,9 +2,9 @@
 Child Lock API — parental controls for calls and messages.
 """
 import logging
-from typing import Any, List
+from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from backend.api import deps

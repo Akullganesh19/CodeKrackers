@@ -4,7 +4,7 @@ Child Lock Service — parental controls for calls and messages.
 import logging
 import re
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from sqlalchemy.orm import Session
 
@@ -45,7 +45,7 @@ def check_call_allowed(
     Returns allow/block with reason.
     """
     profile = db.query(ChildProfile).filter(
-        ChildProfile.id == child_profile_id, ChildProfile.is_active == True
+        ChildProfile.id == child_profile_id, ChildProfile.is_active is True
     ).first()
 
     if not profile:
@@ -127,7 +127,7 @@ def check_sms_allowed(
     Includes content filtering for inappropriate material.
     """
     profile = db.query(ChildProfile).filter(
-        ChildProfile.id == child_profile_id, ChildProfile.is_active == True
+        ChildProfile.id == child_profile_id, ChildProfile.is_active is True
     ).first()
 
     if not profile:
@@ -156,7 +156,7 @@ def check_sms_allowed(
         now_time = datetime.now(timezone.utc).strftime("%H:%M")
         if not (profile.allowed_sms_start <= now_time <= profile.allowed_sms_end):
             _log_activity(db, profile.id, "sms_blocked", phone_number, "Outside hours", content[:100])
-            return {"allowed": False, "reason": f"SMS not allowed at this time"}
+            return {"allowed": False, "reason": "SMS not allowed at this time"}
 
     # Whitelist-only
     if profile.lock_mode == ChildLockMode.WHITELIST_ONLY:

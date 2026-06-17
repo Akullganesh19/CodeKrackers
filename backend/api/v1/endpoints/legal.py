@@ -11,7 +11,7 @@ from backend.api import deps
 from backend.models.legal import Evidence, FIR, FIRStatus
 from backend.models.threat import Threat
 from backend.models.user import User, UserRole
-from backend.schemas.legal import FIR as FIRSchema, FIRCreate
+from backend.schemas.legal import FIR as FIRSchema
 from backend.utils.pdf import generate_fir_pdf
 
 logger = logging.getLogger("vas.legal")

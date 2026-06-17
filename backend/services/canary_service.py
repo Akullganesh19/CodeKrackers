@@ -10,12 +10,10 @@ If those links are accessed, we get immediate notification of:
 
 This works like Thinkst Canary / canarytokens.org — self-hosted and free.
 """
-import uuid
 import time
-import json
 import logging
 import secrets
-from typing import Optional, List, Dict, Any
+from typing import Optional, List
 from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
@@ -60,7 +58,7 @@ def create_canary_token(
     who exfiltrate data. The tracking URL is embedded in the fake data.
     """
     token_val = generate_token(token_type)
-    tracking_url = generate_tracking_url(token_val)
+    generate_tracking_url(token_val)
 
     # Embed tracking URL into one of the fake fields if not otherwise specified
     if not any([fake_email, fake_phone, fake_ssn, fake_credit_card, fake_wallet_address, fake_ip]):
@@ -235,7 +233,7 @@ def scan_request_for_tokens(
     """
     triggered: List[CanaryToken] = []
     tokens = db.query(CanaryToken).filter(
-        CanaryToken.accessed == False
+        CanaryToken.accessed is False
     ).all()
 
     for canary in tokens:

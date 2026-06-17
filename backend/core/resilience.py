@@ -72,7 +72,6 @@ def async_with_retries(
 
 class CircuitBreakerOpenException(Exception):
     """Raised when the circuit breaker is open and requests are blocked."""
-    pass
 
 def circuit_breaker(
     failure_threshold: int = 5,
@@ -101,7 +100,7 @@ def circuit_breaker(
 
             try:
                 result = func(*args, **kwargs)
-            except exceptions as e:
+            except exceptions:
                 failures += 1
                 last_failure_time = time.time()
                 if failures >= failure_threshold:
@@ -145,7 +144,7 @@ def async_circuit_breaker(
 
             try:
                 result = await func(*args, **kwargs)
-            except exceptions as e:
+            except exceptions:
                 failures += 1
                 last_failure_time = time.time()
                 if failures >= failure_threshold:

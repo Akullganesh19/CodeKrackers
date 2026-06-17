@@ -12,7 +12,6 @@ from backend.api import deps
 from backend.models import User
 from backend.schemas.threat import ThreatCreate, Threat as ThreatSchema
 from backend.api.v1.endpoints.threats import create_threat
-from backend.core.config import settings
 from backend.utils.ai import client
 from backend.utils.crypto import extract_crypto_addresses, check_crypto_honeypot
 

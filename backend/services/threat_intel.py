@@ -3,7 +3,7 @@ Threat Intelligence Service — aggregates signals from multiple engines.
 """
 import logging
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from sqlalchemy.orm import Session
 from backend.models.orm import Blacklist as BlacklistEntry, BlacklistType

@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import func, case
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from backend.api import deps
@@ -26,7 +26,7 @@ def get_dashboard_summary(
     """Comprehensive dashboard statistics with trend data."""
     now = datetime.now(timezone.utc)
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-    week_ago = now - timedelta(days=7)
+
 
     # Aggregate counts by type
     type_counts = dict(
@@ -62,7 +62,7 @@ def get_dashboard_summary(
             "vishing": type_counts.get("vishing", type_counts.get(ThreatType.VISHING, 0)),
             "crypto_scam": type_counts.get("crypto_scam", type_counts.get(ThreatType.CRYPTO_SCAM, 0)),
             "firs_filed": db.query(FIR).count(),
-            "protected_users": db.query(User).filter(User.is_active == True).count(),
+            "protected_users": db.query(User).filter(User.is_active is True).count(),
             "total_threats": db.query(Threat).count(),
         },
         "trends": {

@@ -14,13 +14,12 @@ Endpoints:
 import time
 import hashlib
 import logging
-from typing import Optional, List
-from fastapi import APIRouter, Request, Depends, HTTPException, Query, BackgroundTasks
-from fastapi.responses import JSONResponse
+from typing import Optional
+from fastapi import APIRouter, Request, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from backend.api import deps
-from backend.models import ModelVersion, ModelInferenceLog, User, UserRole
+from backend.models import ModelVersion, ModelInferenceLog, User
 from backend.services.model_security import (
     register_model,
     verify_model_integrity,
@@ -28,7 +27,6 @@ from backend.services.model_security import (
     compute_adversarial_robustness_score,
     generate_adversarial_training_data,
     get_extraction_detector,
-    TEXT_ADVERSARIAL_EXAMPLES,
     ADVERSARIAL_PERTURBATIONS,
 )
 
@@ -170,7 +168,7 @@ def api_inference_logs(
     query = db.query(ModelInferenceLog).order_by(ModelInferenceLog.created_at.desc())
     
     if suspicious_only:
-        query = query.filter(ModelInferenceLog.is_suspicious == True)
+        query = query.filter(ModelInferenceLog.is_suspicious is True)
     
     logs = query.limit(limit).all()
     

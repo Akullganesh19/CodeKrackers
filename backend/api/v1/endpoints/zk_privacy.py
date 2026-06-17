@@ -11,21 +11,14 @@ Endpoints:
   GET  /zk/privacy-report       — Get privacy configuration validation report
   POST /zk/hash                 — Hash PII for the client (never stored)
 """
-import time
 import logging
-from typing import Optional
-from fastapi import APIRouter, Request, Depends, HTTPException, Query
+from fastapi import APIRouter, Request, HTTPException, Query
 
-from backend.api import deps
-from backend.models.user import User, UserRole
 from backend.core.zk_privacy import (
-    PIIProtector,
     ZKThreatProof,
     generate_threat_proof,
     verify_threat_proof,
     SealedSender,
-    BlindCredentialManager,
-    generate_blind_auth_token,
     get_blind_credential_manager,
     validate_privacy_config,
     zk_hash,

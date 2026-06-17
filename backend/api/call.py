@@ -1,10 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, WebSocket, WebSocketDisconnect
-from sqlalchemy.ext.asyncio import AsyncSession
-import uuid
+from fastapi import APIRouter, Depends, UploadFile, File, WebSocket, WebSocketDisconnect
 import os
 import shutil
 import tempfile
-import asyncio
 import wave
 import io
 
@@ -148,7 +145,7 @@ async def websocket_endpoint(
                 bytes_per_second = SAMPLE_RATE * 2
                 if audio_buffer.tell() >= BUFFER_TIME_SECONDS * bytes_per_second:
                     audio_buffer.seek(0)
-                    current_buffer_data = audio_buffer.read()
+                    audio_buffer.read()
                     audio_buffer.seek(0) # Reset for next write
                     audio_buffer.truncate(0)
 

@@ -11,7 +11,6 @@ Principles:
 Uses deterministic hashing with domain separation for dedup,
 and a simplified ZK-SNARK-style commitment scheme for threat verification.
 """
-import os
 import re
 import json
 import time
@@ -19,9 +18,8 @@ import hmac
 import hashlib
 import logging
 import secrets
-from typing import Optional, Tuple, Dict, List, Any
+from typing import Optional, Tuple, Dict, Any
 from dataclasses import dataclass
-from datetime import datetime, timezone
 
 logger = logging.getLogger("vas.zk_privacy")
 

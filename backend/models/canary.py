@@ -1,7 +1,5 @@
 """Canary tokens for detecting database breaches and data leakage."""
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, Index
-from sqlalchemy.sql import func
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Index
 
 from backend.db.base_class import Base, TimestampMixin
 

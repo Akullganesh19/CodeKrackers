@@ -9,7 +9,6 @@ Uses IBM Adversarial Robustness Toolbox (ART) for adversarial training
 and Radioactive Data techniques for model watermarking.
 """
 import os
-import json
 import time
 import hashlib
 import logging
@@ -17,8 +16,7 @@ try:
     import numpy as np
 except ImportError:
     np = None
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, List, Optional, Tuple
 from collections import defaultdict, deque
 from datetime import datetime, timezone
 
@@ -104,7 +102,7 @@ def register_model(
     # Deactivate any previously active versions of this model
     db.query(ModelVersion).filter(
         ModelVersion.name == name,
-        ModelVersion.is_active == True,
+        ModelVersion.is_active is True,
     ).update({"is_active": False, "deployed_at": None})
     
     # Generate watermark
@@ -168,7 +166,7 @@ def verify_model_integrity(db: Session, name: str, file_path: str) -> Tuple[bool
     """
     active_version = db.query(ModelVersion).filter(
         ModelVersion.name == name,
-        ModelVersion.is_active == True,
+        ModelVersion.is_active is True,
     ).first()
     
     if not active_version:
@@ -208,7 +206,7 @@ def approve_model(db: Session, model_id: int, approved_by: str) -> Optional[Mode
     model.approved_at = datetime.now(timezone.utc)
     
     # Verify watermark as part of approval
-    fp_hash = hashlib.sha384(model.watermark_embedding).hexdigest() if model.watermark_embedding else ""
+    hashlib.sha384(model.watermark_embedding).hexdigest() if model.watermark_embedding else ""
     model.watermark_verified = True
     
     db.commit()
@@ -438,7 +436,7 @@ class ExtractionDetector:
                 reasons.append(f"high_duplicate_inputs:{duplicate_ratio:.2f}")
         
         # 3. Model-specific query concentration
-        model_key = f"{model_name}:{client_ip}"
+
         # Track per-model queries from this IP
         self._ip_model_queries[client_ip][model_name] += 1
         

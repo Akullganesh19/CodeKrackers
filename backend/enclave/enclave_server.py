@@ -15,7 +15,6 @@ Demo: Run as a standalone Python process (mock_enclave mode)
 """
 import os
 import json
-import time
 import hashlib
 import logging
 import secrets

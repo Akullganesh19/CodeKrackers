@@ -1,7 +1,6 @@
-from typing import AsyncGenerator, Generator, Any
+from typing import AsyncGenerator, Generator
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends, HTTPException, status
-from sqlalchemy.orm import Session
 from ..core.database import AsyncSessionLocal, SessionLocal
 from ..models.orm import User, UserRole
 from sqlalchemy import select

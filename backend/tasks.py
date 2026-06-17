@@ -1,4 +1,3 @@
-import asyncio
 from datetime import datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
@@ -48,7 +47,7 @@ async def record_daily_safety_scores():
     Snapshots current safety scores for all active users into the ScoreHistory table.
     """
     async with AsyncSessionLocal() as db:
-        result = await db.execute(select(User).where(User.is_active == True))
+        result = await db.execute(select(User).where(User.is_active is True))
         users = result.scalars().all()
         
         for user in users:
@@ -73,7 +72,7 @@ async def restore_user_safety_scores():
         
         # Select users who are active, below max score, and NOT in the recent threats list
         stmt = select(User).where(
-            User.is_active == True,
+            User.is_active is True,
             User.safety_score < 100.0,
             ~User.id.in_(recent_threats_subquery)
         )

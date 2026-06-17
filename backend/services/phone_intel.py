@@ -51,7 +51,7 @@ def check_user_consent(db: Session, user_id: int, consent_type: str) -> bool:
     """Verify that the user has given specific consent."""
     consent = (
         db.query(UserConsent)
-        .filter(UserConsent.user_id == user_id, UserConsent.is_revoked == False)
+        .filter(UserConsent.user_id == user_id, UserConsent.is_revoked is False)
         .order_by(UserConsent.consent_given_at.desc())
         .first()
     )

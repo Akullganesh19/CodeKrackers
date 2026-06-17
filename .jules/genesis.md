@@ -1,0 +1,6 @@
+## 2023-10-24 — [Resilience for External Network Dependencies]
+**Failure point found:** External network dependencies such as HTTP API calls (`requests`, `httpx` to Ollama and Groq), and Twilio API notifications were entirely unprotected from transient network failures or service outages.
+**Why it existed:** Initially developed as synchronous, hard-failing requests lacking robust error handling.
+**Recovery built:** Created `@with_retries` and `@async_with_retries` decorators for exponential backoff during transient faults, and `@circuit_breaker` / `@async_circuit_breaker` decorators for long-standing outages to prevent cascading failures in `backend/core/resilience.py`. Applied these to Ollama (circuit breaker + retries), Groq API (retries), honeypot API (async retries), and Twilio notifications (retries).
+**Blast radius before:** High. A brief hiccup in Twilio would permanently drop a critical security alert. A hung local Ollama service could tie up a thread indefinitely and drop the threat scan entirely instead of fast-failing. Groq API rate-limits would immediately hard-fail scans.
+**Watch for:** Other external database integrations or queuing mechanisms that might have silent failures.

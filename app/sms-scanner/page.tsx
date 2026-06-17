@@ -29,12 +29,62 @@ export default function SMSScannerPage() {
     tags: string[];
   }>(null)
 
+  // 🛸 ORACLE PREDICTION ENGINE
+  // State to store pre-computed results
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const prefetchedResultRef = React.useRef<{ text: string, data: any } | null>(null);
+
   React.useEffect(() => {
     setMounted(true)
   }, [])
 
+  // 🛸 ORACLE: Predict next user action (Intent-to-Analyze Prefetching)
+  // When user stops typing for 600ms, prefetch the analysis in the background
+  React.useEffect(() => {
+    const trimmedText = text.trim()
+    if (!trimmedText || trimmedText.length < 5) return
+
+    // Don't re-fetch if we already have it
+    if (prefetchedResultRef.current?.text === trimmedText) return
+
+    const timer = setTimeout(async () => {
+      try {
+        const token = localStorage.getItem('vsdp_token') || 'dummy_token'
+        // Silent background fetch
+        const response = await fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text: trimmedText })
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          if (data && typeof data.isScam !== 'undefined') {
+            prefetchedResultRef.current = { text: trimmedText, data }
+            console.log('🛸 Oracle: Prefetched analysis for text')
+          }
+        }
+      } catch (e) {
+        // Silent fail on prediction
+      }
+    }, 600)
+
+    return () => clearTimeout(timer)
+  }, [text])
+
   const handleAnalyze = async () => {
-    if (!text.trim()) return
+    const trimmedText = text.trim()
+    if (!trimmedText) return
+
+    // 🛸 ORACLE: If prediction is ready, instantly apply it
+    if (prefetchedResultRef.current?.text === trimmedText) {
+      console.log('🛸 Oracle: Cache hit! Zero latency analysis applied.')
+      setResult(prefetchedResultRef.current.data)
+      return
+    }
 
     setLoading(true)
     setResult(null)

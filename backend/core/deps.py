@@ -1,7 +1,7 @@
 from typing import List, Dict, Any
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jwt.exceptions import InvalidTokenError as JWTError
+from jose import JWTError
 
 from backend.core import security
 from backend.core.config import settings

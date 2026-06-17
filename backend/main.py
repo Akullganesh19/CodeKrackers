@@ -9,6 +9,7 @@ from sqlalchemy import select
 from .core.database import engine, Base, AsyncSessionLocal
 from .core.security import get_password_hash
 from .models.orm import User
+from .core.listeners import setup_listeners
 
 # Initialize FastAPI App
 app = FastAPI(
@@ -61,7 +62,9 @@ async def startup_event():
     Actions to perform when the server starts:
     1. Create database tables (if they don't exist).
     2. Start the background scheduler.
+    3. Setup EventBus listeners.
     """
+    setup_listeners()
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     

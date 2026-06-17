@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from backend.api import deps
 from backend.models import User, SpamFilter, SpamReport, SpamLog, SpamType
 from backend.services.spam_shield import check_spam
+from backend.core.event_bus import event_bus
 
 logger = logging.getLogger("vas.spam_api")
 router = APIRouter()
@@ -77,6 +78,8 @@ def report_spam(
     db.add(report)
     db.commit()
     db.refresh(report)
+
+    event_bus.publish("spam.reported", current_user.id)
 
     total_reports = db.query(SpamReport).filter(SpamReport.phone_number == phone).count()
     logger.info("SPAM_REPORTED phone=%s by=%d total=%d", phone, current_user.id, total_reports)

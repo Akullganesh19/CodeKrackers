@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .core.database import engine, Base
 from .api import auth, analytics, call, fir, evidence, honeypot
 from .scheduler import setup_scheduler
 import uvicorn

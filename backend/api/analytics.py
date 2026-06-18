@@ -139,9 +139,6 @@ async def get_hourly_trend(
     now = datetime.now(timezone.utc)
     start_time = now - timedelta(hours=hours)
 
-    # To ensure dialect independence and preserve the sliding window logic,
-    # we fetch all matching records for the time frame in a single query
-    # and bucket them in-memory. This prevents N+1 queries.
     query = select(Threat.type, Threat.detected_at).filter(
         Threat.type.in_([ThreatType.SMISHING, ThreatType.VISHING]),
         Threat.detected_at >= start_time
@@ -169,7 +166,6 @@ async def get_hourly_trend(
         if detected_at.tzinfo is None:
             detected_at = detected_at.replace(tzinfo=timezone.utc)
 
-        # Place the record into the correct sliding window bucket
         for b in buckets:
             if b["start"] <= detected_at <= b["end"]:
                 if t_type == ThreatType.SMISHING or getattr(t_type, 'value', t_type) == 'smishing':

@@ -51,9 +51,8 @@ async def record_daily_safety_scores():
         result = await db.execute(select(User).where(User.is_active == True))
         users = result.scalars().all()
         
-        for user in users:
-            entry = ScoreHistory(user_id=user.id, score=user.safety_score)
-            db.add(entry)
+        entries = [ScoreHistory(user_id=user.id, score=user.safety_score) for user in users]
+        db.add_all(entries)
         
         await db.commit()
         print(f"Recorded daily safety scores for {len(users)} users.")

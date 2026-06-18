@@ -10,6 +10,7 @@ from ..models.orm import Evidence
 from ..models.orm import Threat
 from ..models.orm import FIR
 from ..models.orm import User
+from backend.core.config import settings
 
 class EvidenceChain:
     """
@@ -19,7 +20,7 @@ class EvidenceChain:
     def __init__(self, db: AsyncSession):
         self.db = db
         # Secret key used for signing blocks to ensure authenticity. 
-        self.secret_key = os.getenv("SECRET_KEY", "your-super-secret-key-for-vsdp-platform").encode()
+        self.secret_key = settings.SECRET_KEY.encode()
 
     def _generate_hash(self, previous_hash: str, payload: dict, timestamp: str) -> str:
         """

@@ -153,7 +153,6 @@ def auto_blacklist(
         type=identifier_type,
         value=identifier,
         reason=reason,
-        reported_by=reported_by,
         confidence=confidence,
         source=source,
     )

@@ -2,6 +2,7 @@
 Intelligence gathering endpoints — consent management, phone lookup, device registration.
 All endpoints require explicit user permission before collecting any data.
 """
+
 import logging
 from datetime import datetime, timezone
 from typing import Any
@@ -18,6 +19,7 @@ router = APIRouter()
 
 
 # ─── CONSENT MANAGEMENT ───
+
 
 @router.get("/consent")
 def get_consent_status(
@@ -47,7 +49,9 @@ def get_consent_status(
     return {
         "has_consent": True,
         "consent_id": consent.id,
-        "given_at": consent.consent_given_at.isoformat() if consent.consent_given_at else None,
+        "given_at": (
+            consent.consent_given_at.isoformat() if consent.consent_given_at else None
+        ),
         "permissions": {
             "phone_lookup": consent.consent_phone_lookup,
             "device_info": consent.consent_device_info,
@@ -71,14 +75,12 @@ def grant_consent(
     The user must explicitly opt-in to each type.
     """
     # Revoke any existing consent first
-    existing = (
-        db.query(UserConsent)
-        .filter(UserConsent.user_id == current_user.id, UserConsent.is_revoked == False)
-        .all()
+    db.query(UserConsent).filter(
+        UserConsent.user_id == current_user.id, UserConsent.is_revoked == False
+    ).update(
+        {"is_revoked": True, "revoked_at": datetime.now(timezone.utc)},
+        synchronize_session=False,
     )
-    for old in existing:
-        old.is_revoked = True
-        old.revoked_at = datetime.now(timezone.utc)
 
     # Create new consent record
     consent = UserConsent(
@@ -125,21 +127,25 @@ def revoke_consent(
     current_user: User = Depends(deps.get_current_active_user),
 ) -> Any:
     """Revoke all data collection consent immediately."""
-    consents = (
+    revoked_count = (
         db.query(UserConsent)
         .filter(UserConsent.user_id == current_user.id, UserConsent.is_revoked == False)
-        .all()
+        .update(
+            {"is_revoked": True, "revoked_at": datetime.now(timezone.utc)},
+            synchronize_session=False,
+        )
     )
-    for c in consents:
-        c.is_revoked = True
-        c.revoked_at = datetime.now(timezone.utc)
     db.commit()
 
-    logger.info("CONSENT_REVOKED user=%d count=%d", current_user.id, len(consents))
-    return {"message": "All data collection consent has been revoked", "revoked_count": len(consents)}
+    logger.info("CONSENT_REVOKED user=%d count=%d", current_user.id, revoked_count)
+    return {
+        "message": "All data collection consent has been revoked",
+        "revoked_count": revoked_count,
+    }
 
 
 # ─── PHONE NUMBER INTELLIGENCE ───
+
 
 @router.post("/phone/lookup")
 def phone_lookup(
@@ -202,6 +208,7 @@ def phone_lookup_history(
 
 # ─── DEVICE FINGERPRINT COLLECTION ───
 
+
 @router.post("/device/register")
 def register_device(
     body: dict,
@@ -235,8 +242,16 @@ def register_device(
         sim_operator=body.get("sim_operator"),
         sim_country=body.get("sim_country"),
         # Location (only if consent)
-        latitude=body.get("latitude") if check_user_consent(db, current_user.id, "consent_location") else None,
-        longitude=body.get("longitude") if check_user_consent(db, current_user.id, "consent_location") else None,
+        latitude=(
+            body.get("latitude")
+            if check_user_consent(db, current_user.id, "consent_location")
+            else None
+        ),
+        longitude=(
+            body.get("longitude")
+            if check_user_consent(db, current_user.id, "consent_location")
+            else None
+        ),
         city=body.get("city"),
         state=body.get("state"),
         # Browser
@@ -281,12 +296,17 @@ def list_user_devices(
     return [
         {
             "id": d.id,
-            "device": f"{d.device_brand or ''} {d.device_model or ''}".strip() or "Unknown",
+            "device": f"{d.device_brand or ''} {d.device_model or ''}".strip()
+            or "Unknown",
             "os": f"{d.os_name or ''} {d.os_version or ''}".strip(),
             "ip": d.ip_address,
             "carrier": d.carrier_name,
             "network": d.network_type,
-            "location": f"{d.city or ''}, {d.state or ''}".strip(", ") if d.city or d.state else None,
+            "location": (
+                f"{d.city or ''}, {d.state or ''}".strip(", ")
+                if d.city or d.state
+                else None
+            ),
             "registered_at": d.created_at.isoformat() if d.created_at else None,
         }
         for d in devices

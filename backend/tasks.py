@@ -1,7 +1,7 @@
 import asyncio
 from datetime import datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, update, func, case
 from .core.database import AsyncSessionLocal
 from .services.evidence_chain import EvidenceChain
 from .models.orm import Threat, ScoreHistory, User, FIR, HoneypotSession
@@ -105,7 +105,19 @@ async def restore_user_safety_scores():
             if user.id in hp_users:
                 restoration_points += 2.5
             
-            user.safety_score = min(100.0, user.safety_score + restoration_points)
+            # Use atomic update to prevent drift from concurrent changes
+            # using case statement to bound max score cross-dialect safely
+            new_score = User.safety_score + restoration_points
+            await db.execute(
+                update(User)
+                .where(User.id == user.id)
+                .values(
+                    safety_score=case(
+                        (new_score > 100.0, 100.0),
+                        else_=new_score
+                    )
+                )
+            )
             
         await db.commit()
         print(f"Daily Score Restoration: Processed {len(users_to_restore)} users.")

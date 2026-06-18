@@ -5,6 +5,7 @@ import logging
 import re
 from typing import Any, Dict, List, Optional
 
+from sqlalchemy import update, case, literal_column
 from sqlalchemy.orm import Session
 from backend.models.orm import Blacklist as BlacklistEntry, BlacklistType
 
@@ -129,9 +130,22 @@ def auto_blacklist(
         .first()
     )
     if existing:
-        existing.report_count += 1
-        existing.confidence = min(existing.confidence + 0.1, 1.0)
+        # Atomically update report count and confidence, safely bounding confidence to 1.0
+        # using a case statement to avoid dialect issues with MIN()/LEAST()
+        new_confidence = BlacklistEntry.confidence + 0.1
+        db.execute(
+            update(BlacklistEntry)
+            .where(BlacklistEntry.id == existing.id)
+            .values(
+                report_count=BlacklistEntry.report_count + 1,
+                confidence=case(
+                    (new_confidence > 1.0, 1.0),
+                    else_=new_confidence
+                )
+            )
+        )
         db.commit()
+        db.refresh(existing)
         logger.info("BLACKLIST_UPDATED %s=%s count=%d conf=%.2f", identifier_type, identifier, existing.report_count, existing.confidence)
         return existing
 

@@ -27,7 +27,7 @@ export default function Analytics() {
     setMounted(true)
     async function fetchData() {
       try {
-        const token = localStorage.getItem('vsdp_token') || 'dummy_token'
+        const token = localStorage.getItem('vsdp_token') || ''
         const [summaryRes, mapRes] = await Promise.all([
           fetch('http://localhost:8000/api/analytics/dashboard-summary', {
             headers: { 'Authorization': `Bearer ${token}` }

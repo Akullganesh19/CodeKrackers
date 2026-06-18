@@ -40,7 +40,7 @@ export default function SMSScannerPage() {
     setResult(null)
 
     try {
-      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+      const token = localStorage.getItem('vsdp_token') || '';
       const response = await fetch('http://localhost:8000/api/analytics/scan', {
         method: 'POST',
         headers: { 
@@ -87,7 +87,7 @@ export default function SMSScannerPage() {
   const handleReportToCybercrime = async () => {
     if (!result) return;
     try {
-      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+      const token = localStorage.getItem('vsdp_token') || '';
       const response = await fetch('http://localhost:8000/api/blacklist/report', {
         method: 'POST',
         headers: { 
@@ -113,7 +113,7 @@ export default function SMSScannerPage() {
   const handleBlockchainLog = async () => {
     if (!result) return;
     try {
-      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+      const token = localStorage.getItem('vsdp_token') || '';
       const url = new URL('http://localhost:8000/api/zk/sealed-report');
       url.searchParams.append('report_data', JSON.stringify({ content: text, analysis: result }));
       

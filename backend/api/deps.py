@@ -43,11 +43,6 @@ async def get_current_user(
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
 
-    # Fallback: lookup by email (dev dummy_token stores email as sub)
-    if not user:
-        result = await db.execute(select(User).where(User.email == user_id))
-        user = result.scalar_one_or_none()
-
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
     return user

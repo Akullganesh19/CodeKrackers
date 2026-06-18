@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.api import deps
-from backend.models.orm import FIR, Threat, User, Blacklist, BlacklistType, ThreatType, ThreatSeverity
+from backend.models.orm import FIR, Threat, User, Blacklist, BlacklistType, ThreatType, ThreatSeverity, ScoreHistory
 from backend.utils.ai import client as groq_client
 import json
 import os
@@ -206,6 +206,56 @@ async def scan_voice(body: dict, db: AsyncSession = Depends(deps.get_db)):
         await db.commit()
 
     return result
+
+@router.get("/personal-digest")
+async def get_personal_digest(
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user),
+) -> Any:
+    """Personal defense stats and score history for a citizen."""
+
+    # User's threats breakdown
+    result = await db.execute(
+        select(Threat.type, func.count(Threat.id))
+        .filter(Threat.user_id == current_user.id)
+        .group_by(Threat.type)
+    )
+    user_threats = result.all()
+
+    threat_breakdown = {
+        t[0].value if hasattr(t[0], 'value') else t[0]: t[1]
+        for t in user_threats
+    }
+
+    # Score History
+    result = await db.execute(
+        select(ScoreHistory)
+        .filter(ScoreHistory.user_id == current_user.id)
+        .order_by(ScoreHistory.recorded_at.asc())
+        .limit(30)
+    )
+    history = result.scalars().all()
+
+    score_history_data = [
+        {
+            "score": h.score,
+            "date": h.recorded_at.strftime("%b %d") if h.recorded_at else "Unknown"
+        }
+        for h in history
+    ]
+
+    total_result = await db.execute(
+        select(func.count(Threat.id)).filter(Threat.user_id == current_user.id)
+    )
+    total_threats_blocked = total_result.scalar() or 0
+
+    return {
+        "safety_score": getattr(current_user, "safety_score", 100.0),
+        "scams_avoided": getattr(current_user, "scams_avoided", 0),
+        "total_threats_blocked": total_threats_blocked,
+        "threat_breakdown": threat_breakdown,
+        "score_history": score_history_data
+    }
 
 @router.post("/scan-vishing")
 async def scan_vishing(body: dict, db: AsyncSession = Depends(deps.get_db)):

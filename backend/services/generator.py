@@ -1,13 +1,15 @@
-import uuid
 import os
+import uuid
 from datetime import datetime
-from sqlalchemy.ext.asyncio import AsyncSession
+
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 # Importing models from the application structure
 from ..models.orm import FIR, Threat, User
-from .ipc_tagger import tag_ipc_sections
 from ..utils.pdf_builder import generate_fir_pdf
+from .ipc_tagger import tag_ipc_sections
+
 
 async def generate_fir_pipeline(db: AsyncSession, threat_id: uuid.UUID) -> FIR:
     """

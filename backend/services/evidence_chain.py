@@ -1,15 +1,15 @@
 import hashlib
 import hmac
 import json
-import uuid
 import os
+import uuid
 from datetime import datetime
+
+from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc
-from ..models.orm import Evidence
-from ..models.orm import Threat
-from ..models.orm import FIR
-from ..models.orm import User
+
+from ..models.orm import FIR, Evidence, Threat, User
+
 
 class EvidenceChain:
     """
@@ -169,7 +169,7 @@ class EvidenceChain:
             "incident": {c.name: getattr(threat, c.name) for c in threat.__table__.columns},
             "fir_filing": {c.name: getattr(fir, c.name) for c in fir.__table__.columns} if fir else None,
             "blockchain_audit_trail": [
-                {c.name: getattr(b, c.name) for b in b.__table__.columns} 
+                {c.name: getattr(b, c.name) for c in b.__table__.columns}
                 for b in blocks
             ]
         }

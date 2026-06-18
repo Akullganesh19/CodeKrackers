@@ -1,5 +1,5 @@
 """Audit log model for forensic-grade event tracking."""
-from sqlalchemy import Column, Integer, String, DateTime, Text, JSON, Index
+from sqlalchemy import JSON, Column, DateTime, Index, Integer, String, Text
 from sqlalchemy.sql import func
 
 from backend.db.base_class import Base

@@ -8,7 +8,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from backend.api import deps
-from backend.models.orm import Blacklist as BlacklistEntry, BlacklistType, User, UserRole
+from backend.models.orm import Blacklist as BlacklistEntry
+from backend.models.orm import BlacklistType, User, UserRole
 from backend.services.threat_intel import auto_blacklist, calculate_threat_score
 
 logger = logging.getLogger("vas.blacklist")

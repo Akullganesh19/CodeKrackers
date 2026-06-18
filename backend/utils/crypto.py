@@ -1,6 +1,9 @@
-import httpx
 import re
+
+import httpx
+
 from backend.core.config import settings
+
 
 def extract_crypto_addresses(text: str) -> list[str]:
     """

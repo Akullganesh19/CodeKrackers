@@ -1,7 +1,18 @@
 """Blacklist and reputation models for threat intelligence."""
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Float, Text, Index, Enum
-from sqlalchemy.sql import func
 import enum
+
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Enum,
+    Float,
+    Index,
+    Integer,
+    String,
+    Text,
+)
+from sqlalchemy.sql import func
 
 from backend.db.base_class import Base, TimestampMixin
 

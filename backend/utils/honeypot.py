@@ -1,5 +1,6 @@
 from backend.utils.ai import client as groq_client
 
+
 class EinsteinBot:
     """
     Einstein-bot logic for active scam-baiting.

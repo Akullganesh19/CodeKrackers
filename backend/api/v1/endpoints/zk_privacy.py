@@ -11,29 +11,30 @@ Endpoints:
   GET  /zk/privacy-report       — Get privacy configuration validation report
   POST /zk/hash                 — Hash PII for the client (never stored)
 """
-import time
 import logging
+import time
 from typing import Optional
-from fastapi import APIRouter, Request, Depends, HTTPException, Query
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
 from backend.api import deps
-from backend.models.user import User, UserRole
 from backend.core.zk_privacy import (
-    PIIProtector,
-    ZKThreatProof,
-    generate_threat_proof,
-    verify_threat_proof,
-    SealedSender,
-    BlindCredentialManager,
-    generate_blind_auth_token,
-    get_blind_credential_manager,
-    validate_privacy_config,
-    zk_hash,
+    DOMAIN_SENDER_NUMBER,
+    DOMAIN_SMS_CONTENT,
     DOMAIN_USER_EMAIL,
     DOMAIN_USER_PHONE,
-    DOMAIN_SMS_CONTENT,
-    DOMAIN_SENDER_NUMBER,
+    BlindCredentialManager,
+    PIIProtector,
+    SealedSender,
+    ZKThreatProof,
+    generate_blind_auth_token,
+    generate_threat_proof,
+    get_blind_credential_manager,
+    validate_privacy_config,
+    verify_threat_proof,
+    zk_hash,
 )
+from backend.models.user import User, UserRole
 
 logger = logging.getLogger("vas.zk_privacy_api")
 router = APIRouter()

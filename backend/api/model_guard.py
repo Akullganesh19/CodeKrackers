@@ -11,25 +11,26 @@ Endpoints:
   - POST /models/adversarial-test — Test model robustness against adversarial examples
   - POST /detect/secure-sms — Protected SMS detection with extraction monitoring
 """
-import time
 import hashlib
 import logging
-from typing import Optional, List
-from fastapi import APIRouter, Request, Depends, HTTPException, Query, BackgroundTasks
+import time
+from typing import List, Optional
+
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from backend.api import deps
-from backend.models import ModelVersion, ModelInferenceLog, User, UserRole
+from backend.models import ModelInferenceLog, ModelVersion, User, UserRole
 from backend.services.model_security import (
-    register_model,
-    verify_model_integrity,
+    ADVERSARIAL_PERTURBATIONS,
+    TEXT_ADVERSARIAL_EXAMPLES,
     approve_model,
     compute_adversarial_robustness_score,
     generate_adversarial_training_data,
     get_extraction_detector,
-    TEXT_ADVERSARIAL_EXAMPLES,
-    ADVERSARIAL_PERTURBATIONS,
+    register_model,
+    verify_model_integrity,
 )
 
 logger = logging.getLogger("vas.model_guard")

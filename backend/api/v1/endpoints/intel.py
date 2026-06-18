@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from backend.api import deps
 from backend.models.intel import DeviceInfo, PhoneLookup, UserConsent
 from backend.models.user import User
-from backend.services.phone_intel import lookup_phone_number, check_user_consent
+from backend.services.phone_intel import check_user_consent, lookup_phone_number
 
 logger = logging.getLogger("vas.intel")
 router = APIRouter()
@@ -72,14 +72,12 @@ def grant_consent(
     The user must explicitly opt-in to each type.
     """
     # Revoke any existing consent first
-    existing = (
-        db.query(UserConsent)
-        .filter(UserConsent.user_id == current_user.id, UserConsent.is_revoked == False)
-        .all()
+    db.query(UserConsent).filter(
+        UserConsent.user_id == current_user.id, UserConsent.is_revoked == False
+    ).update(
+        {"is_revoked": True, "revoked_at": datetime.now(timezone.utc)},
+        synchronize_session=False
     )
-    for old in existing:
-        old.is_revoked = True
-        old.revoked_at = datetime.now(timezone.utc)
 
     # Create new consent record
     consent = UserConsent(
@@ -126,18 +124,16 @@ def revoke_consent(
     current_user: User = Depends(deps.get_current_active_user),
 ) -> Any:
     """Revoke all data collection consent immediately."""
-    consents = (
-        db.query(UserConsent)
-        .filter(UserConsent.user_id == current_user.id, UserConsent.is_revoked == False)
-        .all()
+    revoked_count = db.query(UserConsent).filter(
+        UserConsent.user_id == current_user.id, UserConsent.is_revoked == False
+    ).update(
+        {"is_revoked": True, "revoked_at": datetime.now(timezone.utc)},
+        synchronize_session=False
     )
-    for c in consents:
-        c.is_revoked = True
-        c.revoked_at = datetime.now(timezone.utc)
     db.commit()
 
-    logger.info("CONSENT_REVOKED user=%d count=%d", current_user.id, len(consents))
-    return {"message": "All data collection consent has been revoked", "revoked_count": len(consents)}
+    logger.info("CONSENT_REVOKED user=%d count=%d", current_user.id, revoked_count)
+    return {"message": "All data collection consent has been revoked", "revoked_count": revoked_count}
 
 
 # ─── PHONE NUMBER INTELLIGENCE ───

@@ -1,5 +1,7 @@
 from twilio.rest import Client
+
 from backend.core.config import settings
+
 
 def send_alert_sms(to_number: str, message_body: str):
     """

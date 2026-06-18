@@ -127,28 +127,49 @@ def get_hourly_trend(
     current_user: User = Depends(deps.get_current_active_user),
 ) -> Any:
     """Hourly threat trend for the last N hours."""
-    now = datetime.now(timezone.utc)
-    data = []
+    if hours <= 0:
+        return []
 
+    now = datetime.now(timezone.utc)
+
+    # We create conditions to map timestamps to bucket indices (1 to hours)
+    # using a standard SQL CASE statement. This is completely database-agnostic.
+    conditions = []
     for i in range(hours, 0, -1):
         hour_start = now - timedelta(hours=i)
         hour_end = now - timedelta(hours=i - 1)
-
-        smishing = (
-            db.query(Threat)
-            .filter(Threat.type == ThreatType.SMISHING, Threat.timestamp.between(hour_start, hour_end))
-            .count()
-        )
-        vishing = (
-            db.query(Threat)
-            .filter(Threat.type == ThreatType.VISHING, Threat.timestamp.between(hour_start, hour_end))
-            .count()
+        conditions.append(
+            (Threat.timestamp.between(hour_start, hour_end), i)
         )
 
+    bucket_expr = case(*conditions, else_=0).label("bucket_idx")
+
+    start_time = now - timedelta(hours=hours)
+
+    results = (
+        db.query(
+            bucket_expr,
+            func.sum(case((Threat.type == ThreatType.SMISHING, 1), else_=0)).label("smishing"),
+            func.sum(case((Threat.type == ThreatType.VISHING, 1), else_=0)).label("vishing")
+        )
+        .filter(Threat.timestamp >= start_time)
+        .group_by(bucket_expr)
+        .all()
+    )
+
+    results_map = {
+        r.bucket_idx: {"smishing": r.smishing or 0, "vishing": r.vishing or 0}
+        for r in results if r.bucket_idx != 0
+    }
+
+    data = []
+    for i in range(hours, 0, -1):
+        hour_start = now - timedelta(hours=i)
+        bucket = results_map.get(i, {"smishing": 0, "vishing": 0})
         data.append({
             "hour": hour_start.strftime("%H:%M"),
-            "smishing": smishing,
-            "vishing": vishing,
+            "smishing": bucket["smishing"],
+            "vishing": bucket["vishing"],
         })
 
     return data

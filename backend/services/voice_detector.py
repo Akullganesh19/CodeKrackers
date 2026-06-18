@@ -1,9 +1,11 @@
-import torch
-from transformers import Wav2Vec2FeatureExtractor
+import os
+
 import librosa
 import numpy as np
+import torch
 from scipy.signal import find_peaks
-import os
+from transformers import Wav2Vec2FeatureExtractor
+
 
 class VoiceDeepfakeDetector:
     def __init__(self, model_name: str = "facebook/wav2vec2-base"):

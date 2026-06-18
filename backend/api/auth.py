@@ -1,21 +1,21 @@
-from datetime import datetime, timedelta, timezone
 import logging
 import random
+from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
 
 import redis
-from twilio.rest import Client
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from pydantic import BaseModel
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
-from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
+from twilio.rest import Client
 
 from backend.api import deps
-from backend.core.limiter import limiter
 from backend.core import security
-from backend.core.security import get_lockout_time, MAX_LOGIN_ATTEMPTS
 from backend.core.config import settings
+from backend.core.limiter import limiter
+from backend.core.security import MAX_LOGIN_ATTEMPTS, get_lockout_time
 from backend.models.orm import User, UserRole
 
 router = APIRouter()

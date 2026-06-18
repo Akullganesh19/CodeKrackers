@@ -1,5 +1,5 @@
 """Honeypot endpoint access tracking for attacker profiling."""
-from sqlalchemy import Column, Integer, String, DateTime, Text, JSON, Index, Boolean
+from sqlalchemy import JSON, Boolean, Column, DateTime, Index, Integer, String, Text
 from sqlalchemy.sql import func
 
 from backend.db.base_class import Base

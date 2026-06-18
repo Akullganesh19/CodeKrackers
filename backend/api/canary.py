@@ -11,12 +11,14 @@ exfiltrates data and then accesses the tracking URL, we get an immediate alert.
 """
 import logging
 from typing import Optional
-from fastapi import APIRouter, Request, Depends, HTTPException, Query
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
 from backend.api import deps
-from backend.models.orm import CanaryTrap as CanaryToken, User, UserRole
+from backend.models.orm import CanaryTrap as CanaryToken
+from backend.models.orm import User, UserRole
 from backend.services import canary_service
 
 logger = logging.getLogger("vas.canary")

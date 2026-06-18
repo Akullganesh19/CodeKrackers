@@ -11,9 +11,10 @@ probe for:
 
 These endpoints are never used by the real application. Any access is malicious.
 """
-import time
 import logging
-from fastapi import APIRouter, Request, Query
+import time
+
+from fastapi import APIRouter, Query, Request
 from fastapi.responses import JSONResponse
 
 logger = logging.getLogger("vas.honeypot_root")

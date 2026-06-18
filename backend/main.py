@@ -1,14 +1,15 @@
+import asyncio
+
+import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .core.database import engine, Base
-from .api import auth, analytics, call, fir, evidence, honeypot
-from .scheduler import setup_scheduler
-import uvicorn
-import asyncio
 from sqlalchemy import select
-from .core.database import engine, Base, AsyncSessionLocal
+
+from .api import analytics, auth, call, evidence, fir, honeypot
+from .core.database import AsyncSessionLocal, Base, engine
 from .core.security import get_password_hash
 from .models.orm import User
+from .scheduler import setup_scheduler
 
 # Initialize FastAPI App
 app = FastAPI(
@@ -40,7 +41,22 @@ app.include_router(evidence.router, prefix="/api/evidence", tags=["evidence"])
 app.include_router(honeypot.router, prefix="/api/honeypot", tags=["honeypot"])
 
 # New Original Routers
-from .api import blacklist, canary, childlock, enclave, export, intel, legal, model_guard, openclaw, spam, threats, users, zk_privacy
+from .api import (
+    blacklist,
+    canary,
+    childlock,
+    enclave,
+    export,
+    intel,
+    legal,
+    model_guard,
+    openclaw,
+    spam,
+    threats,
+    users,
+    zk_privacy,
+)
+
 app.include_router(blacklist.router, prefix="/api/blacklist", tags=["blacklist"])
 app.include_router(canary.router, prefix="/api/canary", tags=["canary"])
 app.include_router(childlock.router, prefix="/api/childlock", tags=["childlock"])

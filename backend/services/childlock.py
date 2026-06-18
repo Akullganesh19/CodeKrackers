@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional
 
 from sqlalchemy.orm import Session
 
-from backend.models.orm import ChildProfile, ChildActivityLog, ChildLockMode
+from backend.models.orm import ChildActivityLog, ChildLockMode, ChildProfile
 
 logger = logging.getLogger("vas.childlock")
 

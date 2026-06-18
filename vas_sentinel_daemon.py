@@ -25,8 +25,9 @@ def start_services():
         print(f"Starting {svc['name']}...")
         try:
             if os.name == 'nt':
-                # Use start to create a separate persistent window
-                subprocess.Popen(["start", "cmd", "/c"] + svc["command"], shell=True, cwd=svc["cwd"])
+                # Use CREATE_NEW_CONSOLE to create a separate persistent window safely
+                creationflags = getattr(subprocess, "CREATE_NEW_CONSOLE", 0x00000010)
+                subprocess.Popen(svc["command"], cwd=svc["cwd"], creationflags=creationflags)
             else:
                 subprocess.Popen(svc["command"], cwd=svc["cwd"])
             time.sleep(2)

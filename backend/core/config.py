@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./vsdp.db")
     
     # Security
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "your-super-secret-key-for-vsdp-platform")
+    SECRET_KEY: str
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
     API_V1_STR: str = "/api"

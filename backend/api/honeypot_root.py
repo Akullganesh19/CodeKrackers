@@ -1,7 +1,7 @@
 """
 Root-level honeypot endpoints — mounted at exactly the paths attackers expect.
 
-These are mounted at the root level (not under /api/v1) to catch attackers who
+These are mounted at the root level (not under /api) to catch attackers who
 probe for:
   - /admin/export-users
   - /internal/models

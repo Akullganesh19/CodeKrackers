@@ -177,7 +177,7 @@ export default function Dashboard() {
       try {
         const token = typeof window !== 'undefined' ? localStorage.getItem('vsdp_token') : null
         const res = await fetch('http://localhost:8000/api/analytics/dashboard-summary', {
-          headers: { 'Authorization': `Bearer ${token || 'dummy_token'}` }
+          headers: { 'Authorization': `Bearer ${token || ''}` }
         })
         if (res.ok) {
           const data = await res.json()

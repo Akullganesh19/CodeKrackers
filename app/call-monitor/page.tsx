@@ -253,7 +253,7 @@ export default function VishingMonitor() {
 
   const handleEndAndBlock = async () => {
     try {
-      const token = localStorage.getItem('vsdp_token') || 'dummy_token'
+      const token = localStorage.getItem('vsdp_token') || ''
       const response = await fetch('http://localhost:8000/api/blacklist/report', {
         method: 'POST',
         headers: { 
@@ -291,7 +291,7 @@ export default function VishingMonitor() {
       return
     }
     try {
-      const token = localStorage.getItem('vsdp_token') || 'dummy_token'
+      const token = localStorage.getItem('vsdp_token') || ''
       const response = await fetch('http://localhost:8000/api/fir/generate', {
         method: 'POST',
         headers: { 
@@ -313,7 +313,7 @@ export default function VishingMonitor() {
 
   const handleBlockchainLog = async () => {
     try {
-      const token = localStorage.getItem('vsdp_token') || 'dummy_token'
+      const token = localStorage.getItem('vsdp_token') || ''
       const url = new URL('http://localhost:8000/api/zk/sealed-report')
       url.searchParams.append('report_data', JSON.stringify(analysisResult || { type: 'vishing', status: 'detected' }))
       

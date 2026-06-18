@@ -1,12 +1,19 @@
 import logging
 import requests
 from backend.core.config import settings
+from backend.core.resilience import with_retries, circuit_breaker, CircuitBreakerOpenException
 
 logger = logging.getLogger("vas.openclaw")
 
 # OpenClaw Gateway defaults
 OPENCLAW_URL = "http://127.0.0.1:18789"
 OPENCLAW_TOKEN = "22b3d0f8bbe1f335aab557204ab619d5260b91ab8533d3c4"
+
+@circuit_breaker(failure_threshold=3, recovery_timeout=60.0, exceptions=(requests.RequestException,))
+@with_retries(max_attempts=3, initial_backoff=0.5, backoff_factor=2.0, exceptions=(requests.RequestException,))
+def _do_openclaw_health_check() -> None:
+    response = requests.get(OPENCLAW_URL, timeout=5)
+    response.raise_for_status()
 
 def openclaw_analysis(content: str):
     """
@@ -20,7 +27,7 @@ def openclaw_analysis(content: str):
         logger.info("Engaging OpenClaw Autonomous Agent...")
         
         # Real-time check if gateway is up
-        requests.get(OPENCLAW_URL, timeout=1)
+        _do_openclaw_health_check()
         
         # In a real integration, we'd use the token to send a task
         # For now, we acknowledge the gateway is active and ready.
@@ -29,6 +36,9 @@ def openclaw_analysis(content: str):
             "agent": "OpenClaw Sentinel",
             "gateway": OPENCLAW_URL
         }
+    except CircuitBreakerOpenException:
+        logger.warning("OpenClaw Agent gateway circuit breaker open.")
+        return None
     except Exception as e:
         logger.error(f"OpenClaw Agent offline: {e}")
         return None

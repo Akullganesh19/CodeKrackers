@@ -1,11 +1,25 @@
 import logging
 from typing import Dict, Any
-from groq import Groq
+from groq import Groq, GroqError, APIError, APIConnectionError, RateLimitError
 from backend.core.config import settings
 from backend.services.ollama_scan import ollama_deep_scan
 import requests
+from backend.core.resilience import with_retries, circuit_breaker, CircuitBreakerOpenException
 
 logger = logging.getLogger("vas.ai_scan")
+
+@circuit_breaker(failure_threshold=3, recovery_timeout=60.0, exceptions=(APIError, APIConnectionError, RateLimitError))
+@with_retries(max_attempts=3, initial_backoff=1.0, backoff_factor=2.0, exceptions=(APIError, APIConnectionError, RateLimitError))
+def _do_groq_request(client, prompt: str, source_type: str) -> Any:
+    return client.chat.completions.create(
+        messages=[
+            {"role": "system", "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection."},
+            {"role": "user", "content": prompt}
+        ],
+        model=settings.GROQ_MODEL if hasattr(settings, "GROQ_MODEL") else "llama3-8b-8192",
+        response_format={"type": "json_object"}
+    )
+
 
 def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     """
@@ -20,10 +34,13 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
         requests.get("http://localhost:11434", timeout=1)
         logger.info("Using local Ollama for analysis...")
         local_result = ollama_deep_scan(content, source_type)
-        if local_result["score_increase"] > 0:
+        if local_result["score_increase"] > 0 or (
+            local_result["reason"] != "Ollama service unavailable" and
+            local_result["reason"] != "Ollama service unavailable (circuit open)"
+        ):
             return local_result
-    except:
-        logger.info("Ollama not reachable, falling back to Groq Cloud...")
+    except Exception as e:
+        logger.info(f"Ollama not reachable ({e}), falling back to Groq Cloud...")
 
     # ── Fallback to Groq ──
     if not settings.GROQ_API_KEY:
@@ -43,14 +60,7 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
         4. "risk_factors": list of strings
         """
 
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection."},
-                {"role": "user", "content": prompt}
-            ],
-            model=settings.GROQ_MODEL,
-            response_format={"type": "json_object"}
-        )
+        chat_completion = _do_groq_request(client, prompt, source_type)
 
         import json
         result = json.loads(chat_completion.choices[0].message.content)
@@ -60,6 +70,12 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
             "reason": f"Cloud AI: {result.get('reason', 'Analysis complete')}",
             "risk_factors": result.get("risk_factors", [])
         }
+    except CircuitBreakerOpenException:
+        logger.warning("Groq API circuit breaker open, skipping cloud scan")
+        return {"score_increase": 0.0, "reason": "Cloud AI Scan unavailable (circuit open)"}
+    except GroqError as e:
+        logger.error(f"Cloud AI Scan Request Error: {e}")
+        return {"score_increase": 0.0, "reason": f"Cloud AI Scan unavailable: {e}"}
     except Exception as e:
         logger.error(f"Cloud AI Scan Error: {e}")
         return {"score_increase": 0.0, "reason": f"AI Scan failed: {e}"}

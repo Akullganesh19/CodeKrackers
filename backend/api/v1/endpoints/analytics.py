@@ -13,6 +13,7 @@ from backend.api import deps
 from backend.models.legal import FIR
 from backend.models.threat import Threat, ThreatType, ThreatSeverity
 from backend.models.user import User
+from backend.models.orm import ScoreHistory
 
 logger = logging.getLogger("vas.analytics")
 router = APIRouter()
@@ -152,3 +153,50 @@ def get_hourly_trend(
         })
 
     return data
+
+
+@router.get("/personal-digest")
+def get_personal_digest(
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user),
+) -> Any:
+    """Personal defense stats and score history for a citizen."""
+
+    # User's threats breakdown
+    user_threats = (
+        db.query(Threat.type, func.count(Threat.id))
+        .filter(Threat.user_id == current_user.id)
+        .group_by(Threat.type)
+        .all()
+    )
+    threat_breakdown = {
+        t[0].value if hasattr(t[0], 'value') else t[0]: t[1]
+        for t in user_threats
+    }
+
+    # Score History
+    history = (
+        db.query(ScoreHistory)
+        .filter(ScoreHistory.user_id == current_user.id)
+        .order_by(ScoreHistory.recorded_at.asc())
+        .limit(30)
+        .all()
+    )
+
+    score_history_data = [
+        {
+            "score": h.score,
+            "date": h.recorded_at.strftime("%b %d") if h.recorded_at else "Unknown"
+        }
+        for h in history
+    ]
+
+    total_threats_blocked = db.query(Threat).filter(Threat.user_id == current_user.id).count()
+
+    return {
+        "safety_score": getattr(current_user, "safety_score", 100.0),
+        "scams_avoided": getattr(current_user, "scams_avoided", 0),
+        "total_threats_blocked": total_threats_blocked,
+        "threat_breakdown": threat_breakdown,
+        "score_history": score_history_data
+    }

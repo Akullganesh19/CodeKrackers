@@ -95,9 +95,11 @@ async def send_otp(
     return {"message": "OTP sent successfully"}
 
 @router.post("/verify")
+@limiter.limit(settings.RATE_LIMIT_AUTH)
 async def verify_otp(
     *,
     db: Session = Depends(deps.get_db_sync),
+    request: Request,
     otp_verify: OTPVerify,
 ) -> Any:
     """

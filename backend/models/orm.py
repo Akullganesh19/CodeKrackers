@@ -1,8 +1,22 @@
+import enum
 import uuid
 from datetime import datetime
-import enum
-from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime, Text, ForeignKey, JSON, func, Index, Enum
-from sqlalchemy.orm import relationship, declarative_base
+
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Column,
+    DateTime,
+    Enum,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    func,
+)
+from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
 

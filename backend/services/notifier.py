@@ -1,5 +1,7 @@
 import logging
+
 from twilio.rest import Client
+
 from backend.core.config import settings
 
 logger = logging.getLogger("vas.notifier")

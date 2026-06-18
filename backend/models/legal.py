@@ -1,8 +1,9 @@
 """Legal models: Evidence chain and FIR with full audit trail."""
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, Enum, Index
+import enum
+
+from sqlalchemy import Column, DateTime, Enum, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-import enum
 
 from backend.db.base_class import Base, TimestampMixin
 

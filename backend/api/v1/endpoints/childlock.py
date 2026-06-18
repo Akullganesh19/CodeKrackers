@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from backend.api import deps
-from backend.models.childlock import ChildProfile, ChildActivityLog, ChildLockMode
+from backend.models.childlock import ChildActivityLog, ChildLockMode, ChildProfile
 from backend.models.user import User
 from backend.services.childlock import check_call_allowed, check_sms_allowed
 

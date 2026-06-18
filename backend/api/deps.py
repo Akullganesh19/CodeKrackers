@@ -1,12 +1,14 @@
-from typing import AsyncGenerator, Generator, Any
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Any, AsyncGenerator, Generator
+
 from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
+
+from ..core import security
 from ..core.database import AsyncSessionLocal, SessionLocal
 from ..models.orm import User, UserRole
-from sqlalchemy import select
-from ..core import security
-from fastapi.security import OAuth2PasswordBearer
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
 

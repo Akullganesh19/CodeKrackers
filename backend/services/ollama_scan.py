@@ -1,7 +1,8 @@
-import logging
-import requests
 import json
-from typing import Dict, Any
+import logging
+from typing import Any, Dict
+
+import requests
 
 logger = logging.getLogger("vas.ollama")
 

@@ -1,10 +1,23 @@
 """
 Spam Shield models — real-time spam call/SMS detection and auto-blocking.
 """
-from sqlalchemy import Column, Integer, String, Boolean, Float, DateTime, ForeignKey, JSON, Text, Index, Enum
+import enum
+
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Column,
+    DateTime,
+    Enum,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-import enum
 
 from backend.db.base_class import Base, TimestampMixin
 

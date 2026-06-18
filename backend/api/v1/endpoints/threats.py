@@ -11,7 +11,8 @@ from backend.api import deps
 from backend.core.ws import manager
 from backend.models.threat import Threat, ThreatStatus
 from backend.models.user import User, UserRole
-from backend.schemas.threat import Threat as ThreatSchema, ThreatCreate
+from backend.schemas.threat import Threat as ThreatSchema
+from backend.schemas.threat import ThreatCreate
 
 logger = logging.getLogger("vas.threats")
 router = APIRouter()

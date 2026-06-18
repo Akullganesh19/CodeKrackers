@@ -10,18 +10,18 @@ If those links are accessed, we get immediate notification of:
 
 This works like Thinkst Canary / canarytokens.org — self-hosted and free.
 """
-import uuid
-import time
 import json
 import logging
 import secrets
-from typing import Optional, List, Dict, Any
+import time
+import uuid
 from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
 
 from sqlalchemy.orm import Session
 
-from backend.models.orm import CanaryTrap as CanaryToken
 from backend.core.config import settings
+from backend.models.orm import CanaryTrap as CanaryToken
 
 logger = logging.getLogger("vas.canary_service")
 

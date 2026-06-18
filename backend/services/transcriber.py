@@ -1,5 +1,7 @@
-import whisper
 import os
+
+import whisper
+
 
 class AudioTranscriber:
     def __init__(self):

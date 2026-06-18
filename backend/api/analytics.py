@@ -137,28 +137,52 @@ async def get_hourly_trend(
 ) -> Any:
     """Hourly threat trend for the last N hours."""
     now = datetime.now(timezone.utc)
-    data = []
+    start_time = now - timedelta(hours=hours)
 
+    # To ensure dialect independence and preserve the sliding window logic,
+    # we fetch all matching records for the time frame in a single query
+    # and bucket them in-memory. This prevents N+1 queries.
+    query = select(Threat.type, Threat.detected_at).filter(
+        Threat.type.in_([ThreatType.SMISHING, ThreatType.VISHING]),
+        Threat.detected_at >= start_time
+    )
+    result = await db.execute(query)
+    records = result.all()
+
+    data = []
+    buckets = []
     for i in range(hours, 0, -1):
         hour_start = now - timedelta(hours=i)
         hour_end = now - timedelta(hours=i - 1)
+        buckets.append({
+            "start": hour_start,
+            "end": hour_end,
+            "hour_str": hour_start.strftime("%H:%M"),
+            "smishing": 0,
+            "vishing": 0,
+        })
 
-        smishing_res = await db.execute(
-            select(func.count(Threat.id))
-            .filter(Threat.type == ThreatType.SMISHING, Threat.detected_at.between(hour_start, hour_end))
-        )
-        smishing = smishing_res.scalar() or 0
-        
-        vishing_res = await db.execute(
-            select(func.count(Threat.id))
-            .filter(Threat.type == ThreatType.VISHING, Threat.detected_at.between(hour_start, hour_end))
-        )
-        vishing = vishing_res.scalar() or 0
+    for t_type, detected_at in records:
+        if not detected_at:
+            continue
 
+        if detected_at.tzinfo is None:
+            detected_at = detected_at.replace(tzinfo=timezone.utc)
+
+        # Place the record into the correct sliding window bucket
+        for b in buckets:
+            if b["start"] <= detected_at <= b["end"]:
+                if t_type == ThreatType.SMISHING or getattr(t_type, 'value', t_type) == 'smishing':
+                    b["smishing"] += 1
+                elif t_type == ThreatType.VISHING or getattr(t_type, 'value', t_type) == 'vishing':
+                    b["vishing"] += 1
+                break
+
+    for b in buckets:
         data.append({
-            "hour": hour_start.strftime("%H:%M"),
-            "smishing": smishing,
-            "vishing": vishing,
+            "hour": b["hour_str"],
+            "smishing": b["smishing"],
+            "vishing": b["vishing"],
         })
 
     return data

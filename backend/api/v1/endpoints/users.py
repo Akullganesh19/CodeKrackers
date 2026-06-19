@@ -43,7 +43,7 @@ def create_user(
         email=user_in.email,
         hashed_password=security.get_password_hash(user_in.password),
         full_name=user_in.full_name,
-        role=user_in.role or UserRole.CITIZEN,
+        role=UserRole.citizen,
     )
     db.add(user)
     db.commit()

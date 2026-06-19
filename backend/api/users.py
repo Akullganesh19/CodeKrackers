@@ -46,7 +46,7 @@ async def create_user(
         email=user_in.email,
         hashed_password=security.get_password_hash(user_in.password),
         full_name=user_in.full_name,
-        role=user_in.role or UserRole.USER,
+        role=UserRole.citizen,
     )
     db.add(user)
     await db.commit()

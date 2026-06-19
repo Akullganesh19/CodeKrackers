@@ -1,6 +1,7 @@
 """
 Threat management endpoints with RBAC, pagination, and status workflow.
 """
+
 import logging
 from typing import Any, List
 
@@ -22,23 +23,31 @@ def read_threats(
     db: Session = Depends(deps.get_db),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
-    threat_type: str = Query(None, description="Filter by type: smishing, vishing, crypto_scam"),
-    severity: str = Query(None, description="Filter by severity: low, medium, high, critical"),
+    threat_type: str = Query(
+        None, description="Filter by type: smishing, vishing, crypto_scam"
+    ),
+    severity: str = Query(
+        None, description="Filter by severity: low, medium, high, critical"
+    ),
     current_user: User = Depends(deps.get_current_active_user),
 ) -> Any:
     """Retrieve threats with filtering and pagination."""
     query = db.query(Threat)
 
     # RBAC: regular users see only their threats
-    if current_user.role not in {UserRole.ADMIN, UserRole.OFFICER, UserRole.SUPER_ADMIN}:
-        query = query.filter(Threat.owner_id == current_user.id)
+    if current_user.role not in {
+        UserRole.ADMIN,
+        UserRole.OFFICER,
+        UserRole.SUPER_ADMIN,
+    }:
+        query = query.filter(Threat.user_id == current_user.id)
 
     if threat_type:
         query = query.filter(Threat.type == threat_type)
     if severity:
         query = query.filter(Threat.severity == severity)
 
-    return query.order_by(Threat.timestamp.desc()).offset(skip).limit(limit).all()
+    return query.order_by(Threat.detected_at.desc()).offset(skip).limit(limit).all()
 
 
 @router.post("/", response_model=ThreatSchema, status_code=status.HTTP_201_CREATED)
@@ -51,29 +60,37 @@ async def create_threat(
     """Create new threat detection log and broadcast via WebSocket."""
     threat = Threat(
         **threat_in.model_dump(),
-        owner_id=current_user.id,
+        user_id=current_user.id,
     )
     db.add(threat)
     db.commit()
     db.refresh(threat)
 
     logger.warning(
-        "THREAT_CREATED id=%d type=%s severity=%s source=%s user=%d",
-        threat.id, threat.type, threat.severity, threat.source_number, current_user.id,
+        "THREAT_CREATED id=%s type=%s severity=%s source=%s user=%s",
+        threat.id,
+        threat.type,
+        threat.severity,
+        threat.sender_id,
+        current_user.id,
     )
 
     # Broadcast to all connected dashboard clients
-    await manager.broadcast({
-        "type": "NEW_THREAT",
-        "data": {
-            "id": threat.id,
-            "type": threat.type,
-            "source": threat.source_number,
-            "severity": threat.severity,
-            "confidence": threat.confidence_score,
-            "timestamp": threat.timestamp.isoformat() if threat.timestamp else None,
-        },
-    })
+    await manager.broadcast(
+        {
+            "type": "NEW_THREAT",
+            "data": {
+                "id": threat.id,
+                "type": threat.type,
+                "source": threat.sender_id,
+                "severity": threat.severity,
+                "confidence": threat.confidence,
+                "timestamp": (
+                    threat.detected_at.isoformat() if threat.detected_at else None
+                ),
+            },
+        }
+    )
 
     return threat
 
@@ -100,7 +117,12 @@ def update_threat_status(
         )
 
     db.commit()
-    logger.info("THREAT_STATUS_UPDATED id=%d status=%s by=%d", threat_id, new_status, current_user.id)
+    logger.info(
+        "THREAT_STATUS_UPDATED id=%d status=%s by=%d",
+        threat_id,
+        new_status,
+        current_user.id,
+    )
     return {"id": threat_id, "status": threat.status}
 
 

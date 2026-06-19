@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
 import OpenClawStatus from '@/components/OpenClawStatus'
+import PersonalThreatInsights from '@/app/components/PersonalThreatInsights'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ShieldAlert,
@@ -267,6 +268,9 @@ export default function Dashboard() {
 
           {/* RIGHT COLUMN (1/3) */}
           <div className="lg:col-span-4 space-y-10">
+
+            {/* PERSONAL THREAT INSIGHTS */}
+            <PersonalThreatInsights />
 
             {/* SNAPSHOT PANEL */}
             <div className="vsdp-card p-10 space-y-8">

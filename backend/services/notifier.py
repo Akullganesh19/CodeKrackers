@@ -1,8 +1,20 @@
 import logging
 from twilio.rest import Client
 from backend.core.config import settings
+from backend.core.resilience import with_retries, circuit_breaker
 
 logger = logging.getLogger("vas.notifier")
+
+@circuit_breaker(failure_threshold=5, recovery_timeout=60.0)
+@with_retries(max_retries=3, base_delay=0.5, max_delay=2.0)
+def _send_twilio_message(to: str, body: str):
+    """Internal helper to send Twilio messages with auto-retry and circuit breaking."""
+    client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+    return client.messages.create(
+        body=body,
+        from_=settings.TWILIO_PHONE_NUMBER,
+        to=to
+    )
 
 def send_threat_alert(phone_number: str, threat_type: str, score: float, original_sender: str):
     """
@@ -13,8 +25,6 @@ def send_threat_alert(phone_number: str, threat_type: str, score: float, origina
         return False
 
     try:
-        client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-        
         alert_msg = (
             f"🚨 VAS SECURITY ALERT 🚨\n\n"
             f"Red Flag detected from: {original_sender}\n"
@@ -23,16 +33,12 @@ def send_threat_alert(phone_number: str, threat_type: str, score: float, origina
             f"⚠️ DO NOT click any links or share OTPs. This message has been logged for evidence."
         )
 
-        message = client.messages.create(
-            body=alert_msg,
-            from_=settings.TWILIO_PHONE_NUMBER,
-            to=phone_number
-        )
+        message = _send_twilio_message(to=phone_number, body=alert_msg)
         
         logger.info(f"Notification sent to {phone_number}. SID: {message.sid}")
         return True
     except Exception as e:
-        logger.error(f"Failed to send notification: {e}")
+        logger.error(f"Failed to send notification after retries: {e}")
         return False
 
 def send_otp(phone_number: str) -> str:
@@ -49,23 +55,17 @@ def send_otp(phone_number: str) -> str:
         return otp_code
 
     try:
-        client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-        
         msg_body = (
             f"VAS Command Center: Your verification code is {otp_code}. "
             "Valid for 5 minutes. DO NOT share this with anyone."
         )
 
-        client.messages.create(
-            body=msg_body,
-            from_=settings.TWILIO_PHONE_NUMBER,
-            to=phone_number
-        )
+        _send_twilio_message(to=phone_number, body=msg_body)
         
         logger.info(f"OTP sent to {phone_number}")
         return otp_code
     except Exception as e:
-        logger.error(f"Failed to send OTP: {e}")
+        logger.error(f"Failed to send OTP after retries: {e}")
         # Fallback to simulation in logs for dev convenience
         logger.warning(f"FALLBACK SIMULATED OTP: {otp_code}")
         return otp_code

@@ -60,17 +60,17 @@ async def send_otp(
     """
     Generates a 6-digit OTP and stores it in Redis with a TTL.
     """
-    otp_code = f"{random.randint(100000, 999999)}"
+    otp_in.otp = f"{random.randint(100000, 999999)}"
     
     redis_key = f"otp:{otp_in.identifier}"
     if redis_client:
-        redis_client.setex(redis_key, settings.OTP_EXPIRE_SECONDS, otp_code)
+        redis_client.setex(redis_key, settings.OTP_EXPIRE_SECONDS, otp_in.otp)
 
     if "@" not in otp_in.identifier and settings.TWILIO_ACCOUNT_SID and settings.TWILIO_AUTH_TOKEN:
         try:
             client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
             client.messages.create(
-                body=f"VSDP Security Code: {otp_code}. Valid for 5 minutes. Do not share.",
+                body=f"VSDP Security Code: {otp_in.otp}. Valid for 5 minutes. Do not share.",
                 from_=settings.TWILIO_PHONE_NUMBER,
                 to=otp_in.identifier
             )
@@ -83,14 +83,14 @@ async def send_otp(
                 from_email=settings.FROM_EMAIL,
                 to_emails=otp_in.identifier,
                 subject='VSDP Security Code',
-                plain_text_content=f"Your VSDP security code is: {otp_code}. Valid for 5 minutes. Do not share."
+                plain_text_content=f"Your VSDP security code is: {otp_in.otp}. Valid for 5 minutes. Do not share."
             )
             sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
             sg.send(message)
         except Exception as e:
             logger.error(f"EMAIL_GATEWAY_ERROR: Failed to send OTP to {otp_in.identifier}: {e}")
 
-    logger.info(f"SECURITY: Generated OTP for {otp_in.identifier} -> {otp_code}")
+    logger.info(f"SECURITY: Generated OTP for {otp_in.identifier} -> {otp_in.otp}")
     
     return {"message": "OTP sent successfully"}
 
@@ -114,7 +114,7 @@ async def verify_otp(
         )
 
     redis_key = f"otp:{otp_verify.identifier}"
-    stored_code = redis_client.get(redis_key) if redis_client else otp_code # Mock pass if redis down for demo
+    stored_code = redis_client.get(redis_key) if redis_client else "123456" # Mock pass if redis down for demo
 
     if not stored_code or otp_verify.code != stored_code:
         if user:

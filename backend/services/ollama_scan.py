@@ -2,11 +2,17 @@ import logging
 import requests
 import json
 from typing import Dict, Any
+from backend.core.resilience import with_retries, circuit_breaker
 
 logger = logging.getLogger("vas.ollama")
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
 OLLAMA_MODEL = "llama3.1:8b" # Upgraded for tool-calling support
+
+@circuit_breaker(failure_threshold=5, recovery_timeout=30.0)
+@with_retries(max_retries=2, base_delay=0.5, max_delay=2.0)
+def _call_ollama_api(url: str, json_payload: dict, timeout: int) -> requests.Response:
+    return requests.post(url, json=json_payload, timeout=timeout)
 
 def ollama_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     """
@@ -33,7 +39,7 @@ def ollama_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
             "format": "json"
         }
         
-        response = requests.post(OLLAMA_URL, json=payload, timeout=30)
+        response = _call_ollama_api(url=OLLAMA_URL, json_payload=payload, timeout=30)
         if response.status_code == 200:
             result = response.json().get("response", "{}")
             data = json.loads(result)
@@ -48,5 +54,5 @@ def ollama_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
             return {"score_increase": 0.0, "reason": "Ollama service unavailable"}
             
     except Exception as e:
-        logger.error(f"Ollama Scan Error: {e}")
+        logger.error(f"Ollama Scan Error after retries: {e}")
         return {"score_increase": 0.0, "reason": "Local AI Scan failed"}

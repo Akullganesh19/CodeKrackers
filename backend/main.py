@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .core.database import engine, Base
 from .api import auth, analytics, call, fir, evidence, honeypot
 from .scheduler import setup_scheduler
+from .core.events import setup_listeners
 import uvicorn
 import asyncio
 from sqlalchemy import select
@@ -82,6 +83,9 @@ async def startup_event():
     
     # setup_scheduler()
     print("VSDP Backend Startup Complete (Scheduler Disabled for Demo).")
+
+    # Initialize event bus listeners
+    setup_listeners()
 
 @app.get("/")
 async def root():

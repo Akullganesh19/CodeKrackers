@@ -6,15 +6,13 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from fastapi import APIRouter, Depends, Query, HTTPException
-from sqlalchemy import func, case, select
-from sqlalchemy.orm import Session
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.api import deps
-from backend.models.orm import FIR, Threat, User, Blacklist, BlacklistType, ThreatType, ThreatSeverity
+from backend.models.orm import FIR, Threat, User, ThreatType, ThreatSeverity
 from backend.utils.ai import client as groq_client
 import json
-import os
 
 logger = logging.getLogger("vas.analytics")
 router = APIRouter()

@@ -9,11 +9,11 @@ from backend.models import ThreatSeverity, ThreatType
 
 class ThreatBase(BaseModel):
     type: ThreatType
-    source_number: str = Field(..., min_length=1, max_length=64)
-    content: str = Field(..., max_length=10000)
+    sender_id: str = Field(..., min_length=1, max_length=64)
+    raw_content: str = Field(..., max_length=10000)
     severity: Optional[ThreatSeverity] = ThreatSeverity.MEDIUM
-    confidence_score: Optional[float] = Field(0.0, ge=0.0, le=1.0)
-    metadata_json: Optional[Dict[str, Any]] = None
+    confidence: Optional[float] = Field(0.0, ge=0.0, le=1.0)
+    extra_info: Optional[Dict[str, Any]] = None
 
 
 class ThreatCreate(ThreatBase):
@@ -26,9 +26,9 @@ class ThreatUpdate(BaseModel):
 
 
 class ThreatInDBBase(ThreatBase):
-    id: int
-    timestamp: datetime
-    owner_id: int
+    id: str
+    detected_at: datetime
+    user_id: str
     model_config = ConfigDict(from_attributes=True)
 
 

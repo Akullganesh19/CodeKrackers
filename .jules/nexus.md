@@ -1,0 +1,6 @@
+## 2025-06-25 — Personal Threat Insights
+**Product understood as:** A comprehensive security platform designed to detect, analyze, and mitigate voice and SMS-based fraud while actively capturing and punishing scammers.
+**Derivation reasoning:** We store user safety scores and record all of the threats they receive, but we never analyze this history to provide actionable personalized intelligence. By looking at their detection logs, we can tell users *what* specific vector is targeting them the most and *when* they are most vulnerable, giving meaning to their safety score.
+**Feature built:** An API endpoint (`/personal-insights`) that analyzes a user's entire threat history, determining their most common threat vector and the time of day they are most frequently attacked, surfaced in the Dashboard via a new `PersonalThreatInsights` UI component.
+**User impact:** As a user, I can now understand my specific threat profile rather than just seeing a generic score, helping me stay more alert during high-risk periods (e.g. knowing I am usually targeted by smishing at night).
+**Next logical feature:** The product lacks a community response mechanism. We should build a localized neighborhood watch view, mapping anonymous local reports so users can see active threat campaigns spreading in their city before it hits their phone.

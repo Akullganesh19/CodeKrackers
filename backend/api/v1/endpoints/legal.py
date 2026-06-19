@@ -55,9 +55,9 @@ def create_fir(
     # Generate digitally signed PDF
     threat_details = {
         "type": threat.type.value if hasattr(threat.type, 'value') else threat.type,
-        "source_number": threat.source_number,
-        "content": threat.content,
-        "confidence_score": threat.confidence_score,
+        "source_number": threat.sender_id,
+        "content": threat.raw_content,
+        "confidence_score": threat.confidence,
     }
 
     try:

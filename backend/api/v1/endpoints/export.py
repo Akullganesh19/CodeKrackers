@@ -26,7 +26,7 @@ def export_threats_csv(
     limit: int = Query(500, ge=1, le=5000),
 ) -> Any:
     """Export threat data as CSV (admin only)."""
-    threats = db.query(Threat).order_by(Threat.timestamp.desc()).limit(limit).all()
+    threats = db.query(Threat).order_by(Threat.detected_at.desc()).limit(limit).all()
 
     output = io.StringIO()
     writer = csv.writer(output)
@@ -36,12 +36,12 @@ def export_threats_csv(
         writer.writerow([
             t.id,
             t.type.value if hasattr(t.type, "value") else t.type,
-            t.source_number,
+            t.sender_id,
             t.severity.value if hasattr(t.severity, "value") else t.severity,
-            t.confidence_score,
+            t.confidence,
             t.status.value if hasattr(t.status, "value") else getattr(t, "status", "detected"),
-            t.timestamp.isoformat() if t.timestamp else "",
-            (t.content or "")[:200],
+            t.detected_at.isoformat() if t.detected_at else "",
+            (t.raw_content or "")[:200],
         ])
 
     output.seek(0)
@@ -64,18 +64,18 @@ def export_threats_json(
     limit: int = Query(500, ge=1, le=5000),
 ) -> Any:
     """Export threat data as JSON (admin only)."""
-    threats = db.query(Threat).order_by(Threat.timestamp.desc()).limit(limit).all()
+    threats = db.query(Threat).order_by(Threat.detected_at.desc()).limit(limit).all()
 
     data = [
         {
             "id": t.id,
             "type": t.type.value if hasattr(t.type, "value") else t.type,
-            "source_number": t.source_number,
+            "sender_id": t.sender_id,
             "severity": t.severity.value if hasattr(t.severity, "value") else t.severity,
-            "confidence_score": t.confidence_score,
-            "timestamp": t.timestamp.isoformat() if t.timestamp else None,
-            "content": t.content,
-            "metadata": t.metadata_json,
+            "confidence": t.confidence,
+            "timestamp": t.detected_at.isoformat() if t.detected_at else None,
+            "raw_content": t.raw_content,
+            "extra_info": t.extra_info,
         }
         for t in threats
     ]

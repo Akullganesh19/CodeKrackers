@@ -31,14 +31,14 @@ def read_threats(
 
     # RBAC: regular users see only their threats
     if current_user.role not in {UserRole.ADMIN, UserRole.OFFICER, UserRole.SUPER_ADMIN}:
-        query = query.filter(Threat.owner_id == current_user.id)
+        query = query.filter(Threat.user_id == current_user.id)
 
     if threat_type:
         query = query.filter(Threat.type == threat_type)
     if severity:
         query = query.filter(Threat.severity == severity)
 
-    return query.order_by(Threat.timestamp.desc()).offset(skip).limit(limit).all()
+    return query.order_by(Threat.detected_at.desc()).offset(skip).limit(limit).all()
 
 
 @router.post("/", response_model=ThreatSchema, status_code=status.HTTP_201_CREATED)
@@ -51,15 +51,15 @@ async def create_threat(
     """Create new threat detection log and broadcast via WebSocket."""
     threat = Threat(
         **threat_in.model_dump(),
-        owner_id=current_user.id,
+        user_id=current_user.id,
     )
     db.add(threat)
     db.commit()
     db.refresh(threat)
 
     logger.warning(
-        "THREAT_CREATED id=%d type=%s severity=%s source=%s user=%d",
-        threat.id, threat.type, threat.severity, threat.source_number, current_user.id,
+        "THREAT_CREATED id=%s type=%s severity=%s source=%s user=%s",
+        threat.id, threat.type, threat.severity, threat.sender_id, current_user.id,
     )
 
     # Broadcast to all connected dashboard clients
@@ -68,10 +68,10 @@ async def create_threat(
         "data": {
             "id": threat.id,
             "type": threat.type,
-            "source": threat.source_number,
+            "source": threat.sender_id,
             "severity": threat.severity,
-            "confidence": threat.confidence_score,
-            "timestamp": threat.timestamp.isoformat() if threat.timestamp else None,
+            "confidence": threat.confidence,
+            "timestamp": threat.detected_at.isoformat() if threat.detected_at else None,
         },
     })
 

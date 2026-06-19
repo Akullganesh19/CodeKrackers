@@ -38,7 +38,7 @@ def get_dashboard_summary(
     # Today's counts for trends
     today_counts = dict(
         db.query(Threat.type, func.count(Threat.id))
-        .filter(Threat.timestamp >= today_start)
+        .filter(Threat.detected_at >= today_start)
         .group_by(Threat.type)
         .all()
     )
@@ -51,10 +51,10 @@ def get_dashboard_summary(
     )
 
     # Recent detections
-    recent = db.query(Threat).order_by(Threat.timestamp.desc()).limit(8).all()
+    recent = db.query(Threat).order_by(Threat.detected_at.desc()).limit(8).all()
 
     # Average confidence
-    avg_confidence = db.query(func.avg(Threat.confidence_score)).scalar() or 0
+    avg_confidence = db.query(func.avg(Threat.confidence)).scalar() or 0
 
     return {
         "stats": {
@@ -80,10 +80,10 @@ def get_dashboard_summary(
             {
                 "id": t.id,
                 "type": t.type.value if hasattr(t.type, 'value') else t.type,
-                "source": t.source_number,
+                "source": t.sender_id,
                 "severity": t.severity.value if hasattr(t.severity, 'value') else t.severity,
-                "confidence": t.confidence_score,
-                "timestamp": t.timestamp.isoformat() if t.timestamp else None,
+                "confidence": t.confidence,
+                "timestamp": t.detected_at.isoformat() if t.detected_at else None,
             }
             for t in recent
         ],
@@ -136,12 +136,12 @@ def get_hourly_trend(
 
         smishing = (
             db.query(Threat)
-            .filter(Threat.type == ThreatType.SMISHING, Threat.timestamp.between(hour_start, hour_end))
+            .filter(Threat.type == ThreatType.SMISHING, Threat.detected_at.between(hour_start, hour_end))
             .count()
         )
         vishing = (
             db.query(Threat)
-            .filter(Threat.type == ThreatType.VISHING, Threat.timestamp.between(hour_start, hour_end))
+            .filter(Threat.type == ThreatType.VISHING, Threat.detected_at.between(hour_start, hour_end))
             .count()
         )
 
@@ -152,3 +152,58 @@ def get_hourly_trend(
         })
 
     return data
+
+
+@router.get("/personal-insights")
+def get_personal_insights(
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user),
+) -> Any:
+    """Personalized threat insights based on user's history."""
+    threats = db.query(Threat).filter(Threat.user_id == current_user.id).all()
+
+    total_threats = len(threats)
+    if total_threats == 0:
+        return {
+            "has_data": False,
+            "safety_score": current_user.safety_score,
+            "scams_avoided": current_user.scams_avoided,
+            "message": "No threats detected yet. Stay safe!"
+        }
+
+    # Aggregate by threat type
+    type_counts = {}
+    for t in threats:
+        t_type = t.type.value if hasattr(t.type, 'value') else t.type
+        type_counts[t_type] = type_counts.get(t_type, 0) + 1
+
+    top_threat_type = max(type_counts, key=type_counts.get) if type_counts else "Unknown"
+
+    # Analyze time of day
+    # Morning (6-12), Afternoon (12-18), Evening (18-24), Night (0-6)
+    time_distribution = {"Morning": 0, "Afternoon": 0, "Evening": 0, "Night": 0}
+    for t in threats:
+        if not t.detected_at:
+            continue
+        hour = t.detected_at.hour
+        if 6 <= hour < 12:
+            time_distribution["Morning"] += 1
+        elif 12 <= hour < 18:
+            time_distribution["Afternoon"] += 1
+        elif 18 <= hour < 24:
+            time_distribution["Evening"] += 1
+        else:
+            time_distribution["Night"] += 1
+
+    highest_risk_period = max(time_distribution, key=time_distribution.get) if any(time_distribution.values()) else "Unknown"
+
+    return {
+        "has_data": True,
+        "safety_score": current_user.safety_score,
+        "scams_avoided": current_user.scams_avoided,
+        "total_threats": total_threats,
+        "top_threat_type": top_threat_type,
+        "type_distribution": type_counts,
+        "highest_risk_period": highest_risk_period,
+        "time_distribution": time_distribution,
+    }

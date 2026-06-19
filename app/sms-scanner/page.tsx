@@ -29,9 +29,49 @@ export default function SMSScannerPage() {
     tags: string[];
   }>(null)
 
+  // ORACLE: Prediction Cache
+  const predictionCache = React.useRef<{
+    text: string;
+    promise: Promise<Response> | null;
+  }>({ text: '', promise: null });
+
   React.useEffect(() => {
     setMounted(true)
   }, [])
+
+  // ORACLE: Behavioral Prefetch
+  // If user types/pastes a substantial message and pauses, they are almost certainly going to hit "Analyze".
+  // Let's compute it in the background before they even click.
+  React.useEffect(() => {
+    if (text.trim().length < 15) return;
+
+    const timer = setTimeout(() => {
+      // Don't prefetch if we already have it in cache for this exact text
+      if (predictionCache.current.text === text) return;
+
+      console.log("🛸 Oracle Prediction: User paused typing, pre-computing threat analysis...");
+      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+
+      const prefetchPromise = fetch('http://localhost:8000/api/analytics/scan', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ text })
+      }).catch(err => {
+        console.error("🛸 Oracle Prefetch failed silently:", err);
+        return new Response(null, { status: 500, statusText: "Prefetch Failed" });
+      });
+
+      predictionCache.current = {
+        text: text,
+        promise: prefetchPromise
+      };
+    }, 600); // 600ms debounce
+
+    return () => clearTimeout(timer);
+  }, [text]);
 
   const handleAnalyze = async () => {
     if (!text.trim()) return
@@ -40,15 +80,26 @@ export default function SMSScannerPage() {
     setResult(null)
 
     try {
-      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
+      let response: Response;
+
+      // ORACLE: Check if we successfully predicted and pre-computed this exact request
+      if (predictionCache.current.text === text && predictionCache.current.promise) {
+        console.log("🛸 Oracle Prediction Hit: Awaiting pre-computed result!");
+        response = await predictionCache.current.promise;
+        // Clone the response because the body can only be read once,
+        // and we might need it again if the user re-clicks without typing
+        response = response.clone();
+      } else {
+        const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+        response = await fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text })
+        });
+      }
       
       console.log("Response Status:", response.status);
       if (!response.ok) {

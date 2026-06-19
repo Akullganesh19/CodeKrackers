@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from backend.api import deps
 from backend.core.ws import manager
 from backend.models.threat import Threat, ThreatStatus
+from backend.core.events import event_bus
 from backend.models.user import User, UserRole
 from backend.schemas.threat import Threat as ThreatSchema, ThreatCreate
 
@@ -60,6 +61,14 @@ async def create_threat(
     logger.warning(
         "THREAT_CREATED id=%d type=%s severity=%s source=%s user=%d",
         threat.id, threat.type, threat.severity, threat.source_number, current_user.id,
+    )
+
+
+    # Publish event for cross-system intelligence (Gamification)
+    event_bus.publish(
+        "threat.created",
+        user_id=current_user.id,
+        risk_score=threat.confidence_score if hasattr(threat, "confidence_score") else 0.5
     )
 
     # Broadcast to all connected dashboard clients

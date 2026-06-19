@@ -93,6 +93,7 @@ async def restore_user_safety_scores():
             .where(Threat.user_id.in_(user_ids), HoneypotSession.status == 'completed').distinct()
         hp_users = set((await db.execute(hp_users_stmt)).scalars().all())
 
+        from sqlalchemy import update, case
         for user in users_to_restore:
             # Base restoration amount
             restoration_points = 2.0
@@ -105,7 +106,13 @@ async def restore_user_safety_scores():
             if user.id in hp_users:
                 restoration_points += 2.5
             
-            user.safety_score = min(100.0, user.safety_score + restoration_points)
+            stmt = update(User).where(User.id == user.id).values(
+                safety_score=case(
+                    (User.safety_score + restoration_points > 100.0, 100.0),
+                    else_=User.safety_score + restoration_points
+                )
+            ).execution_options(synchronize_session=False)
+            await db.execute(stmt)
             
         await db.commit()
         print(f"Daily Score Restoration: Processed {len(users_to_restore)} users.")

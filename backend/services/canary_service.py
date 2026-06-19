@@ -113,13 +113,16 @@ def trigger_canary(
         logger.warning("CANARY LOOKUP FAILED token=%s from=%s", token[:16], ip)
         return None
 
-    canary.accessed = True
-    canary.accessed_at = datetime.now(timezone.utc)
-    canary.access_count = (canary.access_count or 0) + 1
-    canary.access_ip = ip
-    canary.access_user_agent = user_agent
-    canary.access_path = path
-
+    from sqlalchemy import update
+    stmt = update(CanaryToken).where(CanaryToken.id == canary.id).values(
+        accessed=True,
+        accessed_at=datetime.now(timezone.utc),
+        access_count=CanaryToken.access_count + 1,
+        access_ip=ip,
+        access_user_agent=user_agent,
+        access_path=path
+    ).execution_options(synchronize_session=False)
+    db.execute(stmt)
     db.commit()
     db.refresh(canary)
 

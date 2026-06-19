@@ -129,9 +129,19 @@ def auto_blacklist(
         .first()
     )
     if existing:
-        existing.report_count += 1
-        existing.confidence = min(existing.confidence + 0.1, 1.0)
+        from sqlalchemy import case, update
+        stmt = update(BlacklistEntry).where(
+            BlacklistEntry.id == existing.id
+        ).values(
+            report_count=BlacklistEntry.report_count + 1,
+            confidence=case(
+                (BlacklistEntry.confidence + 0.1 > 1.0, 1.0),
+                else_=BlacklistEntry.confidence + 0.1
+            )
+        ).execution_options(synchronize_session=False)
+        db.execute(stmt)
         db.commit()
+        db.refresh(existing)
         logger.info("BLACKLIST_UPDATED %s=%s count=%d conf=%.2f", identifier_type, identifier, existing.report_count, existing.confidence)
         return existing
 

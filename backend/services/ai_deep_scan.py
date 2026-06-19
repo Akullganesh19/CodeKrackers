@@ -3,9 +3,22 @@ from typing import Dict, Any
 from groq import Groq
 from backend.core.config import settings
 from backend.services.ollama_scan import ollama_deep_scan
+from backend.core.resilience import with_retries, circuit_breaker
 import requests
 
 logger = logging.getLogger("vas.ai_scan")
+
+@circuit_breaker(failure_threshold=5, recovery_timeout=30.0)
+@with_retries(max_retries=2, base_delay=0.5, max_delay=2.0)
+def _call_groq_api(client: Groq, prompt: str, source_type: str) -> Any:
+    return client.chat.completions.create(
+        messages=[
+            {"role": "system", "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection."},
+            {"role": "user", "content": prompt}
+        ],
+        model=settings.GROQ_MODEL,
+        response_format={"type": "json_object"}
+    )
 
 def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     """
@@ -43,14 +56,7 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
         4. "risk_factors": list of strings
         """
 
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection."},
-                {"role": "user", "content": prompt}
-            ],
-            model=settings.GROQ_MODEL,
-            response_format={"type": "json_object"}
-        )
+        chat_completion = _call_groq_api(client, prompt, source_type)
 
         import json
         result = json.loads(chat_completion.choices[0].message.content)
@@ -61,5 +67,5 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
             "risk_factors": result.get("risk_factors", [])
         }
     except Exception as e:
-        logger.error(f"Cloud AI Scan Error: {e}")
+        logger.error(f"Cloud AI Scan Error after retries: {e}")
         return {"score_increase": 0.0, "reason": f"AI Scan failed: {e}"}

@@ -19,3 +19,6 @@ librosa
 scipy
 aiosqlite
 python-dotenv
+twilio
+sendgrid
+redis

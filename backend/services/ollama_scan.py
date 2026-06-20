@@ -2,11 +2,19 @@ import logging
 import requests
 import json
 from typing import Dict, Any
+from backend.core.resilience import with_retries
 
 logger = logging.getLogger("vas.ollama")
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
 OLLAMA_MODEL = "llama3.1:8b" # Upgraded for tool-calling support
+
+@with_retries(max_attempts=3, base_delay=0.5)
+def _ollama_request(payload: Dict[str, Any]) -> requests.Response:
+    """Inner function to handle Ollama API request with retries"""
+    response = requests.post(OLLAMA_URL, json=payload, timeout=30)
+    response.raise_for_status()  # Will raise an exception for 4xx/5xx to trigger retry
+    return response
 
 def ollama_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     """
@@ -33,7 +41,7 @@ def ollama_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
             "format": "json"
         }
         
-        response = requests.post(OLLAMA_URL, json=payload, timeout=30)
+        response = _ollama_request(payload)
         if response.status_code == 200:
             result = response.json().get("response", "{}")
             data = json.loads(result)

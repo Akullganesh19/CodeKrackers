@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from typing import Optional, List, Dict, Any
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from enum import Enum
 
 # Enums for threat fields (matching SQLAlchemy model enums)
@@ -43,8 +43,7 @@ class ThreatBase(BaseModel):
     evidence_hash: Optional[str] = None
     extra_info: Optional[Dict[str, Any]] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # Schema for creating a new threat
 class ThreatCreate(ThreatBase):

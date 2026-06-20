@@ -91,5 +91,42 @@ async def root():
         "documentation": "/docs"
     }
 
+@app.get("/health")
+async def health_check():
+    """
+    Health check endpoint to monitor dependencies (Database, Ollama).
+    """
+    import requests
+    from sqlalchemy import text
+    health_status = {
+        "status": "healthy",
+        "database": "unknown",
+        "ollama": "unknown"
+    }
+
+    # Check Database
+    try:
+        async with AsyncSessionLocal() as db:
+            await db.execute(text("SELECT 1"))
+        health_status["database"] = "healthy"
+    except Exception as e:
+        health_status["database"] = "unhealthy"
+        health_status["status"] = "degraded"
+        print(f"Health Check - DB Error: {e}")
+
+    # Check Ollama
+    try:
+        response = requests.get("http://localhost:11434", timeout=2)
+        if response.status_code == 200:
+            health_status["ollama"] = "healthy"
+        else:
+            health_status["ollama"] = "degraded"
+            health_status["status"] = "degraded"
+    except requests.exceptions.RequestException:
+        health_status["ollama"] = "unhealthy"
+        health_status["status"] = "degraded"
+
+    return health_status
+
 if __name__ == "__main__":
     uvicorn.run("backend.main:app", host="0.0.0.0", port=8000, reload=True)

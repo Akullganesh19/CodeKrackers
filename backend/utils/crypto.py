@@ -1,6 +1,11 @@
 import httpx
 import re
 from backend.core.config import settings
+from backend.core.resilience import async_with_retries
+
+@async_with_retries(max_attempts=3, base_delay=0.5, exceptions=(Exception,))
+async def _call_crypto_api(client, url, headers, params):
+    return await client.get(url, headers=headers, params=params)
 
 def extract_crypto_addresses(text: str) -> list[str]:
     """
@@ -23,7 +28,7 @@ async def check_crypto_honeypot(address: str) -> dict:
 
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.get(url, headers=headers, params=params)
+            response = await _call_crypto_api(client, url, headers, params)
             if response.status_code == 200:
                 return response.json()
             return {"error": f"API returned status {response.status_code}"}

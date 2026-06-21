@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
 import {
@@ -21,6 +21,9 @@ export default function SMSScannerPage() {
   const [mounted, setMounted] = useState(false)
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(false)
+  const prefetchPromise = useRef<Promise<Response> | null>(null);
+  const prefetchedText = useRef<string>('');
+
   const [result, setResult] = useState<null | {
     isScam: boolean;
     confidence: number;
@@ -28,6 +31,33 @@ export default function SMSScannerPage() {
     recommendation: string;
     tags: string[];
   }>(null)
+
+  // 🛸 ORACLE: Predictive Prefetch
+  useEffect(() => {
+    if (!text.trim() || text.length < 10) {
+      prefetchPromise.current = null;
+      prefetchedText.current = '';
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      // User stopped typing for 800ms. Predict they will hit "Analyze".
+      // Fire the fetch in the background and cache the Promise.
+      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+      console.log("[Oracle] 🛸 Prefetching analysis for SMS...");
+      prefetchedText.current = text;
+      prefetchPromise.current = fetch('http://localhost:8000/api/analytics/scan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ text })
+      });
+    }, 800);
+
+    return () => clearTimeout(timeoutId);
+  }, [text]);
 
   React.useEffect(() => {
     setMounted(true)
@@ -40,15 +70,27 @@ export default function SMSScannerPage() {
     setResult(null)
 
     try {
+      let response: Response;
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
+
+      // 🛸 ORACLE: Await the background prefetch if text matches, eliminating perceived latency
+      if (prefetchPromise.current && prefetchedText.current === text) {
+        console.log("[Oracle] 🛸 Cache hit! Reusing background promise.");
+        const cachedPromise = prefetchPromise.current;
+        // Reset cache BEFORE awaiting to prevent stale state if the fetch throws a network error
+        prefetchPromise.current = null;
+        response = await cachedPromise;
+      } else {
+        console.log("[Oracle] 🛸 Cache miss. Standard fetch.");
+        response = await fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text })
+        });
+      }
       
       console.log("Response Status:", response.status);
       if (!response.ok) {

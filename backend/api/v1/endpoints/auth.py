@@ -16,7 +16,7 @@ from backend.core.limiter import limiter
 from backend.core import security
 from backend.core.security import get_lockout_time, MAX_LOGIN_ATTEMPTS
 from backend.core.config import settings
-from backend.models.user import User
+from backend.models.orm import User
 
 router = APIRouter()
 logger = logging.getLogger("vas.auth")

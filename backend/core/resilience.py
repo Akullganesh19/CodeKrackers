@@ -2,9 +2,10 @@ import asyncio
 import logging
 import time
 from functools import wraps
-from typing import Callable, Any, Type, Tuple, Optional
+from typing import Any, Callable, Optional, Tuple, Type
 
 logger = logging.getLogger("vas.resilience")
+
 
 def async_with_retries(
     max_attempts: int = 3,
@@ -22,14 +23,21 @@ def async_with_retries(
                     return await func(*args, **kwargs)
                 except exceptions as e:
                     if attempt >= max_attempts:
-                        logger.error(f"Function {func.__name__} failed after {max_attempts} attempts. Error: {e}")
+                        logger.error(
+                            f"Function {func.__name__} failed after {max_attempts} attempts. Error: {e}"
+                        )
                         raise
-                    logger.warning(f"Function {func.__name__} failed (attempt {attempt}/{max_attempts}). Retrying in {delay}s...")
+                    logger.warning(
+                        f"Function {func.__name__} failed (attempt {attempt}/{max_attempts}). Retrying in {delay}s..."
+                    )
                     await asyncio.sleep(delay)
                     attempt += 1
                     delay = min(delay * 2, max_delay)
+
         return wrapper
+
     return decorator
+
 
 def with_retries(
     max_attempts: int = 3,
@@ -47,17 +55,25 @@ def with_retries(
                     return func(*args, **kwargs)
                 except exceptions as e:
                     if attempt >= max_attempts:
-                        logger.error(f"Function {func.__name__} failed after {max_attempts} attempts. Error: {e}")
+                        logger.error(
+                            f"Function {func.__name__} failed after {max_attempts} attempts. Error: {e}"
+                        )
                         raise
-                    logger.warning(f"Function {func.__name__} failed (attempt {attempt}/{max_attempts}). Retrying in {delay}s...")
+                    logger.warning(
+                        f"Function {func.__name__} failed (attempt {attempt}/{max_attempts}). Retrying in {delay}s..."
+                    )
                     time.sleep(delay)
                     attempt += 1
                     delay = min(delay * 2, max_delay)
+
         return wrapper
+
     return decorator
+
 
 class CircuitBreakerOpenError(Exception):
     pass
+
 
 class CircuitBreaker:
     def __init__(self, failure_threshold: int = 5, recovery_timeout: float = 60.0):
@@ -84,8 +100,14 @@ class CircuitBreaker:
         if self.failure_count >= self.failure_threshold:
             self.state = "OPEN"
 
-def async_circuit_breaker(failure_threshold: int = 5, recovery_timeout: float = 60.0, fallback_func: Optional[Callable] = None):
+
+def async_circuit_breaker(
+    failure_threshold: int = 5,
+    recovery_timeout: float = 60.0,
+    fallback_func: Optional[Callable] = None,
+):
     cb = CircuitBreaker(failure_threshold, recovery_timeout)
+
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         async def wrapper(*args, **kwargs) -> Any:
@@ -94,7 +116,11 @@ def async_circuit_breaker(failure_threshold: int = 5, recovery_timeout: float = 
             except CircuitBreakerOpenError as e:
                 logger.error(f"Circuit breaker OPEN for {func.__name__}")
                 if fallback_func:
-                    return await fallback_func(*args, **kwargs) if asyncio.iscoroutinefunction(fallback_func) else fallback_func(*args, **kwargs)
+                    return (
+                        await fallback_func(*args, **kwargs)
+                        if asyncio.iscoroutinefunction(fallback_func)
+                        else fallback_func(*args, **kwargs)
+                    )
                 raise e
 
             try:
@@ -105,13 +131,25 @@ def async_circuit_breaker(failure_threshold: int = 5, recovery_timeout: float = 
                 cb.record_failure()
                 logger.error(f"Circuit breaker failure for {func.__name__}. Error: {e}")
                 if fallback_func and cb.state == "OPEN":
-                    return await fallback_func(*args, **kwargs) if asyncio.iscoroutinefunction(fallback_func) else fallback_func(*args, **kwargs)
+                    return (
+                        await fallback_func(*args, **kwargs)
+                        if asyncio.iscoroutinefunction(fallback_func)
+                        else fallback_func(*args, **kwargs)
+                    )
                 raise
+
         return wrapper
+
     return decorator
 
-def circuit_breaker(failure_threshold: int = 5, recovery_timeout: float = 60.0, fallback_func: Optional[Callable] = None):
+
+def circuit_breaker(
+    failure_threshold: int = 5,
+    recovery_timeout: float = 60.0,
+    fallback_func: Optional[Callable] = None,
+):
     cb = CircuitBreaker(failure_threshold, recovery_timeout)
+
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         def wrapper(*args, **kwargs) -> Any:
@@ -133,5 +171,7 @@ def circuit_breaker(failure_threshold: int = 5, recovery_timeout: float = 60.0, 
                 if fallback_func and cb.state == "OPEN":
                     return fallback_func(*args, **kwargs)
                 raise
+
         return wrapper
+
     return decorator

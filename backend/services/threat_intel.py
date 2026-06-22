@@ -113,6 +113,8 @@ def calculate_threat_score(
     }
 
 
+from sqlalchemy import update, case, literal
+
 def auto_blacklist(
     db: Session,
     identifier: str,
@@ -129,22 +131,63 @@ def auto_blacklist(
         .first()
     )
     if existing:
-        existing.report_count += 1
-        existing.confidence = min(existing.confidence + 0.1, 1.0)
+        stmt = (
+            update(BlacklistEntry)
+            .where(BlacklistEntry.id == existing.id)
+            .values(
+                report_count=BlacklistEntry.report_count + 1,
+                confidence=case(
+                    (BlacklistEntry.confidence + 0.1 > 1.0, 1.0),
+                    else_=BlacklistEntry.confidence + 0.1
+                )
+            )
+        )
+        db.execute(stmt)
         db.commit()
+        db.refresh(existing)
         logger.info("BLACKLIST_UPDATED %s=%s count=%d conf=%.2f", identifier_type, identifier, existing.report_count, existing.confidence)
         return existing
 
-    entry = BlacklistEntry(
-        type=identifier_type,
-        value=identifier,
-        reason=reason,
-        reported_by=reported_by,
-        confidence=confidence,
-        source=source,
-    )
-    db.add(entry)
-    db.commit()
-    db.refresh(entry)
-    logger.warning("BLACKLIST_ADDED %s=%s conf=%.2f source=%s", identifier_type, identifier, confidence, source)
-    return entry
+    # Use a savepoint to handle potential race condition on insert
+    try:
+        with db.begin_nested():
+            entry = BlacklistEntry(
+                type=identifier_type,
+                value=identifier,
+                reason=reason,
+                reported_by=reported_by,
+                confidence=confidence,
+                source=source,
+            )
+            db.add(entry)
+        db.commit()
+        db.refresh(entry)
+        logger.warning("BLACKLIST_ADDED %s=%s conf=%.2f source=%s", identifier_type, identifier, confidence, source)
+        return entry
+    except Exception:
+        # If insert failed, it might be due to a concurrent insert. Try updating again.
+        db.rollback()
+        existing = (
+            db.query(BlacklistEntry)
+            .filter(BlacklistEntry.type == identifier_type, BlacklistEntry.value == identifier)
+            .first()
+        )
+        if existing:
+            stmt = (
+                update(BlacklistEntry)
+                .where(BlacklistEntry.id == existing.id)
+                .values(
+                    report_count=BlacklistEntry.report_count + 1,
+                    confidence=case(
+                        (BlacklistEntry.confidence + 0.1 > 1.0, 1.0),
+                        else_=BlacklistEntry.confidence + 0.1
+                    )
+                )
+            )
+            db.execute(stmt)
+            db.commit()
+            db.refresh(existing)
+            logger.info("BLACKLIST_UPDATED %s=%s count=%d conf=%.2f", identifier_type, identifier, existing.report_count, existing.confidence)
+            return existing
+        else:
+            raise

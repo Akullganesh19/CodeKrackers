@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 from enum import Enum
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
 class UserRole(str, Enum):
     CITIZEN = "citizen"
@@ -22,8 +22,7 @@ class UserBase(BaseModel):
     safety_score: float = 100.0
     scams_avoided: int = 0
 
-    class Config:
-        from_attributes = True  # Enable ORM mode for SQLAlchemy compatibility
+    model_config = ConfigDict(from_attributes=True)  # Enable ORM mode for SQLAlchemy compatibility
 
 # Schema for user creation (includes password)
 class UserCreate(UserBase):

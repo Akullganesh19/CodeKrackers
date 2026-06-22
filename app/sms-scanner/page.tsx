@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
 import {
@@ -29,26 +29,86 @@ export default function SMSScannerPage() {
     tags: string[];
   }>(null)
 
+  // 🛸 ORACLE: Predictive Pre-computation Cache
+  const predictionCache = useRef<{ text: string; promise: Promise<Response> | null }>({ text: '', promise: null })
+
+  // 🛸 ORACLE: Anticipate user intention. When text is pasted/typed and long enough,
+  // prefetch the analysis result silently before they click "Analyze".
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const currentText = text.trim();
+      if (currentText.length > 15 && currentText !== predictionCache.current.text) {
+        const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+
+        // Start silent fetch
+        const promise = fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text: currentText })
+        })
+        .then(res => res.clone()) // Clone so the stream isn't exhausted
+        .catch(err => {
+          // Swallow error to not disturb UI, graceful degradation
+          console.log('Oracle prefetch failed silently:', err);
+          return new Response(null, { status: 500 }); // Return dummy failing response
+        });
+
+        predictionCache.current = { text: currentText, promise };
+      }
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timer);
+  }, [text]);
+
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
   }, [])
 
   const handleAnalyze = async () => {
-    if (!text.trim()) return
+    const currentText = text.trim();
+    if (!currentText) return
 
     setLoading(true)
     setResult(null)
 
     try {
+      let response: Response;
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
+
+      // 🛸 ORACLE: Check if we already pre-computed this exact request
+      if (predictionCache.current.text === currentText && predictionCache.current.promise) {
+        console.log("🛸 ORACLE: Using pre-computed result to eliminate latency");
+        // Must clone again if we want to allow multiple analyze clicks without re-fetching
+        response = (await predictionCache.current.promise).clone();
+      } else {
+        response = await fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text: currentText })
+        });
+      }
+
+      // If the prefetched response failed, degrade gracefully and try again
+      if (!response || !response.ok) {
+        if (predictionCache.current.text === currentText) {
+           console.log("🛸 ORACLE: Pre-computation failed, degrading gracefully to live fetch");
+           response = await fetch('http://localhost:8000/api/analytics/scan', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ text: currentText })
+          });
+        }
+      }
       
       console.log("Response Status:", response.status);
       if (!response.ok) {

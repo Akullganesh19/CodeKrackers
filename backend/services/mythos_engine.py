@@ -50,7 +50,7 @@ class MythosForensicEngine:
         
         with torch.no_grad():
             # Run the recurrent pass with 16 loops for 'deep reasoning'
-            logits = self.model(input_ids, n_loops=16)
+            self.model(input_ids, n_loops=16)
             
         # Analysis complete
         return {

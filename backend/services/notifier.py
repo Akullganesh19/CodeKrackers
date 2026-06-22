@@ -1,7 +1,6 @@
 import logging
 from twilio.rest import Client
 from backend.core.config import settings
-from twilio.base.exceptions import TwilioRestException
 
 logger = logging.getLogger("vas.notifier")
 

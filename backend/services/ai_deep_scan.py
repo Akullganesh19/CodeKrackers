@@ -2,14 +2,11 @@ import logging
 from typing import Dict, Any
 from groq import Groq
 from backend.core.config import settings
-from backend.core.resilience import with_retries, circuit_breaker
 from backend.services.ollama_scan import ollama_deep_scan
 import requests
 
 logger = logging.getLogger("vas.ai_scan")
 
-@circuit_breaker(max_failures=5, reset_timeout=30.0)
-@with_retries(max_attempts=3, base_delay=0.5, exceptions=(Exception,))
 def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     """
     Hybrid AI Analysis:

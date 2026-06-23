@@ -1,0 +1,110 @@
+--- backend/services/notifier.py
++++ backend/services/notifier.py
+@@ -1,9 +1,18 @@
+ import logging
+ from twilio.rest import Client
+ from backend.core.config import settings
++from backend.core.resilience import with_retries
+
+ logger = logging.getLogger("vas.notifier")
+
++@with_retries(max_attempts=3, base_delay=0.5)
++def _send_twilio_message(client, to, body):
++    return client.messages.create(
++        body=body,
++        from_=settings.TWILIO_PHONE_NUMBER,
++        to=to
++    )
++
+ def send_threat_alert(phone_number: str, threat_type: str, score: float, original_sender: str):
+     """
+     Sends a high-priority alert notification to the user's phone via Twilio SMS.
+@@ -23,11 +32,7 @@
+             f"⚠️ DO NOT click any links or share OTPs. This message has been logged for evidence."
+         )
+
+-        message = client.messages.create(
+-            body=alert_msg,
+-            from_=settings.TWILIO_PHONE_NUMBER,
+-            to=phone_number
+-        )
++        message = _send_twilio_message(client, phone_number, alert_msg)
+
+         logger.info(f"Notification sent to {phone_number}. SID: {message.sid}")
+         return True
+@@ -56,11 +61,7 @@
+             "Valid for 5 minutes. DO NOT share this with anyone."
+         )
+
+-        client.messages.create(
+-            body=msg_body,
+-            from_=settings.TWILIO_PHONE_NUMBER,
+-            to=phone_number
+-        )
++        _send_twilio_message(client, phone_number, msg_body)
+
+         logger.info(f"OTP sent to {phone_number}")
+         return otp_code
+--- backend/services/ollama_scan.py
++++ backend/services/ollama_scan.py
+@@ -2,12 +2,18 @@
+ import requests
+ import json
+ from typing import Dict, Any
++from backend.core.resilience import with_retries, circuit_breaker
+
+ logger = logging.getLogger("vas.ollama")
+
+ OLLAMA_URL = "http://localhost:11434/api/generate"
+ OLLAMA_MODEL = "llama3.1:8b" # Upgraded for tool-calling support
+
++@circuit_breaker(failure_threshold=3, recovery_timeout=60.0)
++@with_retries(max_attempts=3, base_delay=0.5)
++def _call_ollama_api(payload: dict) -> requests.Response:
++    return requests.post(OLLAMA_URL, json=payload, timeout=30)
++
+ def ollama_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
+     """
+     Uses local Ollama instance for on-device/private threat analysis.
+@@ -33,7 +39,7 @@
+             "format": "json"
+         }
+
+-        response = requests.post(OLLAMA_URL, json=payload, timeout=30)
++        response = _call_ollama_api(payload)
+         if response.status_code == 200:
+             result = response.json().get("response", "{}")
+             data = json.loads(result)
+--- backend/services/ai_deep_scan.py
++++ backend/services/ai_deep_scan.py
+@@ -3,10 +3,20 @@
+ from groq import Groq
+ from backend.core.config import settings
+ from backend.services.ollama_scan import ollama_deep_scan
++from backend.core.resilience import with_retries, circuit_breaker
+ import requests
+
+ logger = logging.getLogger("vas.ai_scan")
+
++@circuit_breaker(failure_threshold=3, recovery_timeout=60.0)
++@with_retries(max_attempts=3, base_delay=1.0)
++def _call_groq_api(client, messages, model, response_format):
++    return client.chat.completions.create(
++        messages=messages,
++        model=model,
++        response_format=response_format
++    )
++
+ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
+     """
+     Hybrid AI Analysis:
+@@ -43,7 +53,8 @@
+         4. "risk_factors": list of strings
+         """
+
+-        chat_completion = client.chat.completions.create(
++        chat_completion = _call_groq_api(
++            client,
+             messages=[
+                 {"role": "system", "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection."},
+                 {"role": "user", "content": prompt}

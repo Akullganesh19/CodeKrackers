@@ -29,19 +29,26 @@ export default function SMSScannerPage() {
     tags: string[];
   }>(null)
 
+  // Oracle Predictive Prefetch cache
+  const prefetchPromiseRef = React.useRef<{ text: string; promise: Promise<Response> } | null>(null)
+  const debounceRef = React.useRef<NodeJS.Timeout | null>(null)
+
   React.useEffect(() => {
     setMounted(true)
   }, [])
 
-  const handleAnalyze = async () => {
+  // Oracle: Silent predictive prefetch on text change
+  React.useEffect(() => {
     if (!text.trim()) return
 
-    setLoading(true)
-    setResult(null)
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current)
+    }
 
-    try {
-      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
+    debounceRef.current = setTimeout(() => {
+      // Background silent fetch
+      const token = typeof window !== 'undefined' ? localStorage.getItem('vsdp_token') || 'dummy_token' : 'dummy_token';
+      const promise = fetch('http://localhost:8000/api/analytics/scan', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -50,6 +57,43 @@ export default function SMSScannerPage() {
         body: JSON.stringify({ text })
       });
       
+      prefetchPromiseRef.current = { text, promise };
+      // Swallow errors on prefetch to prevent console noise
+      promise.catch(() => {});
+    }, 400); // 400ms debounce
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [text])
+
+  const handleAnalyze = async () => {
+    if (!text.trim()) return
+
+    setLoading(true)
+    setResult(null)
+
+    try {
+      let response: Response;
+
+      // Oracle: Check if we have a valid predictive prefetch for this exact text
+      if (prefetchPromiseRef.current && prefetchPromiseRef.current.text === text) {
+        console.log("Oracle: Using predictive prefetch cache! ⚡");
+        const cachedRes = await prefetchPromiseRef.current.promise;
+        response = cachedRes.clone(); // Crucial: Clone to prevent "body stream already read" if needed again
+      } else {
+        console.log("Oracle: Cache miss, executing standard fetch 🐢");
+        const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+        response = await fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text })
+        });
+      }
+
       console.log("Response Status:", response.status);
       if (!response.ok) {
         const errorText = await response.text();

@@ -3,9 +3,19 @@ from typing import Dict, Any
 from groq import Groq
 from backend.core.config import settings
 from backend.services.ollama_scan import ollama_deep_scan
+from backend.core.resilience import with_retries, circuit_breaker
 import requests
 
 logger = logging.getLogger("vas.ai_scan")
+
+@circuit_breaker(failure_threshold=3, recovery_timeout=60.0)
+@with_retries(max_attempts=3, base_delay=1.0)
+def _call_groq_api(client, messages, model, response_format):
+    return client.chat.completions.create(
+        messages=messages,
+        model=model,
+        response_format=response_format
+    )
 
 def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     """
@@ -43,7 +53,8 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
         4. "risk_factors": list of strings
         """
 
-        chat_completion = client.chat.completions.create(
+        chat_completion = _call_groq_api(
+            client,
             messages=[
                 {"role": "system", "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection."},
                 {"role": "user", "content": prompt}

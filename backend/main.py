@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from .core.database import engine, Base
 from .api import auth, analytics, call, fir, evidence, honeypot
@@ -90,6 +90,35 @@ async def root():
         "version": "2.0.0",
         "documentation": "/docs"
     }
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint evaluating external dependencies."""
+    status = {"status": "ok", "database": "unknown", "ollama": "unknown"}
+
+    # Check Database
+    try:
+        async with AsyncSessionLocal() as db:
+            await db.execute(select(1))
+        status["database"] = "connected"
+    except Exception as e:
+        status["database"] = f"error: {str(e)}"
+        status["status"] = "degraded"
+
+    # Check Ollama
+    import requests
+    try:
+        response = requests.get("http://localhost:11434", timeout=2)
+        if response.status_code == 200:
+            status["ollama"] = "connected"
+        else:
+            status["ollama"] = f"error: status {response.status_code}"
+            status["status"] = "degraded"
+    except Exception as e:
+        status["ollama"] = "offline"
+        # We don't mark as degraded for Ollama being offline because it's designed to failover
+
+    return status
 
 if __name__ == "__main__":
     uvicorn.run("backend.main:app", host="0.0.0.0", port=8000, reload=True)

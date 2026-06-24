@@ -6,12 +6,15 @@ import json
 
 logger = logging.getLogger("vas.events.listeners")
 
+
 def on_user_locked(data: dict) -> None:
     """
     Cross-system intelligence listener: Auth -> Analytics/Threats.
     When an account is locked due to brute force, surface it as a Threat.
     """
-    logger.info(f"Intelligence Bridge: Processing user.locked event for {data.get('email')}")
+    logger.info(
+        f"Intelligence Bridge: Processing user.locked event for {data.get('email')}"
+    )
     db = SessionLocal()
     try:
         user_id = data.get("user_id")
@@ -28,7 +31,13 @@ def on_user_locked(data: dict) -> None:
             risk_score=90.0,
             confidence=0.9,
             sender_id=ip_address,
-            extra_info=json.dumps({"source_system": "auth", "event": "account_locked", "ip_address": ip_address})
+            extra_info=json.dumps(
+                {
+                    "source_system": "auth",
+                    "event": "account_locked",
+                    "ip_address": ip_address,
+                }
+            ),
         )
         db.add(threat)
         db.commit()
@@ -38,6 +47,7 @@ def on_user_locked(data: dict) -> None:
         db.rollback()
     finally:
         db.close()
+
 
 def setup_listeners() -> None:
     """Initialize all cross-system event listeners."""

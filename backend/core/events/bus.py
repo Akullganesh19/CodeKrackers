@@ -4,6 +4,7 @@ from typing import Callable, Dict, List, Any, Set
 
 logger = logging.getLogger("vas.events.bus")
 
+
 class EventBus:
     def __init__(self):
         self._subscribers: Dict[str, List[Callable]] = {}
@@ -35,5 +36,6 @@ class EventBus:
                     callback(data)
             except Exception as e:
                 logger.error(f"Error in event handler for {event_type}: {e}")
+
 
 event_bus = EventBus()

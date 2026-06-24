@@ -1,4 +1,5 @@
 'use client'
+import { dedupedFetch } from '@/app/lib/api';
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
@@ -125,7 +126,7 @@ export default function Sidebar() {
         ...prev,
         [pathname]: 0
       }))
-      // Optional: Add a fetch() call here to notify the backend to persist the "read" state
+      // Optional: Add a dedupedFetch() call here to notify the backend to persist the "read" state
     }
   }, [pathname, notifications])
 

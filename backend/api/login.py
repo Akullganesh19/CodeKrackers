@@ -1,6 +1,7 @@
 """
 Authentication endpoint with brute-force protection and audit logging.
 """
+
 import logging
 from datetime import datetime, timedelta, timezone
 from typing import Any
@@ -15,6 +16,7 @@ from backend.core.config import settings
 from backend.core.limiter import limiter
 from backend.models import User
 from backend.schemas.token import Token
+from backend.core.events.bus import event_bus
 
 logger = logging.getLogger("vas.auth")
 router = APIRouter()
@@ -48,7 +50,9 @@ def login_access_token(
         )
 
     # Validate credentials
-    if not user or not security.verify_password(form_data.password, user.hashed_password):
+    if not user or not security.verify_password(
+        form_data.password, user.hashed_password
+    ):
         # Increment failed attempts
         if user:
             user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
@@ -62,6 +66,19 @@ def login_access_token(
                 )
             db.commit()
 
+            if user.failed_login_attempts >= security.MAX_LOGIN_ATTEMPTS:
+                # Publish event for intelligence bridge after commit
+                event_bus.publish(
+                    "user.locked",
+                    {
+                        "user_id": str(user.id),
+                        "email": user.email,
+                        "ip_address": (
+                            request.client.host if request.client else "unknown"
+                        ),
+                    },
+                )
+
         logger.warning(
             "LOGIN_FAILED email=%s ip=%s",
             form_data.username,
@@ -73,7 +90,9 @@ def login_access_token(
         )
 
     if not user.is_active:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account deactivated")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Account deactivated"
+        )
 
     # Success: reset failed attempts, update last login
     user.failed_login_attempts = 0

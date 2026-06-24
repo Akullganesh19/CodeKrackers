@@ -1,4 +1,6 @@
+
 'use client';
+import { dedupedFetch } from '@/app/lib/api';
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -21,7 +23,7 @@ export default function Sidebar() {
     const [isExpiringSoon, setIsExpiringSoon] = useState(false);
 
     useEffect(() => {
-        fetch('/api/analytics/safety-score')
+        dedupedFetch('/api/analytics/safety-score')
             .then(res => res.json())
             .then(data => {
                 setSafetyData(data);

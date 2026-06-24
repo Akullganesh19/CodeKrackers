@@ -1,4 +1,6 @@
+
 'use client'
+import { dedupedFetch } from '@/app/lib/api';
 
 import { useState, useEffect, useRef } from 'react'
 import Sidebar from '@/components/Sidebar'
@@ -120,7 +122,7 @@ export default function VishingMonitor() {
     if (!manualText.trim()) return
     setIsAnalyzing(true)
     try {
-      const response = await fetch('http://localhost:8000/api/analytics/scan-voice', {
+      const response = await dedupedFetch('http://localhost:8000/api/analytics/scan-voice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ transcript: manualText })
@@ -229,7 +231,7 @@ export default function VishingMonitor() {
     formData.append('file', file)
     
     try {
-      const response = await fetch('http://localhost:8000/api/call/analyze-audio', {
+      const response = await dedupedFetch('http://localhost:8000/api/call/analyze-audio', {
         method: 'POST',
         body: formData
       })
@@ -254,7 +256,7 @@ export default function VishingMonitor() {
   const handleEndAndBlock = async () => {
     try {
       const token = localStorage.getItem('vsdp_token') || 'dummy_token'
-      const response = await fetch('http://localhost:8000/api/blacklist/report', {
+      const response = await dedupedFetch('http://localhost:8000/api/blacklist/report', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -292,7 +294,7 @@ export default function VishingMonitor() {
     }
     try {
       const token = localStorage.getItem('vsdp_token') || 'dummy_token'
-      const response = await fetch('http://localhost:8000/api/fir/generate', {
+      const response = await dedupedFetch('http://localhost:8000/api/fir/generate', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -317,7 +319,7 @@ export default function VishingMonitor() {
       const url = new URL('http://localhost:8000/api/zk/sealed-report')
       url.searchParams.append('report_data', JSON.stringify(analysisResult || { type: 'vishing', status: 'detected' }))
       
-      const response = await fetch(url.toString(), {
+      const response = await dedupedFetch(url.toString(), {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       })

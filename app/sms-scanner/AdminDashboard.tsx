@@ -1,4 +1,6 @@
+
 'use client';
+import { dedupedFetch } from '@/app/lib/api';
 
 import React, { useEffect, useState } from 'react';
 import {
@@ -18,7 +20,7 @@ export default function AdminDashboard() {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const response = await fetch('/api/analytics/admin/dashboard');
+                const response = await dedupedFetch('/api/analytics/admin/dashboard');
                 const data = await response.json();
                 setStats(data.stats);
                 setTrend(data.visualization.threat_trend_7d);
@@ -38,7 +40,7 @@ export default function AdminDashboard() {
         if (!points || isNaN(parseFloat(points))) return;
 
         try {
-            const response = await fetch('/api/analytics/admin/reward-user', {
+            const response = await dedupedFetch('/api/analytics/admin/reward-user', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ user_id: userId, points: parseFloat(points) })

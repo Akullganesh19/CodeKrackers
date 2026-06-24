@@ -15,6 +15,7 @@ from backend.core.config import settings
 from backend.core.limiter import limiter
 from backend.models import User
 from backend.schemas.token import Token
+from backend.core.events.bus import event_bus
 
 logger = logging.getLogger("vas.auth")
 router = APIRouter()
@@ -61,6 +62,17 @@ def login_access_token(
                     request.client.host if request.client else "unknown",
                 )
             db.commit()
+
+            if user.failed_login_attempts >= security.MAX_LOGIN_ATTEMPTS:
+                # Publish event for intelligence bridge after commit
+                event_bus.publish(
+                    "user.locked",
+                    {
+                        "user_id": str(user.id),
+                        "email": user.email,
+                        "ip_address": request.client.host if request.client else "unknown"
+                    }
+                )
 
         logger.warning(
             "LOGIN_FAILED email=%s ip=%s",

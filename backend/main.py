@@ -41,6 +41,7 @@ app.include_router(honeypot.router, prefix="/api/honeypot", tags=["honeypot"])
 
 # New Original Routers
 from .api import blacklist, canary, childlock, enclave, export, intel, legal, model_guard, openclaw, spam, threats, users, zk_privacy
+from .core.events.listeners import setup_listeners
 app.include_router(blacklist.router, prefix="/api/blacklist", tags=["blacklist"])
 app.include_router(canary.router, prefix="/api/canary", tags=["canary"])
 app.include_router(childlock.router, prefix="/api/childlock", tags=["childlock"])
@@ -80,6 +81,7 @@ async def startup_event():
             await db.commit()
             print("Auto-seeded admin user: admin@vsdp.org / admin123")
     
+    setup_listeners()
     # setup_scheduler()
     print("VSDP Backend Startup Complete (Scheduler Disabled for Demo).")
 

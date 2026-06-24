@@ -17,6 +17,7 @@ from backend.core import security
 from backend.core.security import get_lockout_time, MAX_LOGIN_ATTEMPTS
 from backend.core.config import settings
 from backend.models.orm import User, UserRole
+from backend.core.events.bus import event_bus
 
 router = APIRouter()
 logger = logging.getLogger("vas.auth")
@@ -202,6 +203,17 @@ async def login_access_token_password(
             if user.failed_login_attempts >= MAX_LOGIN_ATTEMPTS:
                 user.locked_until = get_lockout_time()
             db.commit()
+
+            if user.failed_login_attempts >= MAX_LOGIN_ATTEMPTS:
+                # Publish event for intelligence bridge after commit
+                event_bus.publish(
+                    "user.locked",
+                    {
+                        "user_id": str(user.id),
+                        "email": user.email,
+                        "ip_address": request.client.host if request.client else "unknown"
+                    }
+                )
 
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

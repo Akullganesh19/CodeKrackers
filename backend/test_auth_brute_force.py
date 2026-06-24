@@ -1,9 +1,12 @@
+import uuid
+from datetime import datetime, timezone
+
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
 from backend.models.orm import Base, User
-from datetime import datetime, timezone
-import uuid
+
 
 @pytest.fixture(scope="module")
 def engine():
@@ -12,12 +15,14 @@ def engine():
     yield engine
     engine.dispose()
 
+
 @pytest.fixture
 def db_session(engine):
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     session = SessionLocal()
     yield session
     session.close()
+
 
 def test_user_failed_login_attempts(db_session):
     u = User(id=str(uuid.uuid4()), email="test1@test.com", hashed_password="pw")

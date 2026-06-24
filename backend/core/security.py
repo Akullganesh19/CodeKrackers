@@ -17,7 +17,8 @@ ALGORITHM = "HS256"
 # ─── Password Policy ───
 MIN_PASSWORD_LENGTH = 8
 PASSWORD_PATTERN = re.compile(
-    r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_\-+=])[A-Za-z\d@$!%*?&#^()_\-+=]{8,128}$"
+    r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_\-+=])"
+    r"[A-Za-z\d@$!%*?&#^()_\-+=]{8,128}$"
 )
 
 

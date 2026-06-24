@@ -1,6 +1,7 @@
 import httpx
 import re
 from backend.core.config import settings
+from backend.core.resilience import async_circuit_breaker, async_with_retries
 
 def extract_crypto_addresses(text: str) -> list[str]:
     """
@@ -9,6 +10,11 @@ def extract_crypto_addresses(text: str) -> list[str]:
     pattern = r"0x[a-fA-F0-9]{40}"
     return re.findall(pattern, text)
 
+async def check_crypto_honeypot_fallback(*args, **kwargs) -> dict:
+    return {"error": "Honeypot.is API unavailable (Circuit Breaker OPEN)"}
+
+@async_circuit_breaker(failure_threshold=3, recovery_timeout=60.0, fallback_factory=check_crypto_honeypot_fallback)
+@async_with_retries(max_attempts=2, base_delay=0.1)
 async def check_crypto_honeypot(address: str) -> dict:
     """
     Check if a crypto address/token is a honeypot using honeypot.is API.
@@ -22,10 +28,7 @@ async def check_crypto_honeypot(address: str) -> dict:
     params = {"address": address}
 
     async with httpx.AsyncClient() as client:
-        try:
-            response = await client.get(url, headers=headers, params=params)
-            if response.status_code == 200:
-                return response.json()
-            return {"error": f"API returned status {response.status_code}"}
-        except Exception as e:
-            return {"error": str(e)}
+        response = await client.get(url, headers=headers, params=params)
+        if response.status_code == 200:
+            return response.json()
+        raise Exception(f"API returned status {response.status_code}")

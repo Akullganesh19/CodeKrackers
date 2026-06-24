@@ -75,6 +75,9 @@ class User(Base):
     is_active = Column(Boolean, server_default="1", default=True)
     safety_score = Column(Float, server_default="100.0", default=100.0)
     scams_avoided = Column(Integer, server_default="0", default=0)
+    failed_login_attempts = Column(Integer, default=0, server_default="0")
+    locked_until = Column(DateTime, nullable=True)
+    last_login_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 

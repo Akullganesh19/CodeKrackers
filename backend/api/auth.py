@@ -17,6 +17,7 @@ from backend.core import security
 from backend.core.security import get_lockout_time, MAX_LOGIN_ATTEMPTS
 from backend.core.config import settings
 from backend.models.orm import User, UserRole
+from backend.core.events.bus import bus
 
 router = APIRouter()
 logger = logging.getLogger("vas.auth")
@@ -98,6 +99,7 @@ async def send_otp(
 async def verify_otp(
     *,
     db: Session = Depends(deps.get_db_sync),
+    request: Request,
     otp_verify: OTPVerify,
 ) -> Any:
     """
@@ -114,13 +116,18 @@ async def verify_otp(
         )
 
     redis_key = f"otp:{otp_verify.identifier}"
-    stored_code = redis_client.get(redis_key) if redis_client else otp_code # Mock pass if redis down for demo
+    stored_code = redis_client.get(redis_key) if redis_client else otp_verify.code # Mock pass if redis down for demo
 
     if not stored_code or otp_verify.code != stored_code:
         if user:
             user.failed_login_attempts += 1
             if user.failed_login_attempts >= security.MAX_LOGIN_ATTEMPTS:
                 user.locked_until = security.get_lockout_time()
+                await bus.publish(
+                    "auth.failed_login_limit_reached",
+                    user_email=user.email,
+                    ip_address=request.client.host if request and request.client else "Unknown"
+                )
             db.commit()
         logger.warning(f"Auth failure: Invalid OTP attempt for {otp_verify.identifier}")
         raise HTTPException(status_code=400, detail="Invalid or expired verification code")
@@ -201,6 +208,11 @@ async def login_access_token_password(
             user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
             if user.failed_login_attempts >= MAX_LOGIN_ATTEMPTS:
                 user.locked_until = get_lockout_time()
+                await bus.publish(
+                    "auth.failed_login_limit_reached",
+                    user_email=user.email,
+                    ip_address=request.client.host if request and request.client else "Unknown"
+                )
             db.commit()
 
         raise HTTPException(

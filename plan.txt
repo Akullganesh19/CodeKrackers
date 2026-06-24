@@ -1,0 +1,7 @@
+1. We need to implement an EventBus pattern connecting `Auth` and `Threats/Analytics`.
+2. Currently, the `Auth` system knows about failed logins and lockouts, but the `Threats` system (which handles Vishing/Smishing and tracks bad actors) is unaware of this brute-force behavior.
+3. I've created `backend/core/events/bus.py` and `backend/core/events/listeners.py`.
+4. I will import `setup_listeners` into `backend/main.py` and run it on startup.
+5. I will import `bus` into `backend/api/auth.py`.
+6. Inside the OTP and Password failed login handlers, right where `user.failed_login_attempts >= MAX_LOGIN_ATTEMPTS`, I will add `await bus.publish("auth.failed_login_limit_reached", user_email=user.email, ip_address=request.client.host if request and request.client else "Unknown")`.
+7. Write tests/linting.

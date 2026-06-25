@@ -14,7 +14,6 @@ from backend.models import SpamReport, SpamFilter, SpamLog, SpamAction, SpamType
 from backend.services.phone_intel import analyze_phone_number
 from backend.services.ai_deep_scan import ai_deep_scan
 from backend.services.notifier import send_threat_alert
-from backend.models.orm import User
 from backend.core.config import settings
 
 logger = logging.getLogger("vas.spam")

@@ -58,7 +58,7 @@ async def track_canary(
 
     # Return a 1x1 transparent GIF to avoid detection
     # This makes the tracking request look like a broken image or tracking pixel
-    _ = (
+    gif_data = (
         b"\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x80\x00"
         b"\x00\xff\xff\xff\x00\x00\x00\x21\xf9\x04\x00\x00"
         b"\x00\x00\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00"

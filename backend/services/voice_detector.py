@@ -27,7 +27,7 @@ class VoiceDeepfakeDetector:
             return {"error": f"Failed to load audio: {e}"}
 
         # Extract features
-        _ = self.feature_extractor(audio, sampling_rate=sr, return_tensors="pt").input_values
+        input_values = self.feature_extractor(audio, sampling_rate=sr, return_tensors="pt").input_values
 
         # Simulate classification (replace with actual model inference)
         # In a real model, you'd pass input_values through Wav2Vec2 and then the classification head.

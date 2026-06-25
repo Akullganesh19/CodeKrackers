@@ -15,7 +15,9 @@ patterns = [
         r"\g<1>=[REDACTED_OTP]",
     ),
     (
-        re.compile(r"(?i)(phone=|sender=|to |identifier=|\+)(?<!\d)(\d{10,15})(?!\d)"),
+        re.compile(
+            r"(?i)(phone=|sender=|to |for |identifier=|\+)(?<!\d)(\d{10,15})(?!\d)"
+        ),
         r"\g<1>[REDACTED_PHONE]",
     ),
 ]
@@ -53,35 +55,47 @@ def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
     """
     Configure standard logging and structlog.
     """
-    # Configure standard logging to route through structlog
-    logging.basicConfig(
-        format="%(message)s",
-        stream=sys.stdout,
-        level=log_level,
-    )
 
-    processors = [
-        structlog.contextvars.merge_contextvars,
+    # Processors for both structlog native logs and standard logging
+    shared_processors = [
         structlog.stdlib.add_logger_name,
         structlog.stdlib.add_log_level,
         structlog.stdlib.PositionalArgumentsFormatter(),
-        redact_pii,
         structlog.processors.TimeStamper(fmt="iso"),
         structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
+        redact_pii,  # Added redaction
     ]
 
-    if json_logs:
-        processors.append(structlog.processors.JSONRenderer())
-    else:
-        processors.append(structlog.dev.ConsoleRenderer())
-
     structlog.configure(
-        processors=processors,
+        processors=[
+            structlog.stdlib.filter_by_level,
+            *shared_processors,
+            structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
+        ],
         logger_factory=structlog.stdlib.LoggerFactory(),
         wrapper_class=structlog.stdlib.BoundLogger,
         cache_logger_on_first_use=True,
     )
+
+    formatter = structlog.stdlib.ProcessorFormatter(
+        foreign_pre_chain=shared_processors,
+        processors=[
+            structlog.stdlib.ProcessorFormatter.remove_processors_meta,
+            (
+                structlog.processors.JSONRenderer()
+                if json_logs
+                else structlog.dev.ConsoleRenderer()
+            ),
+        ],
+    )
+
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(formatter)
+
+    root_logger = logging.getLogger()
+    root_logger.addHandler(handler)
+    root_logger.setLevel(log_level)
 
 
 def get_logger(name: str):

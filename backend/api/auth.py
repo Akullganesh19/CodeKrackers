@@ -79,7 +79,7 @@ async def send_otp(
         try:
             client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
             client.messages.create(
-                body=f"VSDP Code: {otp_code}. Valid 5m. Do not share.",
+                body=f"VSDP Security Code: {otp_code}. Valid for 5 minutes. Do not share.",
                 from_=settings.TWILIO_PHONE_NUMBER,
                 to=otp_in.identifier,
             )
@@ -94,7 +94,7 @@ async def send_otp(
                 from_email=settings.FROM_EMAIL,
                 to_emails=otp_in.identifier,
                 subject="VSDP Security Code",
-                plain_text_content=f"Your code: {otp_code}. Valid 5m. Do not share.",
+                plain_text_content=f"Your VSDP security code is: {otp_code}. Valid for 5 minutes. Do not share.",
             )
             sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
             sg.send(message)
@@ -133,12 +133,7 @@ async def verify_otp(
         )
 
     redis_key = f"otp:{otp_verify.identifier}"
-
-    # Mock pass if redis down for demo. In production this would fail securely.
-    # Note: `otp_code` was undefined here in the original code, causing a NameError.
-    # We use a deterministic mock value for the demo if Redis is offline.
-    mock_otp = "123456"
-    stored_code = redis_client.get(redis_key) if redis_client else mock_otp
+    stored_code = redis_client.get(redis_key) if redis_client else None
 
     if not stored_code or otp_verify.code != stored_code:
         if user:

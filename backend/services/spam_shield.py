@@ -14,6 +14,7 @@ from backend.models import SpamReport, SpamFilter, SpamLog, SpamAction, SpamType
 from backend.services.phone_intel import analyze_phone_number
 from backend.services.ai_deep_scan import ai_deep_scan
 from backend.services.notifier import send_threat_alert
+from backend.models.orm import User
 from backend.core.config import settings
 
 logger = logging.getLogger("vas.spam")
@@ -60,12 +61,24 @@ def check_spam(
     breakdown: List[Dict[str, Any]] = []
     spam_score = 0.0
 
-    # ── Load user filter settings ──
+    # ── Load user context and filter settings ──
+    user: Optional[User] = db.query(User).filter(User.id == user_id).first()
     user_filter: Optional[SpamFilter] = (
         db.query(SpamFilter)
         .filter(SpamFilter.user_id == user_id, SpamFilter.is_active == True)
         .first()
     )
+
+    # ── Layer 0.5: User Context / Vulnerability Enrichment ──
+    if user and user.safety_score < 80:
+        # Increase spam score based on how vulnerable the user is (max +0.2)
+        vulnerability_points = round(min((100 - user.safety_score) / 100 * 0.5, 0.2), 2)
+        spam_score += vulnerability_points
+        breakdown.append({
+            "factor": f"User Vulnerability Context (Safety Score: {user.safety_score})",
+            "points": f"+{vulnerability_points}",
+            "type": "negative"
+        })
 
     # ── Layer 1: Whitelist ──
     if user_filter and user_filter.whitelisted_numbers:
@@ -235,8 +248,9 @@ def _result(
         spam_score=round(score, 4),
         action_taken=action,
         reason=reason_str,
-        content_snippet=(content or "")[:200],
     )
+    if hasattr(log, "content_snippet"):
+        log.content_snippet = (content or "")[:200]
     db.add(log)
     db.commit()
 

@@ -1,16 +1,20 @@
 import os
+
 from groq import Groq
+
 from backend.core.config import settings
-from backend.core.resilience import async_with_retries, async_circuit_breaker
+from backend.core.resilience import async_circuit_breaker, async_with_retries
 
 client = None
 if settings.GROQ_API_KEY:
     client = Groq(api_key=settings.GROQ_API_KEY)
 
+
 def get_groq_client() -> Groq:
     if not client:
         raise ValueError("GROQ_API_KEY is not set")
     return client
+
 
 @async_circuit_breaker(failure_threshold=3, recovery_timeout=60.0)
 @async_with_retries(max_attempts=3, base_delay=1.0, exceptions=(Exception,))
@@ -20,11 +24,11 @@ async def transcribe_audio(file_path: str) -> str:
     """
     if not client:
         return ""
-    
+
     with open(file_path, "rb") as file:
         transcription = client.audio.transcriptions.create(
             file=(os.path.basename(file_path), file.read()),
             model="whisper-large-v3",
-            response_format="text"
+            response_format="text",
         )
     return transcription

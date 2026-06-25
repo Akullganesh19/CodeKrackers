@@ -91,5 +91,65 @@ async def root():
         "documentation": "/docs"
     }
 
+@app.get("/health")
+async def health_check():
+    import requests
+    import redis
+    from .core.config import settings
+
+    health = {
+        "status": "healthy",
+        "dependencies": {}
+    }
+
+    # Check Database (using engine ping)
+    try:
+        async with engine.connect() as conn:
+            health["dependencies"]["database"] = "up"
+    except Exception as e:
+        health["dependencies"]["database"] = f"down ({str(e)})"
+        health["status"] = "degraded"
+
+    # Check Redis
+    try:
+        r = redis.from_url(settings.REDIS_URL, decode_responses=True)
+        r.ping()
+        health["dependencies"]["redis"] = "up"
+    except Exception as e:
+        health["dependencies"]["redis"] = f"down ({str(e)})"
+        health["status"] = "degraded"
+
+    # Check Ollama
+    try:
+        res = requests.get("http://localhost:11434", timeout=1)
+        if res.status_code == 200:
+            health["dependencies"]["ollama"] = "up"
+        else:
+            health["dependencies"]["ollama"] = "down (bad status)"
+            health["status"] = "degraded"
+    except requests.RequestException:
+        health["dependencies"]["ollama"] = "down (unreachable)"
+        health["status"] = "degraded"
+
+    # Check OpenClaw
+    try:
+        res = requests.get("http://127.0.0.1:18789", timeout=1)
+        if res.status_code == 200:
+            health["dependencies"]["openclaw"] = "up"
+        else:
+            health["dependencies"]["openclaw"] = "down (bad status)"
+            health["status"] = "degraded"
+    except requests.RequestException:
+        health["dependencies"]["openclaw"] = "down (unreachable)"
+        health["status"] = "degraded"
+
+    from fastapi import Response
+    return Response(
+        content=__import__('json').dumps(health),
+        status_code=200 if health["status"] == "healthy" else 503,
+        media_type="application/json"
+    )
+
+
 if __name__ == "__main__":
     uvicorn.run("backend.main:app", host="0.0.0.0", port=8000, reload=True)

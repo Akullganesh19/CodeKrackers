@@ -16,10 +16,25 @@ from backend.core.limiter import limiter
 from backend.core import security
 from backend.core.security import get_lockout_time, MAX_LOGIN_ATTEMPTS
 from backend.core.config import settings
+from backend.core.resilience import with_retries, circuit_breaker
 from backend.models.orm import User, UserRole
 
 router = APIRouter()
 logger = logging.getLogger("vas.auth")
+
+@circuit_breaker(failure_threshold=5, recovery_timeout=60.0)
+@with_retries(max_attempts=3, base_delay=1.0, exceptions=(Exception,))
+def _send_twilio_sms(client: Client, body: str, to: str):
+    client.messages.create(
+        body=body,
+        from_=settings.TWILIO_PHONE_NUMBER,
+        to=to
+    )
+
+@circuit_breaker(failure_threshold=5, recovery_timeout=60.0)
+@with_retries(max_attempts=3, base_delay=1.0, exceptions=(Exception,))
+def _send_sendgrid_email(sg: SendGridAPIClient, message: Mail):
+    sg.send(message)
 
 try:
     redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True)
@@ -69,9 +84,9 @@ async def send_otp(
     if "@" not in otp_in.identifier and settings.TWILIO_ACCOUNT_SID and settings.TWILIO_AUTH_TOKEN:
         try:
             client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-            client.messages.create(
+            _send_twilio_sms(
+                client=client,
                 body=f"VSDP Security Code: {otp_code}. Valid for 5 minutes. Do not share.",
-                from_=settings.TWILIO_PHONE_NUMBER,
                 to=otp_in.identifier
             )
         except Exception as e:
@@ -86,7 +101,7 @@ async def send_otp(
                 plain_text_content=f"Your VSDP security code is: {otp_code}. Valid for 5 minutes. Do not share."
             )
             sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
-            sg.send(message)
+            _send_sendgrid_email(sg, message)
         except Exception as e:
             logger.error(f"EMAIL_GATEWAY_ERROR: Failed to send OTP to {otp_in.identifier}: {e}")
 

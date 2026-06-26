@@ -15,13 +15,14 @@ In DEMO/MOCK mode (no actual AWS Nitro hardware), this falls back to calling the
 enclave functions directly — simulating what the enclave would do.
 """
 
+from backend.core.logger import get_logger
 import os
 import json
 import socket
 import logging
 from typing import Dict, Any, Optional, Union
 
-logger = logging.getLogger("vas.enclave_client")
+logger = get_logger("vas.enclave_client")
 
 # ─── Configuration ─────────────────────────────────────────────────
 # Default vsock parameters for Nitro Enclave

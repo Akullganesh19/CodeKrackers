@@ -1,6 +1,7 @@
 """
 Analytics endpoints with real aggregation queries and trend analysis.
 """
+from backend.core.logger import get_logger
 import logging
 from datetime import datetime, timedelta, timezone
 from typing import Any
@@ -16,7 +17,7 @@ from backend.utils.ai import client as groq_client
 import json
 import os
 
-logger = logging.getLogger("vas.analytics")
+logger = get_logger("vas.analytics")
 router = APIRouter()
 
 

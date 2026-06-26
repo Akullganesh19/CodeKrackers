@@ -1,4 +1,5 @@
 # pyrefly: ignore [missing-import]
+from backend.core.logger import get_logger
 import torch
 import logging
 import sys
@@ -9,7 +10,7 @@ sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.
 
 from open_mythos.main import OpenMythos, MythosConfig
 
-logger = logging.getLogger("vas.mythos")
+logger = get_logger("vas.mythos")
 
 class MythosForensicEngine:
     """

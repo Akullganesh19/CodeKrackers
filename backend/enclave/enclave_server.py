@@ -13,6 +13,7 @@ All data is AES-256-GCM encrypted before transit.
 Production: Build with `nitro-cli build-enclave --docker-uri ...`
 Demo: Run as a standalone Python process (mock_enclave mode)
 """
+from backend.core.logger import get_logger
 import os
 import json
 import time
@@ -21,7 +22,7 @@ import logging
 import secrets
 from typing import Optional, Dict, Any
 
-logger = logging.getLogger("vas.enclave")
+logger = get_logger("vas.enclave")
 
 # ─── Enclave AES-256-GCM Key ─────────────────────────────────────
 # Generated fresh on every enclave boot — never leaves the enclave

@@ -1,9 +1,11 @@
 import logging
 from twilio.rest import Client
 from backend.core.config import settings
+from backend.core.resilience import with_retries
 
 logger = logging.getLogger("vas.notifier")
 
+@with_retries(max_attempts=3, initial_delay=1.0, exceptions=(Exception,))
 def send_threat_alert(phone_number: str, threat_type: str, score: float, original_sender: str):
     """
     Sends a high-priority alert notification to the user's phone via Twilio SMS.
@@ -33,8 +35,9 @@ def send_threat_alert(phone_number: str, threat_type: str, score: float, origina
         return True
     except Exception as e:
         logger.error(f"Failed to send notification: {e}")
-        return False
+        raise
 
+@with_retries(max_attempts=3, initial_delay=1.0, exceptions=(Exception,))
 def send_otp(phone_number: str) -> str:
     """
     Sends a 6-digit OTP code to the user.
@@ -66,6 +69,4 @@ def send_otp(phone_number: str) -> str:
         return otp_code
     except Exception as e:
         logger.error(f"Failed to send OTP: {e}")
-        # Fallback to simulation in logs for dev convenience
-        logger.warning(f"FALLBACK SIMULATED OTP: {otp_code}")
-        return otp_code
+        raise

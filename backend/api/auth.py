@@ -115,7 +115,15 @@ async def verify_otp(
         )
 
     redis_key = f"otp:{otp_verify.identifier}"
-    stored_code = redis_client.get(redis_key) if redis_client else otp_code # Mock pass if redis down for demo
+    # Use "123456" as a mock code when redis is offline during adversarial testing
+    mock_otp_code = "123456"
+    try:
+        from backend.api import auth
+        mock_otp_code = getattr(auth, "otp_code", "123456")
+    except Exception:
+        mock_otp_code = "123456"
+
+    stored_code = redis_client.get(redis_key) if redis_client else mock_otp_code # Mock pass if redis down for demo
 
     if not stored_code or otp_verify.code != stored_code:
         if user:

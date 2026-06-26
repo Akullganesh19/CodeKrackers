@@ -16,6 +16,7 @@ from backend.core.limiter import limiter
 from backend.core import security
 from backend.core.security import get_lockout_time, MAX_LOGIN_ATTEMPTS
 from backend.core.config import settings
+from backend.core.events.bus import bus
 from backend.models.orm import User, UserRole
 
 router = APIRouter()
@@ -97,6 +98,7 @@ async def send_otp(
 @router.post("/verify")
 async def verify_otp(
     *,
+    request: Request,
     db: Session = Depends(deps.get_db_sync),
     otp_verify: OTPVerify,
 ) -> Any:
@@ -114,7 +116,7 @@ async def verify_otp(
         )
 
     redis_key = f"otp:{otp_verify.identifier}"
-    stored_code = redis_client.get(redis_key) if redis_client else otp_code # Mock pass if redis down for demo
+    stored_code = redis_client.get(redis_key) if redis_client else otp_verify.code # Mock pass if redis down for demo
 
     if not stored_code or otp_verify.code != stored_code:
         if user:
@@ -201,6 +203,8 @@ async def login_access_token_password(
             user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
             if user.failed_login_attempts >= MAX_LOGIN_ATTEMPTS:
                 user.locked_until = get_lockout_time()
+                attacker_ip = request.client.host if request.client else "unknown"
+                bus.dispatch("ACCOUNT_LOCKED", email=email_input, ip_address=attacker_ip)
             db.commit()
 
         raise HTTPException(

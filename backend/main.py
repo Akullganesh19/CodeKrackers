@@ -5,6 +5,7 @@ from .api import auth, analytics, call, fir, evidence, honeypot
 from .scheduler import setup_scheduler
 import uvicorn
 import asyncio
+from .core.events.listeners import setup_listeners
 from sqlalchemy import select
 from .core.database import engine, Base, AsyncSessionLocal
 from .core.security import get_password_hash
@@ -81,7 +82,8 @@ async def startup_event():
             print("Auto-seeded admin user: admin@vsdp.org / admin123")
     
     # setup_scheduler()
-    print("VSDP Backend Startup Complete (Scheduler Disabled for Demo).")
+    setup_listeners()
+    print("VSDP Backend Startup Complete (Scheduler Disabled for Demo, Event Bus Enabled).")
 
 @app.get("/")
 async def root():

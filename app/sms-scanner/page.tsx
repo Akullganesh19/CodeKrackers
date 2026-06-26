@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
 import {
@@ -30,8 +30,53 @@ export default function SMSScannerPage() {
   }>(null)
 
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
   }, [])
+
+  const prefetchCache = useRef<Record<string, Promise<Response>>>({});
+
+  // Oracle Directive: Predictive Prefetching
+  // Anticipate the user will click "Analyze" by pre-computing the scan when they stop typing
+  useEffect(() => {
+    const trimmedText = text.trim();
+    if (!trimmedText || (prefetchCache.current[trimmedText] !== undefined)) return;
+
+    const timer = setTimeout(() => {
+      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+      const fetchPromise = fetch('http://localhost:8000/api/analytics/scan', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ text: trimmedText })
+      }).catch(err => {
+        console.error("Prefetch failed, degrading gracefully:", err);
+        return new Response(JSON.stringify({
+          error: "Prefetch failed",
+          isScam: false,
+          confidence: 0,
+          riskFactors: [],
+          recommendation: "Error during prefetch. Please try again.",
+          tags: []
+        }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      });
+      
+      prefetchCache.current[trimmedText] = fetchPromise;
+
+      // Don't cache failures so users can retry
+      fetchPromise.then(res => {
+        if (!res.ok) delete prefetchCache.current[trimmedText];
+      });
+    }, 400); // 400ms debounce
+
+    return () => clearTimeout(timer);
+  }, [text]);
+
 
   const handleAnalyze = async () => {
     if (!text.trim()) return
@@ -40,16 +85,26 @@ export default function SMSScannerPage() {
     setResult(null)
 
     try {
+      const trimmedText = text.trim();
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
-      
+
+      let response: Response;
+      if (prefetchCache.current[trimmedText] !== undefined) {
+        // Use predictive prefetch cache
+        const cachedResponse = await prefetchCache.current[trimmedText];
+        response = cachedResponse.clone(); // Clone to prevent stream read errors
+      } else {
+        // Fallback to normal fetch
+        response = await fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text: trimmedText })
+        });
+      }
+
       console.log("Response Status:", response.status);
       if (!response.ok) {
         const errorText = await response.text();

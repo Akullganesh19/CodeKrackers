@@ -1,4 +1,6 @@
 'use client'
+import { dedupedFetch } from '../lib/api';
+
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -34,7 +36,7 @@ export default function LoginPage() {
       if (email && password) {
         setIsVerifying(true)
         try {
-          const res = await fetch('http://localhost:8000/api/auth/login', {
+          const res = await dedupedFetch('http://localhost:8000/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

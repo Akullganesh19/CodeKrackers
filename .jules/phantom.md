@@ -1,0 +1,7 @@
+## 2026-06-26 — Intelligent API Fetch Layer (dedupedFetch)
+**Gap found:** The frontend components (Next.js client components) were making raw, un-deduplicated `fetch()` calls. Multiple components on the same page were fetching the exact same API endpoints independently (e.g. `dashboard-summary`, `safety-score`, `threat_map`). There was no caching, leading to redundant network calls and artificial latency on page load and subsequent navigations.
+**Why it existed:** The app was built quickly during a hackathon/MVP phase where components were developed in isolation and manually fetched their own dependencies without a centralized state or data-fetching library.
+**Built:** Created `app/lib/api.ts` which exports a `dedupedFetch` function implementing Request Coalescing (in-flight request deduplication via a Promise map) and a Stale-While-Revalidate caching pattern (hot data served instantly, refreshed in the background). Updated 10 frontend files to use this new utility instead of raw `fetch()`.
+**Hot path affected:** Every client-side API read across the dashboard, analytics, call monitor, and SMS scanner pages.
+**Measurable improvement:** Page loads that trigger redundant identical API calls now only trigger 1 network request. Subsequent navigations return instantly (0ms latency to user) from the cache while re-verifying in the background.
+**Next opportunity:** Implement a persistent offline-first cache (IndexedDB) or background retry queue for non-critical write operations (e.g. reporting numbers or updating settings).

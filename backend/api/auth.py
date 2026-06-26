@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 import logging
 import random
+import secrets
 from typing import Any, Optional
 
 import redis
@@ -104,7 +105,7 @@ async def verify_otp(
     Verifies the OTP and issues a signed JWT access token.
     """
     user = db.query(User).filter(
-        (User.email == otp_verify.identifier) | (User.phone_number == otp_verify.identifier)
+        (User.email == otp_verify.identifier) | (User.phone == otp_verify.identifier)
     ).first()
 
     if user and security.check_account_locked(user.locked_until):
@@ -126,11 +127,13 @@ async def verify_otp(
         raise HTTPException(status_code=400, detail="Invalid or expired verification code")
 
     if not user:
+        dummy_password = secrets.token_urlsafe(32)
         user = User(
             email=otp_verify.identifier if "@" in otp_verify.identifier else None,
-            phone_number=otp_verify.identifier if "@" not in otp_verify.identifier else None,
+            phone=otp_verify.identifier if "@" not in otp_verify.identifier else None,
             is_active=True,
-            role=UserRole(otp_verify.role)
+            role=UserRole.CITIZEN,
+            hashed_password=security.get_password_hash(dummy_password)
         )
         db.add(user)
         db.commit()
@@ -250,9 +253,9 @@ async def register_user(
 
     new_user = User(
         email=user_in.email,
-        phone_number=user_in.phone_number,
+        phone=user_in.phone_number,
         hashed_password=security.get_password_hash(user_in.password),
-        role=UserRole(user_in.role),
+        role=UserRole.CITIZEN,
         is_active=True
     )
     db.add(new_user)

@@ -373,14 +373,14 @@ def _seed_baseline(detector: APIAnomalyDetector):
     normal_paths = [
         ("GET", "/"),
         ("GET", "/health"),
-        ("GET", "/api/v1/threats"),
-        ("GET", "/api/v1/analytics/dashboard"),
-        ("POST", "/api/v1/detect/smishing"),
-        ("POST", "/api/v1/login/access-token"),
-        ("GET", "/api/v1/users/me"),
-        ("GET", "/api/v1/blacklist"),
-        ("POST", "/api/v1/spam/report"),
-        ("GET", "/api/v1/intel/phone"),
+        ("GET", "/api/threats"),
+        ("GET", "/api/analytics/dashboard"),
+        ("POST", "/api/detection/smishing"),
+        ("POST", "/api/auth/login"),
+        ("GET", "/api/users/me"),
+        ("GET", "/api/blacklist"),
+        ("POST", "/api/spam/report"),
+        ("GET", "/api/intel/phone"),
     ]
 
     common_uas = [

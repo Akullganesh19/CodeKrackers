@@ -2,8 +2,7 @@ import torch
 from transformers import Wav2Vec2FeatureExtractor
 import librosa
 import numpy as np
-from scipy.signal import find_peaks
-import os
+
 
 class VoiceDeepfakeDetector:
     def __init__(self, model_name: str = "facebook/wav2vec2-base"):
@@ -27,7 +26,7 @@ class VoiceDeepfakeDetector:
             return {"error": f"Failed to load audio: {e}"}
 
         # Extract features
-        input_values = self.feature_extractor(audio, sampling_rate=sr, return_tensors="pt").input_values
+        self.feature_extractor(audio, sampling_rate=sr, return_tensors="pt")
 
         # Simulate classification (replace with actual model inference)
         # In a real model, you'd pass input_values through Wav2Vec2 and then the classification head.

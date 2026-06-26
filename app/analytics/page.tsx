@@ -1,4 +1,6 @@
 'use client'
+import { dedupedFetch } from '../lib/api';
+
 
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
@@ -29,10 +31,10 @@ export default function Analytics() {
       try {
         const token = localStorage.getItem('vsdp_token') || 'dummy_token'
         const [summaryRes, mapRes] = await Promise.all([
-          fetch('http://localhost:8000/api/analytics/dashboard-summary', {
+          dedupedFetch('http://localhost:8000/api/analytics/dashboard-summary', {
             headers: { 'Authorization': `Bearer ${token}` }
           }),
-          fetch('http://localhost:8000/api/analytics/threat_map', {
+          dedupedFetch('http://localhost:8000/api/analytics/threat_map', {
             headers: { 'Authorization': `Bearer ${token}` }
           })
         ])

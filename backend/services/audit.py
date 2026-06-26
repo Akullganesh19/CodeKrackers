@@ -1,6 +1,7 @@
 """
 Audit service for persistent forensic event logging.
 """
+from backend.core.logger import get_logger
 import logging
 from typing import Any, Optional
 
@@ -8,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from backend.models.audit import AuditLog
 
-logger = logging.getLogger("vas.audit")
+logger = get_logger("vas.audit")
 
 
 def log_event(

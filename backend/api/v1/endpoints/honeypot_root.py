@@ -11,12 +11,13 @@ probe for:
 
 These endpoints are never used by the real application. Any access is malicious.
 """
+from backend.core.logger import get_logger
 import time
 import logging
 from fastapi import APIRouter, Request, Query
 from fastapi.responses import JSONResponse
 
-logger = logging.getLogger("vas.honeypot_root")
+logger = get_logger("vas.honeypot_root")
 router = APIRouter()
 
 

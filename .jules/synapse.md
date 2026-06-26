@@ -1,0 +1,6 @@
+## 2024-06-26 — Auth Brute-Force to Blacklist Integration
+**Systems connected:** Auth ↔ Blacklist
+**Intelligence emerged:** When a user account gets locked due to a brute-force attack (exceeding `MAX_LOGIN_ATTEMPTS` in the Auth system), the attacker's IP is automatically added to the global Blacklist system with a high confidence score. This prevents the attacker from trying to attack other users, or use other features of the platform, thereby utilizing data the Auth system already had (the attacking IP and lockout event) to inform the Blacklist system.
+**Data flows:** Auth System -> Event Bus (`ACCOUNT_LOCKED` event with `email` and `ip_address`) -> Blacklist System (Listens, then creates an entry for the IP).
+**Coupling approach:** A lightweight, in-memory `EventBus` was created at `backend/core/events/bus.py`. The Auth system simply dispatches the event without knowing about the Blacklist system. The Blacklist system's listener (`handle_account_locked` in `backend/core/events/listeners.py`) runs synchronously when the event is emitted, decoupling the two domains and keeping Auth clean of Blacklist logic.
+**Next connection:** Errors ↔ Users (Notifying users when they hit known bugs).

@@ -15,6 +15,7 @@ from backend.core.config import settings
 from backend.core.limiter import limiter
 from backend.models import User
 from backend.schemas.token import Token
+from backend.core.events.bus import bus
 
 logger = logging.getLogger("vas.auth")
 router = APIRouter()
@@ -54,12 +55,15 @@ def login_access_token(
             user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
             if user.failed_login_attempts >= security.MAX_LOGIN_ATTEMPTS:
                 user.locked_until = security.get_lockout_time()
+                attacker_ip = request.client.host if request.client else "unknown"
                 logger.critical(
                     "ACCOUNT_LOCKED email=%s attempts=%d ip=%s",
                     form_data.username,
                     user.failed_login_attempts,
-                    request.client.host if request.client else "unknown",
+                    attacker_ip,
                 )
+                # Synapse Intelligence Gap Closed: Trigger auto-blacklisting of attacker IP
+                bus.dispatch("ACCOUNT_LOCKED", email=form_data.username, ip_address=attacker_ip)
             db.commit()
 
         logger.warning(

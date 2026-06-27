@@ -22,8 +22,8 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
         local_result = ollama_deep_scan(content, source_type)
         if local_result["score_increase"] > 0:
             return local_result
-    except:
-        logger.info("Ollama not reachable, falling back to Groq Cloud...")
+    except Exception as e:
+        logger.warning(f"Ollama not reachable or failed: {e}. Falling back to Groq Cloud...")
 
     # ── Fallback to Groq ──
     if not settings.GROQ_API_KEY:

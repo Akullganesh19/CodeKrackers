@@ -29,9 +29,53 @@ export default function SMSScannerPage() {
     tags: string[];
   }>(null)
 
+  // ORACLE: Predictive Pre-computation Cache
+  const predictionCacheRef = React.useRef<Record<string, Promise<Response>>>({})
+
   React.useEffect(() => {
     setMounted(true)
   }, [])
+
+  // ORACLE: Observe typing cadence and pre-compute before user clicks "Analyze"
+  React.useEffect(() => {
+    const trimmedText = text.trim();
+    // Only pre-compute for meaningful length to avoid spamming backend with single chars
+    if (trimmedText.length > 10) {
+      const timeoutId = setTimeout(() => {
+        // If we haven't already cached this exact text
+        if (!predictionCacheRef.current[trimmedText]) {
+          console.log("🛸 Oracle predicting user will analyze:", trimmedText.substring(0, 20) + "...");
+          const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+
+          const fetchPromise = fetch('http://localhost:8000/api/analytics/scan', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ text: trimmedText })
+          }).then(res => {
+            // Delete from cache on failure so user can retry manually
+            if (!res.ok) {
+               delete predictionCacheRef.current[trimmedText];
+            }
+            return res;
+          }).catch(err => {
+            // Graceful degradation: return a mocked Response so awaiters don't crash
+            delete predictionCacheRef.current[trimmedText];
+            return new Response(JSON.stringify({ error: err.message }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' }
+            });
+          });
+
+          predictionCacheRef.current[trimmedText] = fetchPromise;
+        }
+      }, 500); // 500ms debounce
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [text]);
 
   const handleAnalyze = async () => {
     if (!text.trim()) return
@@ -40,15 +84,27 @@ export default function SMSScannerPage() {
     setResult(null)
 
     try {
-      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
+      const trimmedText = text.trim();
+      let response: Response;
+
+      // ORACLE: Intercept explicit click and use pre-computed promise if available
+      const cachedPromise = predictionCacheRef.current[trimmedText];
+      if (cachedPromise !== undefined) {
+        console.log("🛸 Oracle pre-computation hit!");
+        const cachedResponse = await cachedPromise;
+        // Clone response to prevent "body stream already read" if user clicks multiple times
+        response = cachedResponse.clone();
+      } else {
+        const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+        response = await fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text: trimmedText })
+        });
+      }
       
       console.log("Response Status:", response.status);
       if (!response.ok) {

@@ -1,0 +1,6 @@
+## 2025-06-27 — Predictive Pre-computation of SMS
+**Product understood as:** VSDP (Vishing & Smishing Defense Platform) is an anti-fraud security platform designed to detect malicious SMS and phone calls using ML/AI models, intended to help Indian citizens and cyber-cells report and trace fraudulent behaviors.
+**Prediction invented:** Predictive Pre-computation of SMS. The system anticipates the user's intent to scan an SMS message by observing their typing cadence. A 500ms debounce predicts that the text input is complete, triggering a background background inference fetch to the `DistilBERT` threat analysis API.
+**Data used:** Typing cadence / text length (`text` state changes) in `app/sms-scanner/page.tsx` greater than 10 characters.
+**Impact:** Perceived latency drops from ~400-1000ms (standard AI inference time) to nearly ~0ms, because the prediction engine caches the in-flight Promise so the result is immediately ready when the user manually clicks 'Analyze'.
+**Next opportunity:** Pre-compute and auto-generate the FIR report format in the background when the AI detects an extremely high-confidence Smishing or Vishing threat, avoiding wait time on the "Report to Cybercrime" flow.

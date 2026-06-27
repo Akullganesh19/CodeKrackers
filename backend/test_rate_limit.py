@@ -1,5 +1,6 @@
-import requests
 import time
+
+import requests
 
 url = "http://localhost:8000/api/auth/login"
 data = {"email": "user@example.com", "password": "wrongpassword"}

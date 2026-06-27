@@ -2,7 +2,7 @@ import asyncio
 import functools
 import logging
 import time
-from typing import Any, Callable, Dict, TypeVar, Awaitable
+from typing import Any, Callable, TypeVar
 
 logger = logging.getLogger("vas.resilience")
 

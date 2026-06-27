@@ -2,11 +2,8 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from backend.models.orm import User, UserRole, Base
-from backend.api.auth import register_user, UserRegister, verify_otp, OTPVerify, send_otp, OTPSend
+from backend.api.auth import register_user, UserRegister, verify_otp, OTPVerify
 from starlette.requests import Request
-import unittest.mock
-import sys
-sys.modules['redis'] = unittest.mock.MagicMock()
 
 # Setup in-memory DB
 engine = create_engine("sqlite:///:memory:")

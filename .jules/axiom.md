@@ -1,0 +1,6 @@
+## 2025-06-27 — [Eliminated backend/api/v1 Legacy Layer]
+**Complexity found:** The entire `backend/api/v1/` directory. It duplicated every endpoint defined in `backend/api/`, establishing a massive parallel routing system containing thousands of lines of identical code that served no independent function.
+**Why it existed:** Historically, it appeared to be an attempt at versioning the API endpoints (`v1`), but the routing logic in `backend/main.py` had moved on to a flat routing structure that imported directly from `backend/api/`. The `v1` layer was completely bypassed for core routing, yet its files were left in the codebase and arbitrarily referenced by isolated frontend fetches and auxiliary scripts, causing extreme confusion and fragmentation.
+**Eliminated:** The entire `backend/api/v1` directory and its 3,460 lines of duplicate endpoint logic.
+**Net change:** Eliminated 1 massive directory (21 files, ~3,460 lines removed) and collapsed the conceptual model to exactly 1 source of truth for endpoints (`backend/api`). Fixed all lingering references to point to the correct, active routing structure.
+**Next target:** Explore `backend/core/middleware.py` or `backend/core/anomaly_detector.py` for excessive or duplicated request intercept/validation layers.

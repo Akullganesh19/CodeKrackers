@@ -1,7 +1,7 @@
 """
 Root-level honeypot endpoints — mounted at exactly the paths attackers expect.
 
-These are mounted at the root level (not under /api/v1) to catch attackers who
+These are mounted at the root level (not under /api) to catch attackers who
 probe for:
   - /admin/export-users
   - /internal/models
@@ -11,9 +11,11 @@ probe for:
 
 These endpoints are never used by the real application. Any access is malicious.
 """
-import time
+
 import logging
-from fastapi import APIRouter, Request, Query
+import time
+
+from fastapi import APIRouter, Query, Request
 from fastapi.responses import JSONResponse
 
 logger = logging.getLogger("vas.honeypot_root")
@@ -28,7 +30,11 @@ def _log_probe(request: Request, endpoint: str, risk_score: int = 50):
 
     logger.warning(
         "HONEYPOT ROOT PROBE ip=%s endpoint=%s ua=%s auth=%s risk=%d",
-        client_ip, endpoint, user_agent, auth or "none", risk_score,
+        client_ip,
+        endpoint,
+        user_agent,
+        auth or "none",
+        risk_score,
     )
 
     # In production, also:

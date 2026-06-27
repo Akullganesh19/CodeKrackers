@@ -5,6 +5,7 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line
 } from 'recharts';
 import dynamic from 'next/dynamic';
+import { dedupedFetch } from '@/app/lib/api';
 
 // Dynamically import Map to avoid SSR issues with Leaflet
 const ScammerMap = dynamic(() => import('./ScammerMap'), { ssr: false });
@@ -18,7 +19,7 @@ export default function AdminDashboard() {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const response = await fetch('/api/analytics/admin/dashboard');
+                const response = await dedupedFetch('/api/analytics/admin/dashboard');
                 const data = await response.json();
                 setStats(data.stats);
                 setTrend(data.visualization.threat_trend_7d);

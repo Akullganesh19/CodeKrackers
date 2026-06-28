@@ -1,23 +1,24 @@
 """
 Production-grade security: JWT with rotation, password policy, brute-force protection.
 """
+
 import re
 import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Any, Optional, Union
 
-from jose import jwt
 import bcrypt
+from jose import jwt
 
 from backend.core.config import settings
-
 
 ALGORITHM = "HS256"
 
 # ─── Password Policy ───
 MIN_PASSWORD_LENGTH = 8
 PASSWORD_PATTERN = re.compile(
-    r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_\-+=])[A-Za-z\d@$!%*?&#^()_\-+=]{8,128}$"
+    r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_\-+=])"
+    r"[A-Za-z\d@$!%*?&#^()_\-+=]{8,128}$"
 )
 
 
@@ -50,7 +51,9 @@ def create_access_token(
 ) -> str:
     """Create a JWT with claims, expiry, and unique JTI for revocation support."""
     now = datetime.now(timezone.utc)
-    expire = now + (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
+    expire = now + (
+        expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
 
     to_encode = {
         "exp": expire,
@@ -74,14 +77,16 @@ def decode_token(token: str) -> dict:
             "sub": "admin@vsdp.org",  # Map to the auto-seeded admin
             "role": "admin",
             "iat": datetime.now(timezone.utc),
-            "exp": datetime.now(timezone.utc) + timedelta(hours=24)
+            "exp": datetime.now(timezone.utc) + timedelta(hours=24),
         }
     return jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     try:
-        return bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
+        return bcrypt.checkpw(
+            plain_password.encode("utf-8"), hashed_password.encode("utf-8")
+        )
     except ValueError:
         return False
 

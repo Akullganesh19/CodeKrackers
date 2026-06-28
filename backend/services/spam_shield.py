@@ -2,7 +2,7 @@
 Spam Shield Service — real-time spam call/SMS detection and auto-blocking.
 Combines community reports, phone intelligence, and pattern analysis.
 """
-import logging
+from backend.core.logger import get_logger
 import re
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -16,7 +16,7 @@ from backend.services.ai_deep_scan import ai_deep_scan
 from backend.services.notifier import send_threat_alert
 from backend.core.config import settings
 
-logger = logging.getLogger("vas.spam")
+logger = get_logger("vas.spam")
 
 # ─── Known spam patterns (Indian telecom context) ───
 TELEMARKETING_PREFIXES: Tuple[str, ...] = (

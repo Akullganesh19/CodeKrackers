@@ -1,7 +1,7 @@
 """
 Analytics endpoints with real aggregation queries and trend analysis.
 """
-import logging
+from backend.core.logger import get_logger
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
@@ -14,7 +14,7 @@ from backend.models.legal import FIR
 from backend.models.threat import Threat, ThreatType, ThreatSeverity
 from backend.models.user import User
 
-logger = logging.getLogger("vas.analytics")
+logger = get_logger("vas.analytics")
 router = APIRouter()
 
 

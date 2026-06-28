@@ -1,9 +1,9 @@
 """
 Data export endpoints for reports, evidence, and compliance.
 """
+from backend.core.logger import get_logger
 import csv
 import io
-import logging
 from datetime import datetime, timezone
 from typing import Any
 
@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 from backend.api import deps
 from backend.models import Threat, User
 
-logger = logging.getLogger("vas.export")
+logger = get_logger("vas.export")
 router = APIRouter()
 
 

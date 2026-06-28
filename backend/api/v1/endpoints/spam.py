@@ -1,7 +1,7 @@
 """
 Spam Shield API — report, check, configure spam filtering.
 """
-import logging
+from backend.core.logger import get_logger
 from typing import Any, List
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -12,7 +12,7 @@ from backend.models.spam import SpamFilter, SpamReport, SpamLog, SpamType
 from backend.models.user import User
 from backend.services.spam_shield import check_spam
 
-logger = logging.getLogger("vas.spam_api")
+logger = get_logger("vas.spam_api")
 router = APIRouter()
 
 

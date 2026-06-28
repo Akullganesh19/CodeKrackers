@@ -10,7 +10,7 @@ Architecture:
                     ← vsock (encrypted) ←
 """
 
-import logging
+from backend.core.logger import get_logger
 from typing import Dict, Any
 
 from fastapi import APIRouter, HTTPException
@@ -25,7 +25,7 @@ from backend.enclave.enclave_client import (
     MOCK_MODE,
 )
 
-logger = logging.getLogger("vas.enclave_api")
+logger = get_logger("vas.enclave_api")
 
 router = APIRouter()
 

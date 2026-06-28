@@ -15,10 +15,10 @@ Features extracted per request:
   - Time of day (hour) deviation
   - User-agent entropy (unusual vs common)
 """
+from backend.core.logger import get_logger
 import os
 import time
 import json
-import logging
 import pickle
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -35,7 +35,7 @@ except ImportError:
 
 from datetime import datetime
 
-logger = logging.getLogger("vas.anomaly_detector")
+logger = get_logger("vas.anomaly_detector")
 
 MODEL_PATH = Path(__file__).resolve().parent.parent / "data" / "anomaly_model.pkl"
 FEATURE_LOG_PATH = Path(__file__).resolve().parent.parent / "data" / "feature_log.jsonl"

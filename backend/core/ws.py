@@ -1,14 +1,14 @@
 """
 Production-grade WebSocket connection manager with heartbeat and cleanup.
 """
+from backend.core.logger import get_logger
 import asyncio
-import logging
 import json
 from datetime import datetime, timezone
 from typing import List
 from fastapi import WebSocket
 
-logger = logging.getLogger("vas.ws")
+logger = get_logger("vas.ws")
 
 
 class ConnectionManager:

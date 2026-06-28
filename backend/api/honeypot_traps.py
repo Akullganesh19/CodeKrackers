@@ -1,7 +1,7 @@
 """
 Honeypot endpoints - decoy APIs that look real to trap attackers.
 """
-import logging
+from backend.core.logger import get_logger
 import secrets
 from typing import Optional
 from datetime import datetime, timezone
@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 from backend.db.session import SessionLocal
 from backend.models.honeypot import HoneypotAccess
 
-logger = logging.getLogger("vas.honeypot")
+logger = get_logger("vas.honeypot")
 router = APIRouter()
 
 

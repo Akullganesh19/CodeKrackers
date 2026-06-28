@@ -1,7 +1,7 @@
 """
 Blacklist management and threat intelligence endpoints.
 """
-import logging
+from backend.core.logger import get_logger
 from typing import Any, List
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -11,7 +11,7 @@ from backend.api import deps
 from backend.models.orm import Blacklist as BlacklistEntry, BlacklistType, User, UserRole
 from backend.services.threat_intel import auto_blacklist, calculate_threat_score
 
-logger = logging.getLogger("vas.blacklist")
+logger = get_logger("vas.blacklist")
 router = APIRouter()
 
 

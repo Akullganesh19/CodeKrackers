@@ -1,9 +1,9 @@
-import logging
+from backend.core.logger import get_logger
 import requests
 import json
 from typing import Dict, Any
 
-logger = logging.getLogger("vas.ollama")
+logger = get_logger("vas.ollama")
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
 OLLAMA_MODEL = "llama3.1:8b" # Upgraded for tool-calling support

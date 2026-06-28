@@ -1,8 +1,8 @@
 """
 Threat detection endpoints powered by Groq Llama 3 + Crypto Honeypot verification.
 """
+from backend.core.logger import get_logger
 import json
-import logging
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -16,7 +16,7 @@ from backend.core.config import settings
 from backend.utils.ai import client
 from backend.utils.crypto import extract_crypto_addresses, check_crypto_honeypot
 
-logger = logging.getLogger("vas.detection")
+logger = get_logger("vas.detection")
 router = APIRouter()
 
 # ─── Scam keyword database (Indian context) ───

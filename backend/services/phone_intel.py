@@ -2,7 +2,7 @@
 Phone number intelligence service — 100% open-source, no paid APIs.
 Uses Google's libphonenumber (phonenumbers) for offline analysis.
 """
-import logging
+from backend.core.logger import get_logger
 from typing import Any, Dict, Optional
 
 import phonenumbers
@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from backend.models import PhoneLookup, UserConsent
 
-logger = logging.getLogger("vas.phone_intel")
+logger = get_logger("vas.phone_intel")
 
 # ─── Number type to human-readable + risk mapping ───
 NUMBER_TYPE_MAP = {

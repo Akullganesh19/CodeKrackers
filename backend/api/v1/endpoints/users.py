@@ -1,7 +1,7 @@
 """
 User management endpoints with password policy and RBAC.
 """
-import logging
+from backend.core.logger import get_logger
 from typing import Any, List
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -12,7 +12,7 @@ from backend.core import security
 from backend.models.user import User, UserRole
 from backend.schemas.user import UserCreate, User as UserSchema
 
-logger = logging.getLogger("vas.users")
+logger = get_logger("vas.users")
 router = APIRouter()
 
 

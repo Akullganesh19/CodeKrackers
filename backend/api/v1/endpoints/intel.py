@@ -2,7 +2,7 @@
 Intelligence gathering endpoints — consent management, phone lookup, device registration.
 All endpoints require explicit user permission before collecting any data.
 """
-import logging
+from backend.core.logger import get_logger
 from datetime import datetime, timezone
 from typing import Any
 
@@ -14,7 +14,7 @@ from backend.models.intel import DeviceInfo, PhoneLookup, UserConsent
 from backend.models.user import User
 from backend.services.phone_intel import lookup_phone_number, check_user_consent
 
-logger = logging.getLogger("vas.intel")
+logger = get_logger("vas.intel")
 router = APIRouter()
 
 

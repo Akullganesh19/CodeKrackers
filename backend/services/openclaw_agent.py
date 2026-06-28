@@ -1,8 +1,8 @@
-import logging
+from backend.core.logger import get_logger
 import requests
 from backend.core.config import settings
 
-logger = logging.getLogger("vas.openclaw")
+logger = get_logger("vas.openclaw")
 
 # OpenClaw Gateway defaults
 OPENCLAW_URL = "http://127.0.0.1:18789"

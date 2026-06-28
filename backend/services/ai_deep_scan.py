@@ -1,11 +1,11 @@
-import logging
+from backend.core.logger import get_logger
 from typing import Dict, Any
 from groq import Groq
 from backend.core.config import settings
 from backend.services.ollama_scan import ollama_deep_scan
 import requests
 
-logger = logging.getLogger("vas.ai_scan")
+logger = get_logger("vas.ai_scan")
 
 def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     """

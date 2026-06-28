@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
 import {
@@ -33,22 +33,80 @@ export default function SMSScannerPage() {
     setMounted(true)
   }, [])
 
+  const predictionCache = useRef<Record<string, Promise<Response>>>({});
+
+  // Oracle: Predictive prefetching based on user behavior
+  // Users typically paste an SMS and immediately click 'Analyze'.
+  // We can pre-compute the analysis as soon as they stop typing (debounce)
+  // so that when they do click 'Analyze', it feels instantaneous.
+  useEffect(() => {
+    if (!mounted || !text || text.length < 15) return;
+
+    const handler = setTimeout(() => {
+      const cacheKey = text.trim();
+      if (!predictionCache.current[cacheKey]) {
+        console.log("🛸 Oracle Prediction Fired: Pre-fetching SMS analysis for:", cacheKey.substring(0, 20) + "...");
+        const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+
+        const fetchPromise = fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text: cacheKey })
+        }).catch(err => {
+          // Fallback response for graceful degradation if prefetch fails
+          return new Response(JSON.stringify({
+            isScam: false,
+            confidence: 0,
+            riskFactors: ["Fetch Error"],
+            recommendation: "System error during predictive prefetch.",
+            tags: []
+          }), { status: 500 });
+        });
+
+        // Remove from cache if it failed so user can retry properly
+        fetchPromise.then(res => {
+          if (!res.ok) {
+            delete predictionCache.current[cacheKey];
+          }
+        });
+
+        predictionCache.current[cacheKey] = fetchPromise;
+      }
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(handler);
+  }, [text, mounted]);
+
+
   const handleAnalyze = async () => {
-    if (!text.trim()) return
+    const cacheKey = text.trim();
+    if (!cacheKey) return
 
     setLoading(true)
     setResult(null)
 
     try {
-      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
+      let response: Response;
+
+      // 🛸 Oracle: Consume predictive cache if available
+      if (predictionCache.current[cacheKey] !== undefined) {
+        console.log("🛸 Oracle Cache Hit: Serving pre-computed SMS analysis");
+        const cachedRes = await predictionCache.current[cacheKey];
+        response = cachedRes.clone(); // Clone to prevent body already read errors
+      } else {
+        const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+        response = await fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text: cacheKey })
+        });
+      }
       
       console.log("Response Status:", response.status);
       if (!response.ok) {

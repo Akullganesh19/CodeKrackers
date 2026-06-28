@@ -1,0 +1,6 @@
+## 2025-02-27 — Auth Lockout Threat Bridge
+**Systems connected:** [Auth System ↔ Threat Intelligence System]
+**Intelligence emerged:** Threat Intel now automatically tracks active brute-force password and OTP guessing attacks. Previously, Auth knew about account lockouts, but this security intel was discarded and not shared with the active threat mapping and incident response layers.
+**Data flows:** When `auth` locks an account after 5 failed attempts (`MAX_LOGIN_ATTEMPTS`), it emits an `auth.account_locked` event. The `events.listeners` module subscribes to this, reads the context (user ID, identifier, IP address), and asynchronously spawns a `Threat` record (type `OTP_FRAUD`) in the Threat database.
+**Coupling approach:** Fully decoupled using an in-memory `EventBus`. The `auth` endpoints (`backend/api/auth.py`, `backend/api/login.py`) just publish generic events without importing `Threat` models. The listener layer operates independently, ensuring that if Threat DB inserts fail, the core login/OTP flow is unaffected.
+**Next connection:** Correlating `Call Logs/SMS Logs` with `Blacklists` or `User Behaviour` to proactively warn connected users when known malicious numbers text/call them before they open the messages.

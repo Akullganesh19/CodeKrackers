@@ -156,7 +156,7 @@ def check_sms_allowed(
         now_time = datetime.now(timezone.utc).strftime("%H:%M")
         if not (profile.allowed_sms_start <= now_time <= profile.allowed_sms_end):
             _log_activity(db, profile.id, "sms_blocked", phone_number, "Outside hours", content[:100])
-            return {"allowed": False, "reason": f"SMS not allowed at this time"}
+            return {"allowed": False, "reason": "SMS not allowed at this time"}
 
     # Whitelist-only
     if profile.lock_mode == ChildLockMode.WHITELIST_ONLY:

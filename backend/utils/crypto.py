@@ -1,6 +1,7 @@
 import httpx
 import re
 from backend.core.config import settings
+from backend.core.resilience import with_retries, circuit_breaker
 
 def extract_crypto_addresses(text: str) -> list[str]:
     """
@@ -8,6 +9,14 @@ def extract_crypto_addresses(text: str) -> list[str]:
     """
     pattern = r"0x[a-fA-F0-9]{40}"
     return re.findall(pattern, text)
+
+@circuit_breaker(failure_threshold=3, recovery_timeout=60)
+@with_retries(max_attempts=3, base_delay=0.5)
+async def _call_honeypot_api(url: str, headers: dict, params: dict):
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers, params=params)
+        response.raise_for_status()
+        return response
 
 async def check_crypto_honeypot(address: str) -> dict:
     """
@@ -21,11 +30,8 @@ async def check_crypto_honeypot(address: str) -> dict:
     headers = {"X-API-KEY": api_key}
     params = {"address": address}
 
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.get(url, headers=headers, params=params)
-            if response.status_code == 200:
-                return response.json()
-            return {"error": f"API returned status {response.status_code}"}
-        except Exception as e:
-            return {"error": str(e)}
+    try:
+        response = await _call_honeypot_api(url, headers, params)
+        return response.json()
+    except Exception as e:
+        return {"error": f"Honeypot.is API error (or circuit open): {str(e)}"}

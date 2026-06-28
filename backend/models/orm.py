@@ -12,6 +12,8 @@ class ThreatType(str, enum.Enum):
     crypto_scam = "crypto_scam"
     phishing = "phishing"
     other = "other"
+    otp_fraud = "otp_fraud"
+    OTP_FRAUD = "otp_fraud"
     
     # Uppercase aliases
     VISHING = "vishing"

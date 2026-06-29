@@ -1,5 +1,4 @@
 'use client';
-import { phantomFetch } from '../lib/fetch';
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -22,7 +21,7 @@ export default function Sidebar() {
     const [isExpiringSoon, setIsExpiringSoon] = useState(false);
 
     useEffect(() => {
-        phantomFetch('/api/analytics/safety-score')
+        fetch('/api/analytics/safety-score')
             .then(res => res.json())
             .then(data => {
                 setSafetyData(data);

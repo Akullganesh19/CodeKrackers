@@ -1,5 +1,4 @@
 'use client';
-import { phantomFetch } from '../lib/fetch';
 
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
@@ -9,7 +8,7 @@ export default function ScammerMap() {
     const [points, setPoints] = useState<any[]>([]);
 
     useEffect(() => {
-        phantomFetch('/api/analytics/admin/geospatial-map')
+        fetch('/api/analytics/admin/geospatial-map')
             .then(res => res.json())
             .then(data => setPoints(data))
             .catch(err => console.error("Map fetch error:", err));

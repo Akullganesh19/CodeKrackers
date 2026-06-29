@@ -116,15 +116,55 @@ export default function VishingMonitor() {
     }
   }, [isRecording, seconds, cloningStatus, audioAmplitude])
 
+  // Predictive pre-computation for manual voice transcript
+  const predictionCache = useRef<Record<string, Promise<Response>>>({})
+
+  useEffect(() => {
+    const trimmed = manualText.trim()
+    if (!trimmed) return
+
+    const timer = setTimeout(() => {
+      if (predictionCache.current[trimmed] === undefined) {
+        const fetchPromise = fetch('http://localhost:8000/api/analytics/scan-voice', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transcript: trimmed })
+        })
+
+        predictionCache.current[trimmed] = fetchPromise.catch(() => {
+          delete predictionCache.current[trimmed];
+          return new Response(null, { status: 500, statusText: "Prefetch Failed" });
+        });
+
+        fetchPromise.then(res => {
+          if (!res.ok) {
+            delete predictionCache.current[trimmed];
+          }
+        }).catch(() => {});
+      }
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [manualText])
+
   const handleManualAnalyze = async () => {
-    if (!manualText.trim()) return
+    const trimmed = manualText.trim()
+    if (!trimmed) return
     setIsAnalyzing(true)
     try {
-      const response = await fetch('http://localhost:8000/api/analytics/scan-voice', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transcript: manualText })
-      })
+      let response: Response;
+
+      if (predictionCache.current[trimmed] !== undefined) {
+        const cachedRes = await predictionCache.current[trimmed];
+        response = cachedRes.clone();
+      } else {
+        response = await fetch('http://localhost:8000/api/analytics/scan-voice', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transcript: trimmed })
+        })
+      }
+
       const data = await response.json()
       setAnalysisResult(data)
       if (data.threat_id) setThreatId(data.threat_id)

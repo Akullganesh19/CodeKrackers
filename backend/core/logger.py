@@ -1,25 +1,15 @@
 import logging
-import re
 import sys
 
 import structlog
 
-EMAIL_REGEX = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
-PHONE_REGEX = re.compile(
-    r"(?i)(phone=|to\s+)(\+?\d{1,3}[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4})\b"
-)
-OTP_REGEX = re.compile(r"(?i)(->\s*|otp=)(\b\d{4,6}\b)")
+import re
 
-SENSITIVE_KEYS = {
-    "phone",
-    "otp",
-    "ssn",
-    "email",
-    "password",
-    "card_number",
-    "phone_number",
-}
+EMAIL_REGEX = re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b')
+PHONE_REGEX = re.compile(r'(?i)(phone=|to\s+)(\+?\d{1,3}[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4})\b')
+OTP_REGEX = re.compile(r'(?i)(->\s*|otp=)(\b\d{4,6}\b)')
 
+SENSITIVE_KEYS = {"phone", "otp", "ssn", "email", "password", "card_number", "phone_number"}
 
 def redact_pii(logger, log_method, event_dict):
     def mask_string(text: str) -> str:
@@ -44,6 +34,7 @@ def redact_pii(logger, log_method, event_dict):
         return obj
 
     return traverse_and_redact(event_dict)
+
 
 
 def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
@@ -79,7 +70,6 @@ def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
         wrapper_class=structlog.stdlib.BoundLogger,
         cache_logger_on_first_use=True,
     )
-
 
 def get_logger(name: str):
     """

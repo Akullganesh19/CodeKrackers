@@ -1,6 +1,7 @@
 """
 Authentication endpoint with brute-force protection and audit logging.
 """
+
 import logging
 from datetime import datetime, timedelta, timezone
 from typing import Any
@@ -12,6 +13,7 @@ from sqlalchemy.orm import Session
 from backend.api import deps
 from backend.core import security
 from backend.core.config import settings
+from backend.core.events.bus import bus
 from backend.core.limiter import limiter
 from backend.models import User
 from backend.schemas.token import Token
@@ -44,21 +46,35 @@ def login_access_token(
         )
         raise HTTPException(
             status_code=status.HTTP_423_LOCKED,
-            detail="Account temporarily locked due to too many failed attempts. Try again in 15 minutes.",
+            detail=(
+                "Account temporarily locked due to too many "
+                "failed attempts. Try again in 15 minutes."
+            ),
         )
 
     # Validate credentials
-    if not user or not security.verify_password(form_data.password, user.hashed_password):
+    if not user or not security.verify_password(
+        form_data.password, user.hashed_password
+    ):
         # Increment failed attempts
         if user:
             user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
             if user.failed_login_attempts >= security.MAX_LOGIN_ATTEMPTS:
                 user.locked_until = security.get_lockout_time()
+                ip_addr = request.client.host if request.client else "unknown"
                 logger.critical(
                     "ACCOUNT_LOCKED email=%s attempts=%d ip=%s",
                     form_data.username,
                     user.failed_login_attempts,
-                    request.client.host if request.client else "unknown",
+                    ip_addr,
+                )
+                bus.publish(
+                    "user.account_locked",
+                    user_id=str(user.id),
+                    identifier=form_data.username,
+                    ip_address=ip_addr,
+                    attempts=user.failed_login_attempts,
+                    source="login_endpoint",
                 )
             db.commit()
 
@@ -73,7 +89,9 @@ def login_access_token(
         )
 
     if not user.is_active:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account deactivated")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Account deactivated"
+        )
 
     # Success: reset failed attempts, update last login
     user.failed_login_attempts = 0

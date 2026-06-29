@@ -6,7 +6,7 @@ sqlalchemy[asyncio]
 aiomysql
 python-multipart
 python-jose[cryptography]
-passlib[bcrypt]
+bcrypt
 httpx
 reportlab
 apscheduler

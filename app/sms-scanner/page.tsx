@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
 import {
@@ -29,26 +29,78 @@ export default function SMSScannerPage() {
     tags: string[];
   }>(null)
 
-  React.useEffect(() => {
+  // Cache for predictive pre-computation
+  const predictionCache = useRef<Record<string, Promise<Response>>>({})
+
+  useEffect(() => {
     setMounted(true)
   }, [])
 
+  // Predictive pre-computation: start analyzing when user stops typing
+  useEffect(() => {
+    const trimmed = text.trim()
+    if (!trimmed) return
+
+    const timer = setTimeout(() => {
+      // If we haven't prefetched this exact text yet
+      if (predictionCache.current[trimmed] === undefined) {
+        const token = localStorage.getItem('vsdp_token') || 'dummy_token'
+
+        // Start the fetch but don't await it here - just store the promise
+        const fetchPromise = fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text: trimmed })
+        })
+
+        // Add `.catch` so if it fails we remove it from cache and return a mocked response
+        predictionCache.current[trimmed] = fetchPromise.catch(() => {
+          delete predictionCache.current[trimmed];
+          // Return a mock failed response so callers awaiting it handle `.ok === false` gracefully
+          return new Response(null, { status: 500, statusText: "Prefetch Failed" });
+        });
+
+        // Ensure failed HTTP responses also clear from cache so users can retry
+        fetchPromise.then(res => {
+          if (!res.ok) {
+            delete predictionCache.current[trimmed];
+          }
+        }).catch(() => {}); // catch handled above
+      }
+    }, 500) // 500ms debounce
+
+    return () => clearTimeout(timer)
+  }, [text])
+
   const handleAnalyze = async () => {
-    if (!text.trim()) return
+    const trimmed = text.trim();
+    if (!trimmed) return
 
     setLoading(true)
     setResult(null)
 
     try {
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
+      let response: Response;
+
+      if (predictionCache.current[trimmed] !== undefined) {
+        // Await the cached predictive fetch and clone it so the body stream can be read
+        const cachedRes = await predictionCache.current[trimmed];
+        response = cachedRes.clone();
+      } else {
+        // Fallback if prediction didn't fire in time
+        response = await fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text: trimmed })
+        });
+      }
       
       console.log("Response Status:", response.status);
       if (!response.ok) {

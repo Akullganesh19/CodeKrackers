@@ -81,7 +81,7 @@ async def send_otp(
             client.messages.create(
                 body=(
                     f"VSDP Security Code: {otp_code}. "
-                    f"Valid for 5 minutes. Do not share."
+                    "Valid for 5 minutes. Do not share."
                 ),
                 from_=settings.TWILIO_PHONE_NUMBER,
                 to=otp_in.identifier,
@@ -99,7 +99,7 @@ async def send_otp(
                 subject="VSDP Security Code",
                 plain_text_content=(
                     f"Your VSDP security code is: {otp_code}. "
-                    f"Valid for 5 minutes. Do not share."
+                    "Valid for 5 minutes. Do not share."
                 ),
             )
             sg = SendGridAPIClient(settings.SENDGRID_API_KEY)

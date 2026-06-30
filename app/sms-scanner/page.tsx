@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
 import {
@@ -29,9 +29,39 @@ export default function SMSScannerPage() {
     tags: string[];
   }>(null)
 
+  const predictionCache = useRef<Record<string, Promise<Response>>>({})
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null)
+
   React.useEffect(() => {
     setMounted(true)
   }, [])
+
+  // Predictive Pre-computation: fetch analysis before user clicks analyze
+  useEffect(() => {
+    if (text.trim().length > 15) {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current)
+      debounceTimer.current = setTimeout(() => {
+        const cacheKey = text.trim()
+        if (!predictionCache.current[cacheKey]) {
+          const token = localStorage.getItem('vsdp_token') || 'dummy_token'
+          const fetchPromise = fetch('http://localhost:8000/api/analytics/scan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ text: cacheKey })
+          }).catch(() => new Response(null, { status: 500 }))
+
+          fetchPromise.then(res => { if (!res.ok) delete predictionCache.current[cacheKey]; })
+          predictionCache.current[cacheKey] = fetchPromise
+
+          // LRU eviction: keep only last 5 entries to prevent unbounded memory growth
+          const keys = Object.keys(predictionCache.current)
+          if (keys.length > 5) {
+            delete predictionCache.current[keys[0]]
+          }
+        }
+      }, 500)
+    }
+  }, [text])
 
   const handleAnalyze = async () => {
     if (!text.trim()) return
@@ -40,15 +70,22 @@ export default function SMSScannerPage() {
     setResult(null)
 
     try {
+      const cacheKey = text.trim();
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
+      let response;
+
+      if (predictionCache.current[cacheKey] !== undefined) {
+        response = await predictionCache.current[cacheKey].then(res => res.clone());
+      } else {
+        response = await fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text: cacheKey })
+        });
+      }
       
       console.log("Response Status:", response.status);
       if (!response.ok) {

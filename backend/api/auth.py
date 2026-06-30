@@ -88,7 +88,8 @@ async def send_otp(
             )
         except Exception as e:
             logger.error(
-                f"SMS_GATEWAY_ERROR: Failed to send OTP to {otp_in.identifier}: {e}"
+                f"SMS_GATEWAY_ERROR: Failed to send OTP "
+                f"to {otp_in.identifier}: {e}"
             )
 
     if "@" in otp_in.identifier and settings.SENDGRID_API_KEY:
@@ -106,7 +107,8 @@ async def send_otp(
             sg.send(message)
         except Exception as e:
             logger.error(
-                f"EMAIL_GATEWAY_ERROR: Failed to send OTP to {otp_in.identifier}: {e}"
+                f"EMAIL_GATEWAY_ERROR: Failed to send OTP "
+                f"to {otp_in.identifier}: {e}"
             )
 
     logger.info(f"SECURITY: Generated OTP for {otp_in.identifier} -> {otp_code}")

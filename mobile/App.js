@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import SmsAndroid from 'react-native-get-sms-android';
 
-const API_URL = "http://localhost:8000/api/detection/sms";
+const API_URL = "http://localhost:8000/api/detect/sms";
 
 export default function App() {
   const [smsList, setSmsList] = useState([]);

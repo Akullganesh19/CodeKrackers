@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .core.database import engine, Base
 from .api import auth, analytics, call, fir, evidence, honeypot
+from .api import login, honeypot_root, honeypot_traps, detection, blacklist
 from .scheduler import setup_scheduler
 import uvicorn
 import asyncio
@@ -40,7 +41,7 @@ app.include_router(evidence.router, prefix="/api/evidence", tags=["evidence"])
 app.include_router(honeypot.router, prefix="/api/honeypot", tags=["honeypot"])
 
 # New Original Routers
-from .api import blacklist, canary, childlock, enclave, export, intel, legal, model_guard, openclaw, spam, threats, users, zk_privacy
+from .api import login, honeypot_root, honeypot_traps, detection, blacklist, canary, childlock, enclave, export, intel, legal, model_guard, openclaw, spam, threats, users, zk_privacy
 app.include_router(blacklist.router, prefix="/api/blacklist", tags=["blacklist"])
 app.include_router(canary.router, prefix="/api/canary", tags=["canary"])
 app.include_router(childlock.router, prefix="/api/childlock", tags=["childlock"])
@@ -54,6 +55,11 @@ app.include_router(spam.router, prefix="/api/spam", tags=["spam"])
 app.include_router(threats.router, prefix="/api/threats", tags=["threats"])
 app.include_router(users.router, prefix="/api/users", tags=["users"])
 app.include_router(zk_privacy.router, prefix="/api/zk", tags=["zk_privacy"])
+app.include_router(login.router, tags=["auth"])
+app.include_router(detection.router, prefix="/api/detect", tags=["detection"])
+app.include_router(honeypot_root.router, tags=["honeypot-root"])
+app.include_router(honeypot_traps.router, tags=["honeypot-traps"])
+
 
 @app.on_event("startup")
 async def startup_event():

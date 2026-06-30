@@ -11,56 +11,66 @@ Architecture:
 """
 
 import logging
-from typing import Dict, Any
+from typing import Any, Dict
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
+from backend.core.logger import get_logger
 from backend.enclave.enclave_client import (
+    MOCK_MODE,
+    check_enclave_health,
     detect_sms_in_enclave,
     detect_voice_in_enclave,
     get_enclave_attestation,
-    check_enclave_health,
     set_shared_key,
-    MOCK_MODE,
 )
 
-logger = logging.getLogger("vas.enclave_api")
+logger = get_logger("vas.enclave_api")
 
 router = APIRouter()
 
 
 # ─── Request Models ────────────────────────────────────────────────
 
+
 class SMSDetectionRequest(BaseModel):
     sms_text: str = Field(
-        ..., min_length=1, max_length=10000,
+        ...,
+        min_length=1,
+        max_length=10000,
         description="The SMS message text to classify inside the enclave",
     )
 
 
 class VoiceDetectionRequest(BaseModel):
     transcript: str = Field(
-        ..., min_length=1, max_length=50000,
+        ...,
+        min_length=1,
+        max_length=50000,
         description="Voice call transcript to analyze for vishing patterns",
     )
 
 
 class AttestationRequest(BaseModel):
     user_data: str = Field(
-        "", max_length=4096,
+        "",
+        max_length=4096,
         description="Optional data to include in the attestation document",
     )
 
 
 class KeyExchangeRequest(BaseModel):
     shared_key_hex: str = Field(
-        ..., min_length=64, max_length=64,
+        ...,
+        min_length=64,
+        max_length=64,
         description="64-char hex string representing 32-byte AES-256-GCM shared key",
     )
 
 
 # ─── Endpoints ─────────────────────────────────────────────────────
+
 
 @router.post(
     "/detect/sms",
@@ -74,7 +84,7 @@ class KeyExchangeRequest(BaseModel):
 async def detect_sms_endpoint(request: SMSDetectionRequest) -> Dict[str, Any]:
     """
     Classify an SMS message inside the hardware enclave.
-    
+
     The SMS text is encrypted with AES-256-GCM, sent over vsock to the
     Nitro Enclave, classified inside isolated memory, and the result
     is encrypted and returned.
@@ -106,7 +116,7 @@ async def detect_sms_endpoint(request: SMSDetectionRequest) -> Dict[str, Any]:
 async def detect_voice_endpoint(request: VoiceDetectionRequest) -> Dict[str, Any]:
     """
     Classify a voice call transcript inside the hardware enclave.
-    
+
     Detects vishing (voice phishing) patterns including coercion,
     impersonation, and urgent-action requests.
     """
@@ -140,7 +150,7 @@ async def attestation_endpoint(
 ) -> Dict[str, Any]:
     """
     Get cryptographic proof that the enclave is genuine hardware.
-    
+
     Returns PCR values (Platform Configuration Registers) that represent
     the enclave's identity — image hash, kernel hash, application hash.
     """
@@ -181,7 +191,7 @@ async def enclave_health_endpoint() -> Dict[str, Any]:
 async def key_exchange_endpoint(request: KeyExchangeRequest) -> Dict[str, Any]:
     """
     Set the shared AES-256-GCM encryption key for enclave communication.
-    
+
     This key should be obtained via the Nitro Attestation process:
     1. Enclave generates a key during boot
     2. Host calls GET /attestation to get the enclave's attestation
@@ -195,7 +205,7 @@ async def key_exchange_endpoint(request: KeyExchangeRequest) -> Dict[str, Any]:
             "note": "Mock mode — key exchange not needed",
             "mode": "mock",
         }
-    
+
     try:
         key_bytes = bytes.fromhex(request.shared_key_hex)
         set_shared_key(key_bytes)
@@ -228,14 +238,24 @@ async def key_exchange_endpoint(request: KeyExchangeRequest) -> Dict[str, Any]:
 async def enclave_status_endpoint() -> Dict[str, Any]:
     """Get comprehensive enclave security configuration status."""
     health = check_enclave_health()
-    
+
     return {
-        "enclave_type": "AWS Nitro Enclaves" if not MOCK_MODE else "Mock Enclave (Demo)",
+        "enclave_type": (
+            "AWS Nitro Enclaves" if not MOCK_MODE else "Mock Enclave (Demo)"
+        ),
         "encryption": "AES-256-GCM",
         "key_size": 256,
-        "communication": "vsock (CID=16, port=5000)" if not MOCK_MODE else "in-process (mock)",
-        "attestation": "AWS Nitro Attestation" if not MOCK_MODE else "Simulated (PCR mock)",
-        "model_inference": "Hardware-isolated memory" if not MOCK_MODE else "Fallback keyword classifier",
+        "communication": (
+            "vsock (CID=16, port=5000)" if not MOCK_MODE else "in-process (mock)"
+        ),
+        "attestation": (
+            "AWS Nitro Attestation" if not MOCK_MODE else "Simulated (PCR mock)"
+        ),
+        "model_inference": (
+            "Hardware-isolated memory"
+            if not MOCK_MODE
+            else "Fallback keyword classifier"
+        ),
         "reachable": health.get("enclave_reachable", False),
         "mode": MOCK_MODE and "mock" or "production",
     }

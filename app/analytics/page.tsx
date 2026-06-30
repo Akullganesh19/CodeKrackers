@@ -1,6 +1,5 @@
 'use client'
 
-import { phantomFetch } from '@/app/lib/fetch'
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
 import { motion } from 'framer-motion'
@@ -30,10 +29,10 @@ export default function Analytics() {
       try {
         const token = localStorage.getItem('vsdp_token') || 'dummy_token'
         const [summaryRes, mapRes] = await Promise.all([
-          phantomFetch('http://localhost:8000/api/analytics/dashboard-summary', {
+          fetch('http://localhost:8000/api/analytics/dashboard-summary', {
             headers: { 'Authorization': `Bearer ${token}` }
           }),
-          phantomFetch('http://localhost:8000/api/analytics/threat_map', {
+          fetch('http://localhost:8000/api/analytics/threat_map', {
             headers: { 'Authorization': `Bearer ${token}` }
           })
         ])

@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { phantomFetch } from '@/app/lib/fetch';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line
 } from 'recharts';
@@ -19,7 +18,7 @@ export default function AdminDashboard() {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const response = await phantomFetch('/api/analytics/admin/dashboard');
+                const response = await fetch('/api/analytics/admin/dashboard');
                 const data = await response.json();
                 setStats(data.stats);
                 setTrend(data.visualization.threat_trend_7d);

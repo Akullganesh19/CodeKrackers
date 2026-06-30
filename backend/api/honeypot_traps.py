@@ -183,7 +183,7 @@ def honeypot_secrets(request: Request):
         threat_indicators=["secret_leak"],
     )
 
-    canary = secrets.token_urlsafe(32)
+    _ = secrets.token_urlsafe(32)
     return JSONResponse(
         content={"error": "Unauthorized", "honeypot_triggered": True, "alert": "Logged and analyzed"},
         status_code=403,

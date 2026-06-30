@@ -1,0 +1,1310 @@
+backend/api/analytics.py:9:1: F401 'sqlalchemy.case' imported but unused
+backend/api/analytics.py:10:1: F401 'sqlalchemy.orm.Session' imported but unused
+backend/api/analytics.py:14:1: F401 'backend.models.orm.Blacklist' imported but unused
+backend/api/analytics.py:14:1: F401 'backend.models.orm.BlacklistType' imported but unused
+backend/api/analytics.py:14:89: E501 line too long (102 > 88 characters)
+backend/api/analytics.py:17:1: F401 'os' imported but unused
+backend/api/analytics.py:64:87: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+backend/api/analytics.py:64:89: E501 line too long (110 > 88 characters)
+backend/api/analytics.py:69:89: E501 line too long (93 > 88 characters)
+backend/api/analytics.py:70:89: E501 line too long (90 > 88 characters)
+backend/api/analytics.py:71:89: E501 line too long (102 > 88 characters)
+backend/api/analytics.py:77:89: E501 line too long (101 > 88 characters)
+backend/api/analytics.py:78:89: E501 line too long (98 > 88 characters)
+backend/api/analytics.py:81:89: E501 line too long (101 > 88 characters)
+backend/api/analytics.py:82:89: E501 line too long (89 > 88 characters)
+backend/api/analytics.py:83:89: E501 line too long (95 > 88 characters)
+backend/api/analytics.py:92:89: E501 line too long (93 > 88 characters)
+backend/api/analytics.py:148:89: E501 line too long (105 > 88 characters)
+backend/api/analytics.py:151:1: W293 blank line contains whitespace
+backend/api/analytics.py:154:89: E501 line too long (104 > 88 characters)
+backend/api/analytics.py:166:1: E302 expected 2 blank lines, found 1
+backend/api/analytics.py:177:89: E501 line too long (239 > 88 characters)
+backend/api/analytics.py:199:89: E501 line too long (158 > 88 characters)
+backend/api/analytics.py:210:1: E302 expected 2 blank lines, found 1
+backend/api/analytics.py:214:1: E302 expected 2 blank lines, found 1
+backend/api/analytics.py:231:89: E501 line too long (103 > 88 characters)
+backend/api/analytics.py:257:89: E501 line too long (153 > 88 characters)
+backend/api/analytics.py:265:89: E501 line too long (155 > 88 characters)
+backend/api/auth.py:1:1: F401 'datetime.datetime' imported but unused
+backend/api/auth.py:1:1: F401 'datetime.timezone' imported but unused
+backend/api/auth.py:31:1: E302 expected 2 blank lines, found 1
+backend/api/auth.py:35:1: E302 expected 2 blank lines, found 1
+backend/api/auth.py:40:1: E302 expected 2 blank lines, found 1
+backend/api/auth.py:46:1: E302 expected 2 blank lines, found 1
+backend/api/auth.py:52:1: E302 expected 2 blank lines, found 1
+backend/api/auth.py:64:1: W293 blank line contains whitespace
+backend/api/auth.py:69:89: E501 line too long (99 > 88 characters)
+backend/api/auth.py:73:89: E501 line too long (91 > 88 characters)
+backend/api/auth.py:78:89: E501 line too long (94 > 88 characters)
+backend/api/auth.py:86:89: E501 line too long (112 > 88 characters)
+backend/api/auth.py:91:89: E501 line too long (96 > 88 characters)
+backend/api/auth.py:94:1: W293 blank line contains whitespace
+backend/api/auth.py:97:1: E302 expected 2 blank lines, found 1
+backend/api/auth.py:107:89: E501 line too long (92 > 88 characters)
+backend/api/auth.py:117:83: E261 at least two spaces before inline comment
+backend/api/auth.py:117:89: E501 line too long (117 > 88 characters)
+backend/api/auth.py:126:89: E501 line too long (91 > 88 characters)
+backend/api/auth.py:131:89: E501 line too long (93 > 88 characters)
+backend/api/auth.py:148:21: W291 trailing whitespace
+backend/api/auth.py:149:34: W291 trailing whitespace
+backend/api/auth.py:155:1: E302 expected 2 blank lines, found 1
+backend/api/auth.py:181:1: E302 expected 2 blank lines, found 1
+backend/api/auth.py:199:89: E501 line too long (90 > 88 characters)
+backend/api/auth.py:217:89: E501 line too long (113 > 88 characters)
+backend/api/auth.py:230:1: E302 expected 2 blank lines, found 1
+backend/api/auth.py:247:89: E501 line too long (97 > 88 characters)
+backend/api/auth.py:249:89: E501 line too long (91 > 88 characters)
+backend/api/auth.py:261:74: W292 no newline at end of file
+backend/api/blacklist.py:5:1: F401 'typing.List' imported but unused
+backend/api/blacklist.py:7:1: F401 'fastapi.status' imported but unused
+backend/api/blacklist.py:11:89: E501 line too long (89 > 88 characters)
+backend/api/blacklist.py:50:89: E501 line too long (96 > 88 characters)
+backend/api/blacklist.py:96:89: E501 line too long (89 > 88 characters)
+backend/api/blacklist.py:97:57: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+backend/api/blacklist.py:99:89: E501 line too long (94 > 88 characters)
+backend/api/call.py:1:1: F401 'fastapi.HTTPException' imported but unused
+backend/api/call.py:1:89: E501 line too long (103 > 88 characters)
+backend/api/call.py:2:1: F401 'sqlalchemy.ext.asyncio.AsyncSession' imported but unused
+backend/api/call.py:3:1: F401 'uuid' imported but unused
+backend/api/call.py:7:1: F401 'asyncio' imported but unused
+backend/api/call.py:27:20: E261 at least two spaces before inline comment
+backend/api/call.py:31:1: E302 expected 2 blank lines, found 1
+backend/api/call.py:36:17: E251 unexpected spaces around keyword / parameter equals
+backend/api/call.py:36:19: E251 unexpected spaces around keyword / parameter equals
+backend/api/call.py:51:29: E261 at least two spaces before inline comment
+backend/api/call.py:52:1: W293 blank line contains whitespace
+backend/api/call.py:57:1: W293 blank line contains whitespace
+backend/api/call.py:64:89: E501 line too long (122 > 88 characters)
+backend/api/call.py:65:33: E261 at least two spaces before inline comment
+backend/api/call.py:68:89: E501 line too long (114 > 88 characters)
+backend/api/call.py:70:1: W293 blank line contains whitespace
+backend/api/call.py:78:89: E501 line too long (135 > 88 characters)
+backend/api/call.py:82:29: E261 at least two spaces before inline comment
+backend/api/call.py:87:89: E501 line too long (136 > 88 characters)
+backend/api/call.py:119:1: E302 expected 2 blank lines, found 1
+backend/api/call.py:130:1: W293 blank line contains whitespace
+backend/api/call.py:134:1: W293 blank line contains whitespace
+backend/api/call.py:152:41: E261 at least two spaces before inline comment
+backend/api/call.py:157:43: E261 at least two spaces before inline comment
+backend/api/call.py:158:43: E261 at least two spaces before inline comment
+backend/api/call.py:160:57: E261 at least two spaces before inline comment
+backend/api/call.py:165:1: W293 blank line contains whitespace
+backend/api/call.py:171:89: E501 line too long (90 > 88 characters)
+backend/api/call.py:172:1: W293 blank line contains whitespace
+backend/api/call.py:179:1: W293 blank line contains whitespace
+backend/api/call.py:193:89: E501 line too long (89 > 88 characters)
+backend/api/call.py:204:1: W293 blank line contains whitespace
+backend/api/call.py:208:89: E501 line too long (101 > 88 characters)
+backend/api/call.py:209:89: E501 line too long (114 > 88 characters)
+backend/api/call.py:210:89: E501 line too long (91 > 88 characters)
+backend/api/call.py:216:32: W292 no newline at end of file
+backend/api/canary.py:14:1: F401 'fastapi.HTTPException' imported but unused
+backend/api/canary.py:15:1: F401 'fastapi.responses.RedirectResponse' imported but unused
+backend/api/canary.py:19:1: F401 'backend.models.orm.UserRole' imported but unused
+backend/api/canary.py:34:1: W293 blank line contains whitespace
+backend/api/canary.py:37:1: W293 blank line contains whitespace
+backend/api/canary.py:59:5: F841 local variable 'gif_data' is assigned to but never used
+backend/api/canary.py:143:6: W292 no newline at end of file
+backend/api/childlock.py:5:1: F401 'typing.List' imported but unused
+backend/api/childlock.py:7:1: F401 'fastapi.status' imported but unused
+backend/api/childlock.py:32:89: E501 line too long (118 > 88 characters)
+backend/api/childlock.py:57:89: E501 line too long (119 > 88 characters)
+backend/api/childlock.py:58:89: E501 line too long (110 > 88 characters)
+backend/api/childlock.py:67:89: E501 line too long (93 > 88 characters)
+backend/api/childlock.py:73:89: E501 line too long (93 > 88 characters)
+backend/api/childlock.py:94:89: E501 line too long (91 > 88 characters)
+backend/api/childlock.py:97:89: E501 line too long (125 > 88 characters)
+backend/api/childlock.py:115:89: E501 line too long (91 > 88 characters)
+backend/api/childlock.py:117:89: E501 line too long (125 > 88 characters)
+backend/api/childlock.py:132:89: E501 line too long (125 > 88 characters)
+backend/api/childlock.py:140:89: E501 line too long (89 > 88 characters)
+backend/api/childlock.py:162:89: E501 line too long (125 > 88 characters)
+backend/api/childlock.py:181:13: E741 ambiguous variable name 'l'
+backend/api/deps.py:1:1: F401 'typing.Any' imported but unused
+backend/api/deps.py:4:1: F401 'sqlalchemy.orm.Session' imported but unused
+backend/api/deps.py:13:1: E302 expected 2 blank lines, found 1
+backend/api/deps.py:17:1: E302 expected 2 blank lines, found 1
+backend/api/deps.py:24:1: E302 expected 2 blank lines, found 1
+backend/api/deps.py:34:1: E302 expected 2 blank lines, found 1
+backend/api/deps.py:35:40: W291 trailing whitespace
+backend/api/deps.py:41:1: W293 blank line contains whitespace
+backend/api/deps.py:55:1: E302 expected 2 blank lines, found 1
+backend/api/deps.py:55:89: E501 line too long (90 > 88 characters)
+backend/api/deps.py:60:1: E302 expected 2 blank lines, found 1
+backend/api/deps.py:60:89: E501 line too long (98 > 88 characters)
+backend/api/deps.py:65:1: E302 expected 2 blank lines, found 1
+backend/api/deps.py:65:89: E501 line too long (102 > 88 characters)
+backend/api/deps.py:66:89: E501 line too long (89 > 88 characters)
+backend/api/deps.py:70:1: E302 expected 2 blank lines, found 1
+backend/api/deps.py:70:89: E501 line too long (102 > 88 characters)
+backend/api/detection.py:15:1: F401 'backend.core.config.settings' imported but unused
+backend/api/detection.py:66:89: E501 line too long (129 > 88 characters)
+backend/api/detection.py:74:89: E501 line too long (121 > 88 characters)
+backend/api/detection.py:108:89: E501 line too long (109 > 88 characters)
+backend/api/detection.py:123:89: E501 line too long (124 > 88 characters)
+backend/api/detection.py:124:89: E501 line too long (89 > 88 characters)
+backend/api/detection.py:139:89: E501 line too long (90 > 88 characters)
+backend/api/detection.py:151:89: E501 line too long (90 > 88 characters)
+backend/api/detection.py:160:89: E501 line too long (108 > 88 characters)
+backend/api/enclave.py:77:1: W293 blank line contains whitespace
+backend/api/enclave.py:109:1: W293 blank line contains whitespace
+backend/api/enclave.py:143:1: W293 blank line contains whitespace
+backend/api/enclave.py:184:1: W293 blank line contains whitespace
+backend/api/enclave.py:198:1: W293 blank line contains whitespace
+backend/api/enclave.py:231:1: W293 blank line contains whitespace
+backend/api/enclave.py:233:89: E501 line too long (89 > 88 characters)
+backend/api/enclave.py:236:89: E501 line too long (95 > 88 characters)
+backend/api/enclave.py:237:89: E501 line too long (92 > 88 characters)
+backend/api/enclave.py:238:89: E501 line too long (106 > 88 characters)
+backend/api/enclave.py:241:6: W292 no newline at end of file
+backend/api/evidence.py:11:1: E302 expected 2 blank lines, found 1
+backend/api/evidence.py:13:26: W291 trailing whitespace
+backend/api/evidence.py:14:40: W291 trailing whitespace
+backend/api/evidence.py:15:17: E251 unexpected spaces around keyword / parameter equals
+backend/api/evidence.py:15:19: E251 unexpected spaces around keyword / parameter equals
+backend/api/evidence.py:19:89: E501 line too long (95 > 88 characters)
+backend/api/evidence.py:25:1: E302 expected 2 blank lines, found 1
+backend/api/evidence.py:27:26: W291 trailing whitespace
+backend/api/evidence.py:28:40: W291 trailing whitespace
+backend/api/evidence.py:29:17: E251 unexpected spaces around keyword / parameter equals
+backend/api/evidence.py:29:19: E251 unexpected spaces around keyword / parameter equals
+backend/api/evidence.py:42:89: E501 line too long (92 > 88 characters)
+backend/api/evidence.py:44:1: E302 expected 2 blank lines, found 1
+backend/api/evidence.py:47:17: E251 unexpected spaces around keyword / parameter equals
+backend/api/evidence.py:47:19: E251 unexpected spaces around keyword / parameter equals
+backend/api/evidence.py:52:46: W292 no newline at end of file
+backend/api/export.py:32:89: E501 line too long (105 > 88 characters)
+backend/api/export.py:41:89: E501 line too long (95 > 88 characters)
+backend/api/export.py:73:89: E501 line too long (89 > 88 characters)
+backend/api/export.py:83:89: E501 line too long (103 > 88 characters)
+backend/api/fir.py:14:1: E302 expected 2 blank lines, found 1
+backend/api/fir.py:17:1: E302 expected 2 blank lines, found 1
+backend/api/fir.py:18:89: E501 line too long (89 > 88 characters)
+backend/api/fir.py:36:1: E302 expected 2 blank lines, found 1
+backend/api/fir.py:54:6: W292 no newline at end of file
+backend/api/honeypot.py:7:1: E302 expected 2 blank lines, found 1
+backend/api/honeypot.py:14:1: W293 blank line contains whitespace
+backend/api/honeypot.py:17:1: W293 blank line contains whitespace
+backend/api/honeypot.py:25:1: W293 blank line contains whitespace
+backend/api/honeypot.py:28:1: E302 expected 2 blank lines, found 1
+backend/api/honeypot_root.py:203:6: W292 no newline at end of file
+backend/api/honeypot_traps.py:55:89: E501 line too long (101 > 88 characters)
+backend/api/honeypot_traps.py:75:89: E501 line too long (113 > 88 characters)
+backend/api/honeypot_traps.py:78:89: E501 line too long (129 > 88 characters)
+backend/api/honeypot_traps.py:101:89: E501 line too long (94 > 88 characters)
+backend/api/honeypot_traps.py:123:89: E501 line too long (104 > 88 characters)
+backend/api/honeypot_traps.py:143:89: E501 line too long (110 > 88 characters)
+backend/api/honeypot_traps.py:164:89: E501 line too long (94 > 88 characters)
+backend/api/honeypot_traps.py:186:5: F841 local variable 'canary' is assigned to but never used
+backend/api/honeypot_traps.py:188:89: E501 line too long (102 > 88 characters)
+backend/api/honeypot_traps.py:210:89: E501 line too long (110 > 88 characters)
+backend/api/honeypot_traps.py:231:89: E501 line too long (116 > 88 characters)
+backend/api/honeypot_traps.py:246:89: E501 line too long (100 > 88 characters)
+backend/api/honeypot_traps.py:262:89: E501 line too long (102 > 88 characters)
+backend/api/honeypot_traps.py:265:89: E501 line too long (119 > 88 characters)
+backend/api/honeypot_traps.py:282:89: E501 line too long (92 > 88 characters)
+backend/api/honeypot_traps.py:298:89: E501 line too long (125 > 88 characters)
+backend/api/honeypot_traps.py:314:89: E501 line too long (115 > 88 characters)
+backend/api/honeypot_traps.py:331:89: E501 line too long (114 > 88 characters)
+backend/api/intel.py:2:89: E501 line too long (89 > 88 characters)
+backend/api/intel.py:30:80: E712 comparison to False should be 'if cond is False:' or 'if not cond:'
+backend/api/intel.py:37:89: E501 line too long (99 > 88 characters)
+backend/api/intel.py:50:89: E501 line too long (95 > 88 characters)
+backend/api/intel.py:76:80: E712 comparison to False should be 'if cond is False:' or 'if not cond:'
+backend/api/intel.py:130:80: E712 comparison to False should be 'if cond is False:' or 'if not cond:'
+backend/api/intel.py:139:89: E501 line too long (102 > 88 characters)
+backend/api/intel.py:199:13: E741 ambiguous variable name 'l'
+backend/api/intel.py:220:89: E501 line too long (102 > 88 characters)
+backend/api/intel.py:238:89: E501 line too long (111 > 88 characters)
+backend/api/intel.py:239:89: E501 line too long (113 > 88 characters)
+backend/api/intel.py:284:89: E501 line too long (92 > 88 characters)
+backend/api/intel.py:289:89: E501 line too long (102 > 88 characters)
+backend/api/legal.py:12:1: F401 'backend.schemas.legal.FIRCreate' imported but unused
+backend/api/legal.py:34:89: E501 line too long (91 > 88 characters)
+backend/api/legal.py:62:89: E501 line too long (94 > 88 characters)
+backend/api/legal.py:95:89: E501 line too long (105 > 88 characters)
+backend/api/legal.py:120:89: E501 line too long (96 > 88 characters)
+backend/api/login.py:47:89: E501 line too long (106 > 88 characters)
+backend/api/login.py:51:89: E501 line too long (90 > 88 characters)
+backend/api/login.py:76:89: E501 line too long (96 > 88 characters)
+backend/api/model_guard.py:17:1: F401 'typing.List' imported but unused
+backend/api/model_guard.py:18:1: F401 'fastapi.BackgroundTasks' imported but unused
+backend/api/model_guard.py:19:1: F401 'fastapi.responses.JSONResponse' imported but unused
+backend/api/model_guard.py:23:1: F401 'backend.models.UserRole' imported but unused
+backend/api/model_guard.py:24:1: F401 'backend.services.model_security.TEXT_ADVERSARIAL_EXAMPLES' imported but unused
+backend/api/model_guard.py:48:89: E501 line too long (90 > 88 characters)
+backend/api/model_guard.py:79:89: E501 line too long (124 > 88 characters)
+backend/api/model_guard.py:149:1: W293 blank line contains whitespace
+backend/api/model_guard.py:171:1: W293 blank line contains whitespace
+backend/api/model_guard.py:173:62: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+backend/api/model_guard.py:174:1: W293 blank line contains whitespace
+backend/api/model_guard.py:176:1: W293 blank line contains whitespace
+backend/api/model_guard.py:179:39: E741 ambiguous variable name 'l'
+backend/api/model_guard.py:192:17: E741 ambiguous variable name 'l'
+backend/api/model_guard.py:207:1: W293 blank line contains whitespace
+backend/api/model_guard.py:216:89: E501 line too long (92 > 88 characters)
+backend/api/model_guard.py:220:1: W293 blank line contains whitespace
+backend/api/model_guard.py:231:1: W293 blank line contains whitespace
+backend/api/model_guard.py:237:1: W293 blank line contains whitespace
+backend/api/model_guard.py:239:89: E501 line too long (91 > 88 characters)
+backend/api/model_guard.py:240:1: W293 blank line contains whitespace
+backend/api/model_guard.py:249:89: E501 line too long (92 > 88 characters)
+backend/api/model_guard.py:257:89: E501 line too long (97 > 88 characters)
+backend/api/model_guard.py:267:1: W293 blank line contains whitespace
+backend/api/model_guard.py:272:1: W293 blank line contains whitespace
+backend/api/model_guard.py:278:1: W293 blank line contains whitespace
+backend/api/model_guard.py:290:1: W293 blank line contains whitespace
+backend/api/model_guard.py:292:1: W293 blank line contains whitespace
+backend/api/model_guard.py:305:1: W293 blank line contains whitespace
+backend/api/model_guard.py:317:1: W293 blank line contains whitespace
+backend/api/model_guard.py:323:1: W293 blank line contains whitespace
+backend/api/model_guard.py:324:18: W292 no newline at end of file
+backend/api/openclaw.py:1:1: F401 'fastapi.HTTPException' imported but unused
+backend/api/openclaw.py:3:1: F401 'typing.List' imported but unused
+backend/api/openclaw.py:9:1: E302 expected 2 blank lines, found 1
+backend/api/openclaw.py:14:1: E302 expected 2 blank lines, found 1
+backend/api/openclaw.py:18:1: E302 expected 2 blank lines, found 1
+backend/api/openclaw.py:23:89: E501 line too long (94 > 88 characters)
+backend/api/openclaw.py:26:1: E302 expected 2 blank lines, found 1
+backend/api/openclaw.py:31:89: E501 line too long (92 > 88 characters)
+backend/api/openclaw.py:34:89: E501 line too long (138 > 88 characters)
+backend/api/openclaw.py:39:1: E302 expected 2 blank lines, found 1
+backend/api/spam.py:5:1: F401 'typing.List' imported but unused
+backend/api/spam.py:7:1: F401 'fastapi.status' imported but unused
+backend/api/spam.py:39:1: E302 expected 2 blank lines, found 1
+backend/api/spam.py:50:89: E501 line too long (91 > 88 characters)
+backend/api/spam.py:81:89: E501 line too long (89 > 88 characters)
+backend/api/spam.py:82:89: E501 line too long (95 > 88 characters)
+backend/api/spam.py:95:89: E501 line too long (113 > 88 characters)
+backend/api/spam.py:161:89: E501 line too long (99 > 88 characters)
+backend/api/spam.py:165:13: E741 ambiguous variable name 'l'
+backend/api/threats.py:24:89: E501 line too long (97 > 88 characters)
+backend/api/threats.py:25:89: E501 line too long (95 > 88 characters)
+backend/api/threats.py:32:89: E501 line too long (89 > 88 characters)
+backend/api/threats.py:102:89: E501 line too long (102 > 88 characters)
+backend/api/users.py:8:1: F401 'sqlalchemy.orm.Session' imported but unused
+backend/api/v1/api.py:26:1: E302 expected 2 blank lines, found 1
+backend/api/v1/api.py:30:1: E305 expected 2 blank lines after class or function definition, found 1
+backend/api/v1/api.py:47:89: E501 line too long (91 > 88 characters)
+backend/api/v1/endpoints/analytics.py:9:1: F401 'sqlalchemy.case' imported but unused
+backend/api/v1/endpoints/analytics.py:29:5: F841 local variable 'week_ago' is assigned to but never used
+backend/api/v1/endpoints/analytics.py:61:89: E501 line too long (93 > 88 characters)
+backend/api/v1/endpoints/analytics.py:62:89: E501 line too long (90 > 88 characters)
+backend/api/v1/endpoints/analytics.py:63:89: E501 line too long (102 > 88 characters)
+backend/api/v1/endpoints/analytics.py:65:69: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+backend/api/v1/endpoints/analytics.py:69:89: E501 line too long (101 > 88 characters)
+backend/api/v1/endpoints/analytics.py:70:89: E501 line too long (98 > 88 characters)
+backend/api/v1/endpoints/analytics.py:73:89: E501 line too long (101 > 88 characters)
+backend/api/v1/endpoints/analytics.py:74:89: E501 line too long (89 > 88 characters)
+backend/api/v1/endpoints/analytics.py:75:89: E501 line too long (95 > 88 characters)
+backend/api/v1/endpoints/analytics.py:84:89: E501 line too long (93 > 88 characters)
+backend/api/v1/endpoints/analytics.py:139:89: E501 line too long (103 > 88 characters)
+backend/api/v1/endpoints/analytics.py:144:89: E501 line too long (102 > 88 characters)
+backend/api/v1/endpoints/auth.py:26:1: E302 expected 2 blank lines, found 1
+backend/api/v1/endpoints/auth.py:30:1: E302 expected 2 blank lines, found 1
+backend/api/v1/endpoints/auth.py:35:1: E302 expected 2 blank lines, found 1
+backend/api/v1/endpoints/auth.py:40:1: E302 expected 2 blank lines, found 1
+backend/api/v1/endpoints/auth.py:47:1: E302 expected 2 blank lines, found 1
+backend/api/v1/endpoints/auth.py:59:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/auth.py:63:89: E501 line too long (99 > 88 characters)
+backend/api/v1/endpoints/auth.py:67:89: E501 line too long (91 > 88 characters)
+backend/api/v1/endpoints/auth.py:72:89: E501 line too long (94 > 88 characters)
+backend/api/v1/endpoints/auth.py:80:89: E501 line too long (112 > 88 characters)
+backend/api/v1/endpoints/auth.py:85:89: E501 line too long (96 > 88 characters)
+backend/api/v1/endpoints/auth.py:88:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/auth.py:91:1: E302 expected 2 blank lines, found 1
+backend/api/v1/endpoints/auth.py:101:89: E501 line too long (92 > 88 characters)
+backend/api/v1/endpoints/auth.py:120:89: E501 line too long (91 > 88 characters)
+backend/api/v1/endpoints/auth.py:125:89: E501 line too long (93 > 88 characters)
+backend/api/v1/endpoints/auth.py:141:21: W291 trailing whitespace
+backend/api/v1/endpoints/auth.py:142:28: W291 trailing whitespace
+backend/api/v1/endpoints/auth.py:148:1: E302 expected 2 blank lines, found 1
+backend/api/v1/endpoints/auth.py:174:1: E302 expected 2 blank lines, found 1
+backend/api/v1/endpoints/auth.py:190:89: E501 line too long (127 > 88 characters)
+backend/api/v1/endpoints/auth.py:208:89: E501 line too long (115 > 88 characters)
+backend/api/v1/endpoints/auth.py:212:1: E302 expected 2 blank lines, found 1
+backend/api/v1/endpoints/auth.py:229:89: E501 line too long (97 > 88 characters)
+backend/api/v1/endpoints/auth.py:231:89: E501 line too long (91 > 88 characters)
+backend/api/v1/endpoints/auth.py:243:74: W292 no newline at end of file
+backend/api/v1/endpoints/blacklist.py:5:1: F401 'typing.List' imported but unused
+backend/api/v1/endpoints/blacklist.py:7:1: F401 'fastapi.status' imported but unused
+backend/api/v1/endpoints/blacklist.py:51:89: E501 line too long (96 > 88 characters)
+backend/api/v1/endpoints/blacklist.py:97:89: E501 line too long (89 > 88 characters)
+backend/api/v1/endpoints/blacklist.py:98:57: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+backend/api/v1/endpoints/blacklist.py:100:89: E501 line too long (94 > 88 characters)
+backend/api/v1/endpoints/canary.py:14:1: F401 'fastapi.HTTPException' imported but unused
+backend/api/v1/endpoints/canary.py:15:1: F401 'fastapi.responses.RedirectResponse' imported but unused
+backend/api/v1/endpoints/canary.py:21:1: F401 'backend.models.user.UserRole' imported but unused
+backend/api/v1/endpoints/canary.py:36:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/canary.py:39:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/canary.py:61:5: F841 local variable 'gif_data' is assigned to but never used
+backend/api/v1/endpoints/canary.py:145:6: W292 no newline at end of file
+backend/api/v1/endpoints/childlock.py:5:1: F401 'typing.List' imported but unused
+backend/api/v1/endpoints/childlock.py:7:1: F401 'fastapi.status' imported but unused
+backend/api/v1/endpoints/childlock.py:33:89: E501 line too long (118 > 88 characters)
+backend/api/v1/endpoints/childlock.py:58:89: E501 line too long (119 > 88 characters)
+backend/api/v1/endpoints/childlock.py:59:89: E501 line too long (110 > 88 characters)
+backend/api/v1/endpoints/childlock.py:68:89: E501 line too long (93 > 88 characters)
+backend/api/v1/endpoints/childlock.py:74:89: E501 line too long (93 > 88 characters)
+backend/api/v1/endpoints/childlock.py:95:89: E501 line too long (91 > 88 characters)
+backend/api/v1/endpoints/childlock.py:98:89: E501 line too long (125 > 88 characters)
+backend/api/v1/endpoints/childlock.py:116:89: E501 line too long (91 > 88 characters)
+backend/api/v1/endpoints/childlock.py:118:89: E501 line too long (125 > 88 characters)
+backend/api/v1/endpoints/childlock.py:133:89: E501 line too long (125 > 88 characters)
+backend/api/v1/endpoints/childlock.py:141:89: E501 line too long (89 > 88 characters)
+backend/api/v1/endpoints/childlock.py:163:89: E501 line too long (125 > 88 characters)
+backend/api/v1/endpoints/childlock.py:182:13: E741 ambiguous variable name 'l'
+backend/api/v1/endpoints/detection.py:15:1: F401 'backend.core.config.settings' imported but unused
+backend/api/v1/endpoints/detection.py:66:89: E501 line too long (129 > 88 characters)
+backend/api/v1/endpoints/detection.py:74:89: E501 line too long (121 > 88 characters)
+backend/api/v1/endpoints/detection.py:108:89: E501 line too long (109 > 88 characters)
+backend/api/v1/endpoints/detection.py:123:89: E501 line too long (124 > 88 characters)
+backend/api/v1/endpoints/detection.py:124:89: E501 line too long (89 > 88 characters)
+backend/api/v1/endpoints/detection.py:139:89: E501 line too long (90 > 88 characters)
+backend/api/v1/endpoints/detection.py:151:89: E501 line too long (90 > 88 characters)
+backend/api/v1/endpoints/detection.py:160:89: E501 line too long (108 > 88 characters)
+backend/api/v1/endpoints/enclave.py:77:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/enclave.py:109:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/enclave.py:143:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/enclave.py:184:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/enclave.py:198:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/enclave.py:231:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/enclave.py:233:89: E501 line too long (89 > 88 characters)
+backend/api/v1/endpoints/enclave.py:236:89: E501 line too long (95 > 88 characters)
+backend/api/v1/endpoints/enclave.py:237:89: E501 line too long (92 > 88 characters)
+backend/api/v1/endpoints/enclave.py:238:89: E501 line too long (106 > 88 characters)
+backend/api/v1/endpoints/enclave.py:241:6: W292 no newline at end of file
+backend/api/v1/endpoints/export.py:33:89: E501 line too long (105 > 88 characters)
+backend/api/v1/endpoints/export.py:42:89: E501 line too long (95 > 88 characters)
+backend/api/v1/endpoints/export.py:74:89: E501 line too long (89 > 88 characters)
+backend/api/v1/endpoints/export.py:84:89: E501 line too long (103 > 88 characters)
+backend/api/v1/endpoints/honeypot.py:7:1: E302 expected 2 blank lines, found 1
+backend/api/v1/endpoints/honeypot.py:14:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/honeypot.py:17:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/honeypot.py:25:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/honeypot_root.py:203:6: W292 no newline at end of file
+backend/api/v1/endpoints/honeypot_traps.py:55:89: E501 line too long (101 > 88 characters)
+backend/api/v1/endpoints/honeypot_traps.py:75:89: E501 line too long (113 > 88 characters)
+backend/api/v1/endpoints/honeypot_traps.py:78:89: E501 line too long (129 > 88 characters)
+backend/api/v1/endpoints/honeypot_traps.py:101:89: E501 line too long (94 > 88 characters)
+backend/api/v1/endpoints/honeypot_traps.py:123:89: E501 line too long (104 > 88 characters)
+backend/api/v1/endpoints/honeypot_traps.py:143:89: E501 line too long (110 > 88 characters)
+backend/api/v1/endpoints/honeypot_traps.py:164:89: E501 line too long (94 > 88 characters)
+backend/api/v1/endpoints/honeypot_traps.py:186:5: F841 local variable 'canary' is assigned to but never used
+backend/api/v1/endpoints/honeypot_traps.py:188:89: E501 line too long (102 > 88 characters)
+backend/api/v1/endpoints/honeypot_traps.py:210:89: E501 line too long (110 > 88 characters)
+backend/api/v1/endpoints/honeypot_traps.py:231:89: E501 line too long (116 > 88 characters)
+backend/api/v1/endpoints/honeypot_traps.py:246:89: E501 line too long (100 > 88 characters)
+backend/api/v1/endpoints/honeypot_traps.py:262:89: E501 line too long (102 > 88 characters)
+backend/api/v1/endpoints/honeypot_traps.py:265:89: E501 line too long (119 > 88 characters)
+backend/api/v1/endpoints/honeypot_traps.py:282:89: E501 line too long (92 > 88 characters)
+backend/api/v1/endpoints/honeypot_traps.py:298:89: E501 line too long (125 > 88 characters)
+backend/api/v1/endpoints/honeypot_traps.py:314:89: E501 line too long (115 > 88 characters)
+backend/api/v1/endpoints/honeypot_traps.py:331:89: E501 line too long (114 > 88 characters)
+backend/api/v1/endpoints/intel.py:2:89: E501 line too long (89 > 88 characters)
+backend/api/v1/endpoints/intel.py:31:80: E712 comparison to False should be 'if cond is False:' or 'if not cond:'
+backend/api/v1/endpoints/intel.py:38:89: E501 line too long (99 > 88 characters)
+backend/api/v1/endpoints/intel.py:51:89: E501 line too long (95 > 88 characters)
+backend/api/v1/endpoints/intel.py:77:80: E712 comparison to False should be 'if cond is False:' or 'if not cond:'
+backend/api/v1/endpoints/intel.py:131:80: E712 comparison to False should be 'if cond is False:' or 'if not cond:'
+backend/api/v1/endpoints/intel.py:140:89: E501 line too long (102 > 88 characters)
+backend/api/v1/endpoints/intel.py:200:13: E741 ambiguous variable name 'l'
+backend/api/v1/endpoints/intel.py:221:89: E501 line too long (102 > 88 characters)
+backend/api/v1/endpoints/intel.py:239:89: E501 line too long (111 > 88 characters)
+backend/api/v1/endpoints/intel.py:240:89: E501 line too long (113 > 88 characters)
+backend/api/v1/endpoints/intel.py:285:89: E501 line too long (92 > 88 characters)
+backend/api/v1/endpoints/intel.py:290:89: E501 line too long (102 > 88 characters)
+backend/api/v1/endpoints/legal.py:14:1: F401 'backend.schemas.legal.FIRCreate' imported but unused
+backend/api/v1/endpoints/legal.py:36:89: E501 line too long (91 > 88 characters)
+backend/api/v1/endpoints/legal.py:64:89: E501 line too long (94 > 88 characters)
+backend/api/v1/endpoints/legal.py:97:89: E501 line too long (105 > 88 characters)
+backend/api/v1/endpoints/legal.py:122:89: E501 line too long (96 > 88 characters)
+backend/api/v1/endpoints/login.py:47:89: E501 line too long (106 > 88 characters)
+backend/api/v1/endpoints/login.py:51:89: E501 line too long (90 > 88 characters)
+backend/api/v1/endpoints/login.py:76:89: E501 line too long (96 > 88 characters)
+backend/api/v1/endpoints/model_guard.py:17:1: F401 'typing.List' imported but unused
+backend/api/v1/endpoints/model_guard.py:18:1: F401 'fastapi.BackgroundTasks' imported but unused
+backend/api/v1/endpoints/model_guard.py:19:1: F401 'fastapi.responses.JSONResponse' imported but unused
+backend/api/v1/endpoints/model_guard.py:25:1: F401 'backend.models.user.UserRole' imported but unused
+backend/api/v1/endpoints/model_guard.py:26:1: F401 'backend.services.model_security.TEXT_ADVERSARIAL_EXAMPLES' imported but unused
+backend/api/v1/endpoints/model_guard.py:50:89: E501 line too long (90 > 88 characters)
+backend/api/v1/endpoints/model_guard.py:81:89: E501 line too long (124 > 88 characters)
+backend/api/v1/endpoints/model_guard.py:151:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/model_guard.py:173:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/model_guard.py:175:62: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+backend/api/v1/endpoints/model_guard.py:176:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/model_guard.py:178:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/model_guard.py:181:39: E741 ambiguous variable name 'l'
+backend/api/v1/endpoints/model_guard.py:194:17: E741 ambiguous variable name 'l'
+backend/api/v1/endpoints/model_guard.py:209:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/model_guard.py:218:89: E501 line too long (92 > 88 characters)
+backend/api/v1/endpoints/model_guard.py:222:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/model_guard.py:233:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/model_guard.py:239:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/model_guard.py:241:89: E501 line too long (91 > 88 characters)
+backend/api/v1/endpoints/model_guard.py:242:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/model_guard.py:251:89: E501 line too long (92 > 88 characters)
+backend/api/v1/endpoints/model_guard.py:259:89: E501 line too long (97 > 88 characters)
+backend/api/v1/endpoints/model_guard.py:269:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/model_guard.py:274:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/model_guard.py:280:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/model_guard.py:292:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/model_guard.py:294:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/model_guard.py:307:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/model_guard.py:319:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/model_guard.py:325:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/model_guard.py:326:18: W292 no newline at end of file
+backend/api/v1/endpoints/spam.py:5:1: F401 'typing.List' imported but unused
+backend/api/v1/endpoints/spam.py:7:1: F401 'fastapi.status' imported but unused
+backend/api/v1/endpoints/spam.py:40:1: E302 expected 2 blank lines, found 1
+backend/api/v1/endpoints/spam.py:51:89: E501 line too long (91 > 88 characters)
+backend/api/v1/endpoints/spam.py:82:89: E501 line too long (89 > 88 characters)
+backend/api/v1/endpoints/spam.py:83:89: E501 line too long (95 > 88 characters)
+backend/api/v1/endpoints/spam.py:96:89: E501 line too long (113 > 88 characters)
+backend/api/v1/endpoints/spam.py:162:89: E501 line too long (99 > 88 characters)
+backend/api/v1/endpoints/spam.py:166:13: E741 ambiguous variable name 'l'
+backend/api/v1/endpoints/threats.py:25:89: E501 line too long (97 > 88 characters)
+backend/api/v1/endpoints/threats.py:26:89: E501 line too long (95 > 88 characters)
+backend/api/v1/endpoints/threats.py:33:89: E501 line too long (89 > 88 characters)
+backend/api/v1/endpoints/threats.py:103:89: E501 line too long (102 > 88 characters)
+backend/api/v1/endpoints/zk_privacy.py:14:1: F401 'time' imported but unused
+backend/api/v1/endpoints/zk_privacy.py:16:1: F401 'typing.Optional' imported but unused
+backend/api/v1/endpoints/zk_privacy.py:17:1: F401 'fastapi.Depends' imported but unused
+backend/api/v1/endpoints/zk_privacy.py:19:1: F401 'backend.api.deps' imported but unused
+backend/api/v1/endpoints/zk_privacy.py:20:1: F401 'backend.models.user.User' imported but unused
+backend/api/v1/endpoints/zk_privacy.py:20:1: F401 'backend.models.user.UserRole' imported but unused
+backend/api/v1/endpoints/zk_privacy.py:21:1: F401 'backend.core.zk_privacy.PIIProtector' imported but unused
+backend/api/v1/endpoints/zk_privacy.py:21:1: F401 'backend.core.zk_privacy.BlindCredentialManager' imported but unused
+backend/api/v1/endpoints/zk_privacy.py:21:1: F401 'backend.core.zk_privacy.generate_blind_auth_token' imported but unused
+backend/api/v1/endpoints/zk_privacy.py:51:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/zk_privacy.py:54:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/zk_privacy.py:61:89: E501 line too long (94 > 88 characters)
+backend/api/v1/endpoints/zk_privacy.py:66:89: E501 line too long (91 > 88 characters)
+backend/api/v1/endpoints/zk_privacy.py:78:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/zk_privacy.py:84:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/zk_privacy.py:88:89: E501 line too long (132 > 88 characters)
+backend/api/v1/endpoints/zk_privacy.py:100:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/zk_privacy.py:106:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/zk_privacy.py:109:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/zk_privacy.py:114:89: E501 line too long (92 > 88 characters)
+backend/api/v1/endpoints/zk_privacy.py:124:89: E501 line too long (101 > 88 characters)
+backend/api/v1/endpoints/zk_privacy.py:131:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/zk_privacy.py:133:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/zk_privacy.py:147:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/zk_privacy.py:149:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/zk_privacy.py:153:89: E501 line too long (90 > 88 characters)
+backend/api/v1/endpoints/zk_privacy.py:154:89: E501 line too long (97 > 88 characters)
+backend/api/v1/endpoints/zk_privacy.py:167:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/zk_privacy.py:170:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/zk_privacy.py:174:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/zk_privacy.py:177:89: E501 line too long (97 > 88 characters)
+backend/api/v1/endpoints/zk_privacy.py:190:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/zk_privacy.py:196:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/zk_privacy.py:201:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/zk_privacy.py:207:89: E501 line too long (94 > 88 characters)
+backend/api/v1/endpoints/zk_privacy.py:208:89: E501 line too long (92 > 88 characters)
+backend/api/v1/endpoints/zk_privacy.py:217:89: E501 line too long (94 > 88 characters)
+backend/api/v1/endpoints/zk_privacy.py:221:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/zk_privacy.py:231:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/zk_privacy.py:234:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/zk_privacy.py:238:89: E501 line too long (97 > 88 characters)
+backend/api/v1/endpoints/zk_privacy.py:258:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/zk_privacy.py:261:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/zk_privacy.py:272:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/zk_privacy.py:277:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/zk_privacy.py:279:1: W293 blank line contains whitespace
+backend/api/v1/endpoints/zk_privacy.py:286:6: W292 no newline at end of file
+backend/api/zk_privacy.py:14:1: F401 'time' imported but unused
+backend/api/zk_privacy.py:16:1: F401 'typing.Optional' imported but unused
+backend/api/zk_privacy.py:17:1: F401 'fastapi.Depends' imported but unused
+backend/api/zk_privacy.py:19:1: F401 'backend.api.deps' imported but unused
+backend/api/zk_privacy.py:20:1: F401 'backend.models.User' imported but unused
+backend/api/zk_privacy.py:20:1: F401 'backend.models.UserRole' imported but unused
+backend/api/zk_privacy.py:21:1: F401 'backend.core.zk_privacy.PIIProtector' imported but unused
+backend/api/zk_privacy.py:21:1: F401 'backend.core.zk_privacy.BlindCredentialManager' imported but unused
+backend/api/zk_privacy.py:21:1: F401 'backend.core.zk_privacy.generate_blind_auth_token' imported but unused
+backend/api/zk_privacy.py:51:1: W293 blank line contains whitespace
+backend/api/zk_privacy.py:54:1: W293 blank line contains whitespace
+backend/api/zk_privacy.py:61:89: E501 line too long (94 > 88 characters)
+backend/api/zk_privacy.py:66:89: E501 line too long (91 > 88 characters)
+backend/api/zk_privacy.py:78:1: W293 blank line contains whitespace
+backend/api/zk_privacy.py:84:1: W293 blank line contains whitespace
+backend/api/zk_privacy.py:88:89: E501 line too long (132 > 88 characters)
+backend/api/zk_privacy.py:100:1: W293 blank line contains whitespace
+backend/api/zk_privacy.py:106:1: W293 blank line contains whitespace
+backend/api/zk_privacy.py:109:1: W293 blank line contains whitespace
+backend/api/zk_privacy.py:114:89: E501 line too long (92 > 88 characters)
+backend/api/zk_privacy.py:124:89: E501 line too long (101 > 88 characters)
+backend/api/zk_privacy.py:131:1: W293 blank line contains whitespace
+backend/api/zk_privacy.py:133:1: W293 blank line contains whitespace
+backend/api/zk_privacy.py:147:1: W293 blank line contains whitespace
+backend/api/zk_privacy.py:149:1: W293 blank line contains whitespace
+backend/api/zk_privacy.py:153:89: E501 line too long (90 > 88 characters)
+backend/api/zk_privacy.py:154:89: E501 line too long (97 > 88 characters)
+backend/api/zk_privacy.py:167:1: W293 blank line contains whitespace
+backend/api/zk_privacy.py:170:1: W293 blank line contains whitespace
+backend/api/zk_privacy.py:174:1: W293 blank line contains whitespace
+backend/api/zk_privacy.py:177:89: E501 line too long (97 > 88 characters)
+backend/api/zk_privacy.py:190:1: W293 blank line contains whitespace
+backend/api/zk_privacy.py:196:1: W293 blank line contains whitespace
+backend/api/zk_privacy.py:201:1: W293 blank line contains whitespace
+backend/api/zk_privacy.py:207:89: E501 line too long (94 > 88 characters)
+backend/api/zk_privacy.py:208:89: E501 line too long (92 > 88 characters)
+backend/api/zk_privacy.py:217:89: E501 line too long (94 > 88 characters)
+backend/api/zk_privacy.py:221:1: W293 blank line contains whitespace
+backend/api/zk_privacy.py:231:1: W293 blank line contains whitespace
+backend/api/zk_privacy.py:234:1: W293 blank line contains whitespace
+backend/api/zk_privacy.py:238:89: E501 line too long (97 > 88 characters)
+backend/api/zk_privacy.py:258:1: W293 blank line contains whitespace
+backend/api/zk_privacy.py:261:1: W293 blank line contains whitespace
+backend/api/zk_privacy.py:272:1: W293 blank line contains whitespace
+backend/api/zk_privacy.py:277:1: W293 blank line contains whitespace
+backend/api/zk_privacy.py:279:1: W293 blank line contains whitespace
+backend/api/zk_privacy.py:286:6: W292 no newline at end of file
+backend/core/anomaly_detector.py:18:1: F401 'os' imported but unused
+backend/core/anomaly_detector.py:108:24: E261 at least two spaces before inline comment
+backend/core/anomaly_detector.py:142:89: E501 line too long (97 > 88 characters)
+backend/core/anomaly_detector.py:256:89: E501 line too long (95 > 88 characters)
+backend/core/anomaly_detector.py:404:89: E501 line too long (90 > 88 characters)
+backend/core/anomaly_detector.py:411:72: W292 no newline at end of file
+backend/core/config.py:5:1: E302 expected 2 blank lines, found 1
+backend/core/config.py:7:1: W293 blank line contains whitespace
+backend/core/config.py:10:1: W293 blank line contains whitespace
+backend/core/config.py:23:1: W293 blank line contains whitespace
+backend/core/config.py:37:1: W293 blank line contains whitespace
+backend/core/config.py:41:1: E305 expected 2 blank lines after class or function definition, found 1
+backend/core/config.py:41:22: W292 no newline at end of file
+backend/core/database.py:3:1: F401 'sqlalchemy.orm.declarative_base' imported but unused
+backend/core/database.py:18:12: W291 trailing whitespace
+backend/core/database.py:19:25: W291 trailing whitespace
+backend/core/database.py:37:1: F401 '..models.orm.Base' imported but unused
+backend/core/database.py:37:1: E402 module level import not at top of file
+backend/core/database.py:39:1: E302 expected 2 blank lines, found 1
+backend/core/database.py:46:1: E302 expected 2 blank lines, found 1
+backend/core/dependencies.py:1:1: F401 'fastapi.status' imported but unused
+backend/core/dependencies.py:6:1: F401 '.security.decode_token' imported but unused
+backend/core/dependencies.py:11:1: E302 expected 2 blank lines, found 1
+backend/core/dependencies.py:19:1: W293 blank line contains whitespace
+backend/core/dependencies.py:30:1: E302 expected 2 blank lines, found 1
+backend/core/dependencies.py:36:89: E501 line too long (102 > 88 characters)
+backend/core/dependencies.py:38:24: W292 no newline at end of file
+backend/core/deps.py:15:1: E302 expected 2 blank lines, found 1
+backend/core/deps.py:31:1: E302 expected 2 blank lines, found 1
+backend/core/deps.py:39:89: E501 line too long (103 > 88 characters)
+backend/core/deps.py:45:23: W292 no newline at end of file
+backend/core/logger.py:6:1: E302 expected 2 blank lines, found 1
+backend/core/logger.py:39:1: E302 expected 2 blank lines, found 1
+backend/core/middleware.py:1:89: E501 line too long (94 > 88 characters)
+backend/core/middleware.py:4:1: F401 'json' imported but unused
+backend/core/middleware.py:7:1: F401 'typing.Set' imported but unused
+backend/core/middleware.py:13:1: F401 '.config.settings' imported but unused
+backend/core/middleware.py:14:1: F401 '.anomaly_detector.APIAnomalyDetector' imported but unused
+backend/core/middleware.py:28:89: E501 line too long (91 > 88 characters)
+backend/core/middleware.py:29:89: E501 line too long (93 > 88 characters)
+backend/core/middleware.py:151:89: E501 line too long (94 > 88 characters)
+backend/core/middleware.py:302:5: C901 'RAPSMiddleware.dispatch' is too complex (18)
+backend/core/middleware.py:406:89: E501 line too long (92 > 88 characters)
+backend/core/middleware.py:420:89: E501 line too long (91 > 88 characters)
+backend/core/middleware.py:431:89: E501 line too long (89 > 88 characters)
+backend/core/middleware.py:467:89: E501 line too long (98 > 88 characters)
+backend/core/middleware.py:490:89: E501 line too long (94 > 88 characters)
+backend/core/middleware.py:509:89: E501 line too long (94 > 88 characters)
+backend/core/security.py:25:89: E501 line too long (96 > 88 characters)
+backend/core/security.py:58:89: E501 line too long (93 > 88 characters)
+backend/core/ws.py:7:1: F401 'datetime.datetime' imported but unused
+backend/core/ws.py:7:1: F401 'datetime.timezone' imported but unused
+backend/core/zk_privacy.py:14:1: F401 'os' imported but unused
+backend/core/zk_privacy.py:22:1: F401 'typing.List' imported but unused
+backend/core/zk_privacy.py:24:1: F401 'datetime.datetime' imported but unused
+backend/core/zk_privacy.py:24:1: F401 'datetime.timezone' imported but unused
+backend/core/zk_privacy.py:61:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:63:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:72:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:84:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:97:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:99:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:102:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:112:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:122:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:123:89: E501 line too long (90 > 88 characters)
+backend/core/zk_privacy.py:140:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:143:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:146:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:152:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:159:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:165:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:171:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:177:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:190:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:195:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:203:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:212:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:231:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:237:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:242:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:249:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:256:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:269:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:274:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:280:89: E501 line too long (100 > 88 characters)
+backend/core/zk_privacy.py:282:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:283:66: W291 trailing whitespace
+backend/core/zk_privacy.py:293:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:299:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:304:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:306:89: E501 line too long (91 > 88 characters)
+backend/core/zk_privacy.py:309:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:317:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:320:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:329:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:332:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:342:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:344:89: E501 line too long (94 > 88 characters)
+backend/core/zk_privacy.py:347:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:351:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:354:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:362:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:371:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:375:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:378:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:381:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:385:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:394:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:398:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:399:89: E501 line too long (91 > 88 characters)
+backend/core/zk_privacy.py:406:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:410:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:417:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:419:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:435:1: W293 blank line contains whitespace
+backend/core/zk_privacy.py:464:37: W292 no newline at end of file
+backend/db/base_class.py:4:1: F401 'datetime.datetime' imported but unused
+backend/db/base_class.py:4:1: F401 'datetime.timezone' imported but unused
+backend/db/base_class.py:6:1: F401 'sqlalchemy.Integer' imported but unused
+backend/enclave/enclave_client.py:118:1: W293 blank line contains whitespace
+backend/enclave/enclave_client.py:122:1: W293 blank line contains whitespace
+backend/enclave/enclave_client.py:125:1: W293 blank line contains whitespace
+backend/enclave/enclave_client.py:131:1: W293 blank line contains whitespace
+backend/enclave/enclave_client.py:143:1: W293 blank line contains whitespace
+backend/enclave/enclave_client.py:146:1: W293 blank line contains whitespace
+backend/enclave/enclave_client.py:154:1: W293 blank line contains whitespace
+backend/enclave/enclave_client.py:158:1: W293 blank line contains whitespace
+backend/enclave/enclave_client.py:162:1: W293 blank line contains whitespace
+backend/enclave/enclave_client.py:182:1: W293 blank line contains whitespace
+backend/enclave/enclave_client.py:191:1: W293 blank line contains whitespace
+backend/enclave/enclave_client.py:193:1: W293 blank line contains whitespace
+backend/enclave/enclave_client.py:211:1: W293 blank line contains whitespace
+backend/enclave/enclave_client.py:213:1: W293 blank line contains whitespace
+backend/enclave/enclave_client.py:216:1: W293 blank line contains whitespace
+backend/enclave/enclave_client.py:224:1: W293 blank line contains whitespace
+backend/enclave/enclave_client.py:229:1: W293 blank line contains whitespace
+backend/enclave/enclave_client.py:237:1: W293 blank line contains whitespace
+backend/enclave/enclave_client.py:240:1: W293 blank line contains whitespace
+backend/enclave/enclave_client.py:248:1: W293 blank line contains whitespace
+backend/enclave/enclave_client.py:253:1: W293 blank line contains whitespace
+backend/enclave/enclave_client.py:261:1: W293 blank line contains whitespace
+backend/enclave/enclave_client.py:264:1: W293 blank line contains whitespace
+backend/enclave/enclave_client.py:267:1: W293 blank line contains whitespace
+backend/enclave/enclave_client.py:272:1: W293 blank line contains whitespace
+backend/enclave/enclave_client.py:277:1: W293 blank line contains whitespace
+backend/enclave/enclave_client.py:284:1: W293 blank line contains whitespace
+backend/enclave/enclave_client.py:310:1: W293 blank line contains whitespace
+backend/enclave/enclave_client.py:311:18: W292 no newline at end of file
+backend/enclave/enclave_server.py:18:1: F401 'time' imported but unused
+backend/enclave/enclave_server.py:88:1: W293 blank line contains whitespace
+backend/enclave/enclave_server.py:93:1: W293 blank line contains whitespace
+backend/enclave/enclave_server.py:114:1: W293 blank line contains whitespace
+backend/enclave/enclave_server.py:182:1: W293 blank line contains whitespace
+backend/enclave/enclave_server.py:221:1: W293 blank line contains whitespace
+backend/enclave/enclave_server.py:266:19: W292 no newline at end of file
+backend/initial_data.py:9:1: F401 'backend.models.legal.Evidence' imported but unused
+backend/initial_data.py:9:1: F401 'backend.models.legal.FIR' imported but unused
+backend/initial_data.py:62:89: E501 line too long (109 > 88 characters)
+backend/initial_data.py:72:89: E501 line too long (111 > 88 characters)
+backend/initial_data.py:82:89: E501 line too long (120 > 88 characters)
+backend/initial_data.py:87:89: E501 line too long (93 > 88 characters)
+backend/initial_data.py:92:89: E501 line too long (127 > 88 characters)
+backend/initial_data.py:97:89: E501 line too long (99 > 88 characters)
+backend/initial_data.py:102:89: E501 line too long (142 > 88 characters)
+backend/main.py:5:1: F401 '.scheduler.setup_scheduler' imported but unused
+backend/main.py:7:1: F401 'asyncio' imported but unused
+backend/main.py:9:1: F811 redefinition of unused 'engine' from line 3
+backend/main.py:9:1: F811 redefinition of unused 'Base' from line 3
+backend/main.py:16:89: E501 line too long (93 > 88 characters)
+backend/main.py:43:1: E402 module level import not at top of file
+backend/main.py:43:89: E501 line too long (133 > 88 characters)
+backend/main.py:58:1: E302 expected 2 blank lines, found 1
+backend/main.py:67:1: W293 blank line contains whitespace
+backend/main.py:82:1: W293 blank line contains whitespace
+backend/main.py:86:1: E302 expected 2 blank lines, found 1
+backend/migrate_to_supabase.py:9:1: E402 module level import not at top of file
+backend/migrate_to_supabase.py:11:1: E302 expected 2 blank lines, found 1
+backend/migrate_to_supabase.py:16:89: E501 line too long (90 > 88 characters)
+backend/migrate_to_supabase.py:21:1: E305 expected 2 blank lines after class or function definition, found 1
+backend/migrate_to_supabase.py:23:89: E501 line too long (105 > 88 characters)
+backend/migrations/001_initial_migration.py:4:9: W291 trailing whitespace
+backend/migrations/001_initial_migration.py:17:1: E302 expected 2 blank lines, found 1
+backend/migrations/001_initial_migration.py:32:89: E501 line too long (100 > 88 characters)
+backend/migrations/001_initial_migration.py:57:89: E501 line too long (96 > 88 characters)
+backend/migrations/001_initial_migration.py:107:1: E302 expected 2 blank lines, found 1
+backend/migrations/001_initial_migration.py:114:27: W292 no newline at end of file
+backend/models/__init__.py:1:1: F401 '.orm.Base' imported but unused
+backend/models/__init__.py:1:1: F401 '.orm.User' imported but unused
+backend/models/__init__.py:1:1: F401 '.orm.Threat' imported but unused
+backend/models/__init__.py:1:1: F401 '.orm.Evidence' imported but unused
+backend/models/__init__.py:1:1: F401 '.orm.FIR' imported but unused
+backend/models/__init__.py:1:1: F401 '.orm.HoneypotSession' imported but unused
+backend/models/__init__.py:1:1: F401 '.orm.ScoreHistory' imported but unused
+backend/models/__init__.py:1:1: F401 '.orm.Blacklist' imported but unused
+backend/models/__init__.py:1:1: F401 '.orm.CanaryTrap' imported but unused
+backend/models/__init__.py:1:1: F401 '.orm.ChildProfile' imported but unused
+backend/models/__init__.py:1:1: F401 '.orm.ChildActivityLog' imported but unused
+backend/models/__init__.py:1:1: F401 '.orm.IntelLog' imported but unused
+backend/models/__init__.py:1:1: F401 '.orm.LegalDocument' imported but unused
+backend/models/__init__.py:1:1: F401 '.orm.AuditLog' imported but unused
+backend/models/__init__.py:1:1: F401 '.orm.ModelVersion' imported but unused
+backend/models/__init__.py:1:1: F401 '.orm.ModelInferenceLog' imported but unused
+backend/models/__init__.py:1:1: F401 '.orm.UserConsent' imported but unused
+backend/models/__init__.py:1:1: F401 '.orm.PhoneLookup' imported but unused
+backend/models/__init__.py:1:1: F401 '.orm.DeviceInfo' imported but unused
+backend/models/__init__.py:1:1: F401 '.orm.SpamReport' imported but unused
+backend/models/__init__.py:1:1: F401 '.orm.SpamFilter' imported but unused
+backend/models/__init__.py:1:1: F401 '.orm.SpamLog' imported but unused
+backend/models/__init__.py:1:1: F401 '.orm.UserRole' imported but unused
+backend/models/__init__.py:1:1: F401 '.orm.ThreatType' imported but unused
+backend/models/__init__.py:1:1: F401 '.orm.ThreatSeverity' imported but unused
+backend/models/__init__.py:1:1: F401 '.orm.BlacklistType' imported but unused
+backend/models/__init__.py:1:1: F401 '.orm.ChildLockMode' imported but unused
+backend/models/__init__.py:1:1: F401 '.orm.FIRStatus' imported but unused
+backend/models/__init__.py:1:1: F401 '.orm.SpamType' imported but unused
+backend/models/__init__.py:1:1: F401 '.orm.SpamAction' imported but unused
+backend/models/__init__.py:33:1: F401 '.threat.ThreatStatus' imported but unused
+backend/models/audit.py:2:1: F401 'sqlalchemy.Text' imported but unused
+backend/models/audit.py:11:89: E501 line too long (102 > 88 characters)
+backend/models/audit.py:20:89: E501 line too long (113 > 88 characters)
+backend/models/audit.py:23:1: W293 blank line contains whitespace
+backend/models/blacklist.py:2:89: E501 line too long (91 > 88 characters)
+backend/models/blacklist.py:20:89: E501 line too long (106 > 88 characters)
+backend/models/blacklist.py:26:89: E501 line too long (109 > 88 characters)
+backend/models/blacklist.py:41:89: E501 line too long (108 > 88 characters)
+backend/models/canary.py:2:1: F401 'sqlalchemy.Text' imported but unused
+backend/models/canary.py:3:1: F401 'sqlalchemy.sql.func' imported but unused
+backend/models/canary.py:4:1: F401 'sqlalchemy.orm.relationship' imported but unused
+backend/models/canary.py:10:89: E501 line too long (93 > 88 characters)
+backend/models/canary.py:17:89: E501 line too long (94 > 88 characters)
+backend/models/canary.py:45:89: E501 line too long (98 > 88 characters)
+backend/models/childlock.py:4:1: F401 'sqlalchemy.Time' imported but unused
+backend/models/childlock.py:4:89: E501 line too long (102 > 88 characters)
+backend/models/childlock.py:32:89: E501 line too long (91 > 88 characters)
+backend/models/childlock.py:40:89: E501 line too long (91 > 88 characters)
+backend/models/childlock.py:74:89: E501 line too long (98 > 88 characters)
+backend/models/childlock.py:75:89: E501 line too long (108 > 88 characters)
+backend/models/honeypot.py:2:1: F401 'sqlalchemy.Text' imported but unused
+backend/models/honeypot.py:13:89: E501 line too long (102 > 88 characters)
+backend/models/honeypot.py:21:89: E501 line too long (92 > 88 characters)
+backend/models/honeypot.py:44:89: E501 line too long (96 > 88 characters)
+backend/models/intel.py:5:1: F401 'sqlalchemy.Text' imported but unused
+backend/models/intel.py:5:89: E501 line too long (96 > 88 characters)
+backend/models/intel.py:13:89: E501 line too long (90 > 88 characters)
+backend/models/intel.py:36:89: E501 line too long (122 > 88 characters)
+backend/models/intel.py:92:89: E501 line too long (89 > 88 characters)
+backend/models/intel.py:104:89: E501 line too long (102 > 88 characters)
+backend/models/legal.py:43:89: E501 line too long (97 > 88 characters)
+backend/models/model_version.py:2:1: F401 'datetime.datetime' imported but unused
+backend/models/model_version.py:3:89: E501 line too long (104 > 88 characters)
+backend/models/model_version.py:4:1: F401 'sqlalchemy.sql.func' imported but unused
+backend/models/model_version.py:12:1: W293 blank line contains whitespace
+backend/models/model_version.py:20:1: W293 blank line contains whitespace
+backend/models/model_version.py:22:89: E501 line too long (100 > 88 characters)
+backend/models/model_version.py:25:1: W293 blank line contains whitespace
+backend/models/model_version.py:27:89: E501 line too long (91 > 88 characters)
+backend/models/model_version.py:30:1: W293 blank line contains whitespace
+backend/models/model_version.py:36:1: W293 blank line contains whitespace
+backend/models/model_version.py:41:1: W293 blank line contains whitespace
+backend/models/model_version.py:45:89: E501 line too long (97 > 88 characters)
+backend/models/model_version.py:46:1: W293 blank line contains whitespace
+backend/models/model_version.py:48:89: E501 line too long (93 > 88 characters)
+backend/models/model_version.py:50:1: W293 blank line contains whitespace
+backend/models/model_version.py:52:89: E501 line too long (96 > 88 characters)
+backend/models/model_version.py:54:1: W293 blank line contains whitespace
+backend/models/model_version.py:59:1: W293 blank line contains whitespace
+backend/models/model_version.py:66:89: E501 line too long (97 > 88 characters)
+backend/models/model_version.py:72:1: W293 blank line contains whitespace
+backend/models/model_version.py:80:1: W293 blank line contains whitespace
+backend/models/model_version.py:85:1: W293 blank line contains whitespace
+backend/models/model_version.py:89:1: W293 blank line contains whitespace
+backend/models/model_version.py:94:1: W293 blank line contains whitespace
+backend/models/model_version.py:99:1: W293 blank line contains whitespace
+backend/models/model_version.py:106:89: E501 line too long (111 > 88 characters)
+backend/models/model_version.py:106:112: W292 no newline at end of file
+backend/models/orm.py:2:1: F401 'datetime.datetime' imported but unused
+backend/models/orm.py:4:89: E501 line too long (115 > 88 characters)
+backend/models/orm.py:9:1: E302 expected 2 blank lines, found 1
+backend/models/orm.py:15:1: W293 blank line contains whitespace
+backend/models/orm.py:23:1: E302 expected 2 blank lines, found 1
+backend/models/orm.py:29:1: W293 blank line contains whitespace
+backend/models/orm.py:37:1: E302 expected 2 blank lines, found 1
+backend/models/orm.py:42:1: W293 blank line contains whitespace
+backend/models/orm.py:49:1: E302 expected 2 blank lines, found 1
+backend/models/orm.py:56:1: E302 expected 2 blank lines, found 1
+backend/models/orm.py:60:1: E302 expected 2 blank lines, found 1
+backend/models/orm.py:65:1: E302 expected 2 blank lines, found 1
+backend/models/orm.py:85:1: E302 expected 2 blank lines, found 1
+backend/models/orm.py:108:89: E501 line too long (94 > 88 characters)
+backend/models/orm.py:114:1: E302 expected 2 blank lines, found 1
+backend/models/orm.py:129:1: E302 expected 2 blank lines, found 1
+backend/models/orm.py:143:1: E302 expected 2 blank lines, found 1
+backend/models/orm.py:157:1: E302 expected 2 blank lines, found 1
+backend/models/orm.py:167:1: E302 expected 2 blank lines, found 1
+backend/models/orm.py:173:1: E302 expected 2 blank lines, found 1
+backend/models/orm.py:176:57: E261 at least two spaces before inline comment
+backend/models/orm.py:177:39: E261 at least two spaces before inline comment
+backend/models/orm.py:186:1: E302 expected 2 blank lines, found 1
+backend/models/orm.py:190:36: E261 at least two spaces before inline comment
+backend/models/orm.py:207:1: E302 expected 2 blank lines, found 1
+backend/models/orm.py:213:1: E302 expected 2 blank lines, found 1
+backend/models/orm.py:222:38: E261 at least two spaces before inline comment
+backend/models/orm.py:239:1: E302 expected 2 blank lines, found 1
+backend/models/orm.py:243:36: E261 at least two spaces before inline comment
+backend/models/orm.py:249:1: E302 expected 2 blank lines, found 1
+backend/models/orm.py:258:1: E302 expected 2 blank lines, found 1
+backend/models/orm.py:262:34: E261 at least two spaces before inline comment
+backend/models/orm.py:264:36: E261 at least two spaces before inline comment
+backend/models/orm.py:267:1: E302 expected 2 blank lines, found 1
+backend/models/orm.py:276:1: E302 expected 2 blank lines, found 1
+backend/models/orm.py:295:39: E261 at least two spaces before inline comment
+backend/models/orm.py:304:1: E302 expected 2 blank lines, found 1
+backend/models/orm.py:321:1: E302 expected 2 blank lines, found 1
+backend/models/orm.py:336:1: E302 expected 2 blank lines, found 1
+backend/models/orm.py:351:1: E302 expected 2 blank lines, found 1
+backend/models/orm.py:376:1: E302 expected 2 blank lines, found 1
+backend/models/orm.py:386:1: E302 expected 2 blank lines, found 1
+backend/models/orm.py:403:1: E302 expected 2 blank lines, found 1
+backend/models/score_history.py:7:1: E302 expected 2 blank lines, found 1
+backend/models/score_history.py:13:71: W292 no newline at end of file
+backend/models/spam.py:4:1: F401 'sqlalchemy.DateTime' imported but unused
+backend/models/spam.py:4:89: E501 line too long (109 > 88 characters)
+backend/models/spam.py:6:1: F401 'sqlalchemy.sql.func' imported but unused
+backend/models/spam.py:33:89: E501 line too long (89 > 88 characters)
+backend/models/threat.py:8:1: E302 expected 2 blank lines, found 1
+backend/models/threat.py:15:1: E302 expected 2 blank lines, found 1
+backend/models/threat.py:21:1: E302 expected 2 blank lines, found 1
+backend/models/threat.py:30:1: E302 expected 2 blank lines, found 1
+backend/models/threat.py:50:1: E302 expected 2 blank lines, found 1
+backend/models/threat.py:54:1: E302 expected 2 blank lines, found 1
+backend/models/threat.py:56:26: W292 no newline at end of file
+backend/models/user.py:3:1: F401 'typing.List' imported but unused
+backend/models/user.py:3:1: F401 'typing.Dict' imported but unused
+backend/models/user.py:3:1: F401 'typing.Any' imported but unused
+backend/models/user.py:7:1: E302 expected 2 blank lines, found 1
+backend/models/user.py:15:1: E302 expected 2 blank lines, found 1
+backend/models/user.py:29:1: E302 expected 2 blank lines, found 1
+backend/models/user.py:33:1: E302 expected 2 blank lines, found 1
+backend/models/user.py:36:89: E501 line too long (93 > 88 characters)
+backend/models/user.py:39:1: E302 expected 2 blank lines, found 1
+backend/models/user.py:45:1: E302 expected 2 blank lines, found 1
+backend/models/user.py:50:1: E302 expected 2 blank lines, found 1
+backend/models/user.py:55:1: E302 expected 2 blank lines, found 1
+backend/models/user.py:56:40: W292 no newline at end of file
+backend/scheduler.py:3:89: E501 line too long (101 > 88 characters)
+backend/scheduler.py:11:1: E302 expected 2 blank lines, found 1
+backend/scheduler.py:21:89: E501 line too long (97 > 88 characters)
+backend/scheduler.py:23:1: W293 blank line contains whitespace
+backend/scheduler.py:39:1: W293 blank line contains whitespace
+backend/scheduler.py:41:89: W292 no newline at end of file
+backend/schemas/token.py:4:1: E302 expected 2 blank lines, found 1
+backend/schemas/token.py:8:1: E302 expected 2 blank lines, found 1
+backend/services/__init__.py:1:32: W292 no newline at end of file
+backend/services/ai_deep_scan.py:10:1: E302 expected 2 blank lines, found 1
+backend/services/ai_deep_scan.py:16:1: W293 blank line contains whitespace
+backend/services/ai_deep_scan.py:25:5: E722 do not use bare 'except'
+backend/services/ai_deep_scan.py:34:1: W293 blank line contains whitespace
+backend/services/ai_deep_scan.py:36:71: W291 trailing whitespace
+backend/services/ai_deep_scan.py:38:1: W293 blank line contains whitespace
+backend/services/ai_deep_scan.py:48:89: E501 line too long (128 > 88 characters)
+backend/services/ai_deep_scan.py:57:1: W293 blank line contains whitespace
+backend/services/ai_deep_scan.py:59:89: E501 line too long (104 > 88 characters)
+backend/services/audit.py:5:1: F401 'typing.Any' imported but unused
+backend/services/canary_service.py:13:1: F401 'uuid' imported but unused
+backend/services/canary_service.py:15:1: F401 'json' imported but unused
+backend/services/canary_service.py:18:1: F401 'typing.Dict' imported but unused
+backend/services/canary_service.py:18:1: F401 'typing.Any' imported but unused
+backend/services/canary_service.py:58:1: W293 blank line contains whitespace
+backend/services/canary_service.py:63:5: F841 local variable 'tracking_url' is assigned to but never used
+backend/services/canary_service.py:66:89: E501 line too long (99 > 88 characters)
+backend/services/canary_service.py:107:1: W293 blank line contains whitespace
+backend/services/canary_service.py:232:1: W293 blank line contains whitespace
+backend/services/canary_service.py:238:30: E712 comparison to False should be 'if cond is False:' or 'if not cond:'
+backend/services/canary_service.py:264:21: W292 no newline at end of file
+backend/services/childlock.py:7:1: F401 'typing.List' imported but unused
+backend/services/childlock.py:38:1: C901 'check_call_allowed' is too complex (18)
+backend/services/childlock.py:48:69: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+backend/services/childlock.py:65:89: E501 line too long (96 > 88 characters)
+backend/services/childlock.py:70:89: E501 line too long (89 > 88 characters)
+backend/services/childlock.py:71:89: E501 line too long (96 > 88 characters)
+backend/services/childlock.py:83:26: E128 continuation line under-indented for visual indent
+backend/services/childlock.py:83:89: E501 line too long (108 > 88 characters)
+backend/services/childlock.py:86:89: E501 line too long (128 > 88 characters)
+backend/services/childlock.py:94:89: E501 line too long (102 > 88 characters)
+backend/services/childlock.py:107:89: E501 line too long (93 > 88 characters)
+backend/services/childlock.py:111:89: E501 line too long (113 > 88 characters)
+backend/services/childlock.py:112:89: E501 line too long (97 > 88 characters)
+backend/services/childlock.py:119:1: C901 'check_sms_allowed' is too complex (21)
+backend/services/childlock.py:130:69: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+backend/services/childlock.py:134:89: E501 line too long (98 > 88 characters)
+backend/services/childlock.py:142:89: E501 line too long (100 > 88 characters)
+backend/services/childlock.py:146:89: E501 line too long (98 > 88 characters)
+backend/services/childlock.py:147:89: E501 line too long (91 > 88 characters)
+backend/services/childlock.py:151:89: E501 line too long (100 > 88 characters)
+backend/services/childlock.py:158:89: E501 line too long (102 > 88 characters)
+backend/services/childlock.py:159:49: F541 f-string is missing placeholders
+backend/services/childlock.py:169:89: E501 line too long (108 > 88 characters)
+backend/services/childlock.py:175:89: E501 line too long (101 > 88 characters)
+backend/services/childlock.py:176:89: E501 line too long (95 > 88 characters)
+backend/services/evidence_chain.py:14:1: E302 expected 2 blank lines, found 1
+backend/services/evidence_chain.py:21:69: W291 trailing whitespace
+backend/services/evidence_chain.py:22:89: E501 line too long (101 > 88 characters)
+backend/services/evidence_chain.py:36:89: E501 line too long (91 > 88 characters)
+backend/services/evidence_chain.py:45:1: W293 blank line contains whitespace
+backend/services/evidence_chain.py:48:1: W293 blank line contains whitespace
+backend/services/evidence_chain.py:58:1: W293 blank line contains whitespace
+backend/services/evidence_chain.py:64:89: E501 line too long (96 > 88 characters)
+backend/services/evidence_chain.py:66:80: W291 trailing whitespace
+backend/services/evidence_chain.py:75:1: W293 blank line contains whitespace
+backend/services/evidence_chain.py:78:1: W293 blank line contains whitespace
+backend/services/evidence_chain.py:81:1: W293 blank line contains whitespace
+backend/services/evidence_chain.py:84:1: W293 blank line contains whitespace
+backend/services/evidence_chain.py:94:1: W293 blank line contains whitespace
+backend/services/evidence_chain.py:102:69: W291 trailing whitespace
+backend/services/evidence_chain.py:111:1: W293 blank line contains whitespace
+backend/services/evidence_chain.py:114:1: W293 blank line contains whitespace
+backend/services/evidence_chain.py:117:37: W291 trailing whitespace
+backend/services/evidence_chain.py:118:31: W291 trailing whitespace
+backend/services/evidence_chain.py:123:1: W293 blank line contains whitespace
+backend/services/evidence_chain.py:127:1: W293 blank line contains whitespace
+backend/services/evidence_chain.py:129:89: E501 line too long (91 > 88 characters)
+backend/services/evidence_chain.py:130:1: W293 blank line contains whitespace
+backend/services/evidence_chain.py:131:89: E501 line too long (99 > 88 characters)
+backend/services/evidence_chain.py:150:1: W293 blank line contains whitespace
+backend/services/evidence_chain.py:154:89: E501 line too long (89 > 88 characters)
+backend/services/evidence_chain.py:168:89: E501 line too long (94 > 88 characters)
+backend/services/evidence_chain.py:169:89: E501 line too long (92 > 88 characters)
+backend/services/evidence_chain.py:170:89: E501 line too long (105 > 88 characters)
+backend/services/evidence_chain.py:172:74: W291 trailing whitespace
+backend/services/evidence_chain.py:175:10: W292 no newline at end of file
+backend/services/generator.py:12:1: E302 expected 2 blank lines, found 1
+backend/services/generator.py:21:1: W293 blank line contains whitespace
+backend/services/generator.py:29:1: W293 blank line contains whitespace
+backend/services/generator.py:36:89: E501 line too long (106 > 88 characters)
+backend/services/generator.py:87:19: W292 no newline at end of file
+backend/services/ipc_tagger.py:3:67: W291 trailing whitespace
+backend/services/ipc_tagger.py:11:89: E501 line too long (90 > 88 characters)
+backend/services/ipc_tagger.py:47:89: E501 line too long (104 > 88 characters)
+backend/services/ipc_tagger.py:61:26: W292 no newline at end of file
+backend/services/model_security.py:12:1: F401 'json' imported but unused
+backend/services/model_security.py:20:1: F401 'pathlib.Path' imported but unused
+backend/services/model_security.py:21:1: F401 'typing.Any' imported but unused
+backend/services/model_security.py:41:1: W293 blank line contains whitespace
+backend/services/model_security.py:44:1: W293 blank line contains whitespace
+backend/services/model_security.py:62:1: W293 blank line contains whitespace
+backend/services/model_security.py:68:1: W293 blank line contains whitespace
+backend/services/model_security.py:95:1: W293 blank line contains whitespace
+backend/services/model_security.py:103:1: W293 blank line contains whitespace
+backend/services/model_security.py:109:1: W293 blank line contains whitespace
+backend/services/model_security.py:112:1: W293 blank line contains whitespace
+backend/services/model_security.py:134:1: W293 blank line contains whitespace
+backend/services/model_security.py:138:1: W293 blank line contains whitespace
+backend/services/model_security.py:160:89: E501 line too long (106 > 88 characters)
+backend/services/model_security.py:163:1: W293 blank line contains whitespace
+backend/services/model_security.py:166:1: W293 blank line contains whitespace
+backend/services/model_security.py:173:1: W293 blank line contains whitespace
+backend/services/model_security.py:177:1: W293 blank line contains whitespace
+backend/services/model_security.py:183:1: W293 blank line contains whitespace
+backend/services/model_security.py:186:1: W293 blank line contains whitespace
+backend/services/model_security.py:200:89: E501 line too long (90 > 88 characters)
+backend/services/model_security.py:205:1: W293 blank line contains whitespace
+backend/services/model_security.py:209:1: W293 blank line contains whitespace
+backend/services/model_security.py:212:1: W293 blank line contains whitespace
+backend/services/model_security.py:215:1: W293 blank line contains whitespace
+backend/services/model_security.py:253:89: E501 line too long (102 > 88 characters)
+backend/services/model_security.py:260:1: C901 'compute_adversarial_robustness_score' is too complex (16)
+backend/services/model_security.py:267:1: W293 blank line contains whitespace
+backend/services/model_security.py:272:1: W293 blank line contains whitespace
+backend/services/model_security.py:276:1: W293 blank line contains whitespace
+backend/services/model_security.py:281:1: W293 blank line contains whitespace
+backend/services/model_security.py:284:1: W293 blank line contains whitespace
+backend/services/model_security.py:288:1: W293 blank line contains whitespace
+backend/services/model_security.py:292:1: W293 blank line contains whitespace
+backend/services/model_security.py:300:1: W293 blank line contains whitespace
+backend/services/model_security.py:305:1: W293 blank line contains whitespace
+backend/services/model_security.py:317:1: W293 blank line contains whitespace
+backend/services/model_security.py:323:1: W293 blank line contains whitespace
+backend/services/model_security.py:326:1: W293 blank line contains whitespace
+backend/services/model_security.py:330:1: W293 blank line contains whitespace
+backend/services/model_security.py:344:1: W293 blank line contains whitespace
+backend/services/model_security.py:347:1: W293 blank line contains whitespace
+backend/services/model_security.py:352:1: W293 blank line contains whitespace
+backend/services/model_security.py:363:1: W293 blank line contains whitespace
+backend/services/model_security.py:377:1: W293 blank line contains whitespace
+backend/services/model_security.py:385:1: W293 blank line contains whitespace
+backend/services/model_security.py:388:89: E501 line too long (96 > 88 characters)
+backend/services/model_security.py:389:89: E501 line too long (97 > 88 characters)
+backend/services/model_security.py:390:1: W293 blank line contains whitespace
+backend/services/model_security.py:399:1: W293 blank line contains whitespace
+backend/services/model_security.py:409:1: W293 blank line contains whitespace
+backend/services/model_security.py:415:1: W293 blank line contains whitespace
+backend/services/model_security.py:422:1: W293 blank line contains whitespace
+backend/services/model_security.py:426:1: W293 blank line contains whitespace
+backend/services/model_security.py:430:1: W293 blank line contains whitespace
+backend/services/model_security.py:438:1: W293 blank line contains whitespace
+backend/services/model_security.py:442:1: W293 blank line contains whitespace
+backend/services/model_security.py:450:1: W293 blank line contains whitespace
+backend/services/model_security.py:454:1: W293 blank line contains whitespace
+backend/services/model_security.py:457:1: W293 blank line contains whitespace
+backend/services/model_security.py:459:1: W293 blank line contains whitespace
+backend/services/model_security.py:475:1: W293 blank line contains whitespace
+backend/services/model_security.py:477:89: E501 line too long (110 > 88 characters)
+backend/services/model_security.py:478:1: W293 blank line contains whitespace
+backend/services/model_security.py:492:1: W293 blank line contains whitespace
+backend/services/model_security.py:496:1: W293 blank line contains whitespace
+backend/services/model_security.py:502:1: W293 blank line contains whitespace
+backend/services/model_security.py:515:32: W292 no newline at end of file
+backend/services/mythos_engine.py:8:89: E501 line too long (121 > 88 characters)
+backend/services/mythos_engine.py:10:1: E402 module level import not at top of file
+backend/services/mythos_engine.py:14:1: E302 expected 2 blank lines, found 1
+backend/services/mythos_engine.py:23:30: E261 at least two spaces before inline comment
+backend/services/mythos_engine.py:27:31: E261 at least two spaces before inline comment
+backend/services/mythos_engine.py:45:21: F541 f-string is missing placeholders
+backend/services/mythos_engine.py:46:1: W293 blank line contains whitespace
+backend/services/mythos_engine.py:50:1: W293 blank line contains whitespace
+backend/services/mythos_engine.py:54:1: W293 blank line contains whitespace
+backend/services/mythos_engine.py:60:39: E261 at least two spaces before inline comment
+backend/services/mythos_engine.py:65:1: E305 expected 2 blank lines after class or function definition, found 1
+backend/services/notifier.py:7:1: E302 expected 2 blank lines, found 1
+backend/services/notifier.py:7:89: E501 line too long (95 > 88 characters)
+backend/services/notifier.py:11:89: E501 line too long (104 > 88 characters)
+backend/services/notifier.py:17:1: W293 blank line contains whitespace
+backend/services/notifier.py:23:89: E501 line too long (98 > 88 characters)
+backend/services/notifier.py:31:1: W293 blank line contains whitespace
+backend/services/notifier.py:38:1: E302 expected 2 blank lines, found 1
+backend/services/notifier.py:45:1: W293 blank line contains whitespace
+backend/services/notifier.py:46:89: E501 line too long (104 > 88 characters)
+backend/services/notifier.py:53:1: W293 blank line contains whitespace
+backend/services/notifier.py:64:1: W293 blank line contains whitespace
+backend/services/ollama_scan.py:9:29: E261 at least two spaces before inline comment
+backend/services/ollama_scan.py:11:1: E302 expected 2 blank lines, found 1
+backend/services/ollama_scan.py:19:1: W293 blank line contains whitespace
+backend/services/ollama_scan.py:28:1: W293 blank line contains whitespace
+backend/services/ollama_scan.py:35:1: W293 blank line contains whitespace
+backend/services/ollama_scan.py:40:1: W293 blank line contains whitespace
+backend/services/ollama_scan.py:42:89: E501 line too long (104 > 88 characters)
+backend/services/ollama_scan.py:49:1: W293 blank line contains whitespace
+backend/services/openclaw_agent.py:3:1: F401 'backend.core.config.settings' imported but unused
+backend/services/openclaw_agent.py:11:1: E302 expected 2 blank lines, found 1
+backend/services/openclaw_agent.py:13:89: E501 line too long (94 > 88 characters)
+backend/services/openclaw_agent.py:19:1: W293 blank line contains whitespace
+backend/services/openclaw_agent.py:21:1: W293 blank line contains whitespace
+backend/services/openclaw_agent.py:24:1: W293 blank line contains whitespace
+backend/services/phone_intel.py:54:72: E712 comparison to False should be 'if cond is False:' or 'if not cond:'
+backend/services/phone_intel.py:63:1: C901 'analyze_phone_number' is too complex (11)
+backend/services/phone_intel.py:88:89: E501 line too long (95 > 88 characters)
+backend/services/phone_intel.py:95:89: E501 line too long (111 > 88 characters)
+backend/services/phone_intel.py:96:89: E501 line too long (121 > 88 characters)
+backend/services/phone_intel.py:122:89: E501 line too long (95 > 88 characters)
+backend/services/phone_intel.py:144:89: E501 line too long (95 > 88 characters)
+backend/services/phone_intel.py:164:89: E501 line too long (94 > 88 characters)
+backend/services/phone_intel.py:185:89: E501 line too long (101 > 88 characters)
+backend/services/risk_scorer.py:68:30: W292 no newline at end of file
+backend/services/spam_shield.py:8:1: F401 'typing.Union' imported but unused
+backend/services/spam_shield.py:13:89: E501 line too long (130 > 88 characters)
+backend/services/spam_shield.py:17:1: F401 'backend.core.config.settings' imported but unused
+backend/services/spam_shield.py:40:70: E261 at least two spaces before inline comment
+backend/services/spam_shield.py:40:89: E501 line too long (104 > 88 characters)
+backend/services/spam_shield.py:44:1: C901 'check_spam' is too complex (29)
+backend/services/spam_shield.py:66:69: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+backend/services/spam_shield.py:74:89: E501 line too long (106 > 88 characters)
+backend/services/spam_shield.py:75:89: E501 line too long (105 > 88 characters)
+backend/services/spam_shield.py:76:89: E501 line too long (111 > 88 characters)
+backend/services/spam_shield.py:78:89: E501 line too long (89 > 88 characters)
+backend/services/spam_shield.py:90:89: E501 line too long (117 > 88 characters)
+backend/services/spam_shield.py:94:89: E501 line too long (119 > 88 characters)
+backend/services/spam_shield.py:107:89: E501 line too long (145 > 88 characters)
+backend/services/spam_shield.py:112:89: E501 line too long (97 > 88 characters)
+backend/services/spam_shield.py:118:89: E501 line too long (139 > 88 characters)
+backend/services/spam_shield.py:120:89: E501 line too long (101 > 88 characters)
+backend/services/spam_shield.py:129:89: E501 line too long (104 > 88 characters)
+backend/services/spam_shield.py:131:89: E501 line too long (106 > 88 characters)
+backend/services/spam_shield.py:132:89: E501 line too long (130 > 88 characters)
+backend/services/spam_shield.py:137:89: E501 line too long (136 > 88 characters)
+backend/services/spam_shield.py:139:89: E501 line too long (115 > 88 characters)
+backend/services/spam_shield.py:140:89: E501 line too long (130 > 88 characters)
+backend/services/spam_shield.py:151:89: E501 line too long (133 > 88 characters)
+backend/services/spam_shield.py:158:89: E501 line too long (126 > 88 characters)
+backend/services/spam_shield.py:164:89: E501 line too long (118 > 88 characters)
+backend/services/spam_shield.py:172:89: E501 line too long (130 > 88 characters)
+backend/services/spam_shield.py:180:89: E501 line too long (127 > 88 characters)
+backend/services/spam_shield.py:185:89: E501 line too long (104 > 88 characters)
+backend/services/spam_shield.py:190:70: W291 trailing whitespace
+backend/services/spam_shield.py:191:44: W291 trailing whitespace
+backend/services/spam_shield.py:200:89: E501 line too long (120 > 88 characters)
+backend/services/spam_shield.py:216:89: E501 line too long (111 > 88 characters)
+backend/services/spam_shield.py:218:89: E501 line too long (96 > 88 characters)
+backend/services/spam_shield.py:228:89: E501 line too long (96 > 88 characters)
+backend/services/spam_shield.py:244:89: E501 line too long (99 > 88 characters)
+backend/services/spam_shield.py:245:1: W293 blank line contains whitespace
+backend/services/spam_shield.py:256:89: E501 line too long (91 > 88 characters)
+backend/services/threat_intel.py:6:1: F401 'typing.List' imported but unused
+backend/services/threat_intel.py:69:89: E501 line too long (94 > 88 characters)
+backend/services/threat_intel.py:73:89: E501 line too long (91 > 88 characters)
+backend/services/threat_intel.py:89:89: E501 line too long (95 > 88 characters)
+backend/services/threat_intel.py:94:89: E501 line too long (98 > 88 characters)
+backend/services/threat_intel.py:128:89: E501 line too long (91 > 88 characters)
+backend/services/threat_intel.py:135:89: E501 line too long (138 > 88 characters)
+backend/services/threat_intel.py:149:89: E501 line too long (112 > 88 characters)
+backend/services/transcriber.py:4:1: E302 expected 2 blank lines, found 1
+backend/services/transcriber.py:7:39: W291 trailing whitespace
+backend/services/transcriber.py:22:24: W291 trailing whitespace
+backend/services/transcriber.py:27:1: W293 blank line contains whitespace
+backend/services/transcriber.py:46:89: E501 line too long (122 > 88 characters)
+backend/services/transcriber.py:47:89: E501 line too long (111 > 88 characters)
+backend/services/transcriber.py:48:89: E501 line too long (99 > 88 characters)
+backend/services/transcriber.py:50:1: W293 blank line contains whitespace
+backend/services/transcriber.py:53:1: W293 blank line contains whitespace
+backend/services/transcriber.py:65:1: W293 blank line contains whitespace
+backend/services/transcriber.py:66:28: W292 no newline at end of file
+backend/services/voice_detector.py:5:1: F401 'scipy.signal.find_peaks' imported but unused
+backend/services/voice_detector.py:6:1: F401 'os' imported but unused
+backend/services/voice_detector.py:8:1: E302 expected 2 blank lines, found 1
+backend/services/voice_detector.py:11:1: W293 blank line contains whitespace
+backend/services/voice_detector.py:15:59: E261 at least two spaces before inline comment
+backend/services/voice_detector.py:15:89: E501 line too long (93 > 88 characters)
+backend/services/voice_detector.py:16:1: W293 blank line contains whitespace
+backend/services/voice_detector.py:30:89: E501 line too long (93 > 88 characters)
+backend/services/voice_detector.py:33:89: E501 line too long (101 > 88 characters)
+backend/services/voice_detector.py:37:1: W293 blank line contains whitespace
+backend/services/voice_detector.py:39:63: E261 at least two spaces before inline comment
+backend/services/voice_detector.py:62:89: E501 line too long (103 > 88 characters)
+backend/services/voice_detector.py:64:33: E261 at least two spaces before inline comment
+backend/services/voice_detector.py:71:63: E261 at least two spaces before inline comment
+backend/services/voice_detector.py:72:89: E501 line too long (99 > 88 characters)
+backend/services/voice_detector.py:76:89: E501 line too long (101 > 88 characters)
+backend/services/voice_detector.py:77:89: E501 line too long (97 > 88 characters)
+backend/services/voice_detector.py:81:50: E261 at least two spaces before inline comment
+backend/services/voice_detector.py:86:10: W292 no newline at end of file
+backend/tasks.py:1:1: F401 'asyncio' imported but unused
+backend/tasks.py:9:1: E302 expected 2 blank lines, found 1
+backend/tasks.py:12:89: E501 line too long (93 > 88 characters)
+backend/tasks.py:16:1: W293 blank line contains whitespace
+backend/tasks.py:17:89: E501 line too long (92 > 88 characters)
+backend/tasks.py:22:1: W293 blank line contains whitespace
+backend/tasks.py:28:1: W293 blank line contains whitespace
+backend/tasks.py:37:1: W293 blank line contains whitespace
+backend/tasks.py:42:89: E501 line too long (92 > 88 characters)
+backend/tasks.py:43:1: W293 blank line contains whitespace
+backend/tasks.py:46:1: E302 expected 2 blank lines, found 1
+backend/tasks.py:51:69: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+backend/tasks.py:53:1: W293 blank line contains whitespace
+backend/tasks.py:57:1: W293 blank line contains whitespace
+backend/tasks.py:61:1: E302 expected 2 blank lines, found 1
+backend/tasks.py:64:89: E501 line too long (89 > 88 characters)
+backend/tasks.py:65:89: E501 line too long (90 > 88 characters)
+backend/tasks.py:70:1: W293 blank line contains whitespace
+backend/tasks.py:72:89: E501 line too long (113 > 88 characters)
+backend/tasks.py:73:1: W293 blank line contains whitespace
+backend/tasks.py:74:89: E501 line too long (90 > 88 characters)
+backend/tasks.py:76:28: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+backend/tasks.py:80:1: W293 blank line contains whitespace
+backend/tasks.py:86:1: W293 blank line contains whitespace
+backend/tasks.py:92:89: E501 line too long (109 > 88 characters)
+backend/tasks.py:93:89: E501 line too long (98 > 88 characters)
+backend/tasks.py:104:89: E501 line too long (90 > 88 characters)
+backend/tasks.py:107:1: W293 blank line contains whitespace
+backend/tasks.py:109:1: W293 blank line contains whitespace
+backend/tasks.py:113:1: E302 expected 2 blank lines, found 1
+backend/tasks.py:120:1: W293 blank line contains whitespace
+backend/tasks.py:129:1: W293 blank line contains whitespace
+backend/tasks.py:131:38: W292 no newline at end of file
+backend/trigger_incident.py:5:89: E501 line too long (150 > 88 characters)
+backend/trigger_incident.py:11:89: E501 line too long (92 > 88 characters)
+backend/utils/ai.py:9:1: E302 expected 2 blank lines, found 1
+backend/utils/ai.py:14:1: E302 expected 2 blank lines, found 1
+backend/utils/ai.py:20:1: W293 blank line contains whitespace
+backend/utils/crypto.py:5:1: E302 expected 2 blank lines, found 1
+backend/utils/crypto.py:12:1: E302 expected 2 blank lines, found 1
+backend/utils/honeypot.py:3:1: E302 expected 2 blank lines, found 1
+backend/utils/honeypot.py:15:89: E501 line too long (91 > 88 characters)
+backend/utils/honeypot.py:24:1: W293 blank line contains whitespace
+backend/utils/honeypot.py:37:1: E305 expected 2 blank lines after class or function definition, found 1
+backend/utils/pdf.py:9:1: E302 expected 2 blank lines, found 1
+backend/utils/pdf.py:9:89: E501 line too long (94 > 88 characters)
+backend/utils/pdf.py:16:1: W293 blank line contains whitespace
+backend/utils/pdf.py:20:1: W293 blank line contains whitespace
+backend/utils/pdf.py:23:1: W293 blank line contains whitespace
+backend/utils/pdf.py:33:1: W293 blank line contains whitespace
+backend/utils/pdf.py:35:1: W293 blank line contains whitespace
+backend/utils/pdf.py:37:89: E501 line too long (94 > 88 characters)
+backend/utils/pdf.py:38:89: E501 line too long (137 > 88 characters)
+backend/utils/pdf.py:40:1: W293 blank line contains whitespace
+backend/utils/pdf.py:42:89: E501 line too long (90 > 88 characters)
+backend/utils/pdf.py:44:1: W293 blank line contains whitespace
+backend/utils/pdf.py:54:1: W293 blank line contains whitespace
+backend/utils/pdf.py:57:20: E231 missing whitespace after ','
+backend/utils/pdf.py:57:28: E231 missing whitespace after ','
+backend/utils/pdf.py:58:26: E231 missing whitespace after ','
+backend/utils/pdf.py:58:33: E231 missing whitespace after ','
+backend/utils/pdf.py:59:24: E231 missing whitespace after ','
+backend/utils/pdf.py:59:31: E231 missing whitespace after ','
+backend/utils/pdf.py:60:23: E231 missing whitespace after ','
+backend/utils/pdf.py:60:31: E231 missing whitespace after ','
+backend/utils/pdf.py:64:1: W293 blank line contains whitespace
+backend/utils/pdf.py:66:89: E501 line too long (91 > 88 characters)
+backend/utils/pdf.py:67:89: E501 line too long (103 > 88 characters)
+backend/utils/pdf.py:69:1: W293 blank line contains whitespace
+backend/utils/pdf.py:74:1: W293 blank line contains whitespace
+backend/utils/pdf.py:76:1: W293 blank line contains whitespace
+backend/utils/pdf_builder.py:7:1: E302 expected 2 blank lines, found 1
+backend/utils/pdf_builder.py:13:1: W293 blank line contains whitespace
+backend/utils/pdf_builder.py:23:1: W293 blank line contains whitespace
+backend/utils/pdf_builder.py:33:1: W293 blank line contains whitespace
+backend/utils/pdf_builder.py:35:89: E501 line too long (89 > 88 characters)
+backend/utils/pdf_builder.py:36:89: E501 line too long (105 > 88 characters)
+backend/utils/pdf_builder.py:38:1: W293 blank line contains whitespace
+backend/utils/pdf_builder.py:42:1: W293 blank line contains whitespace
+backend/utils/pdf_builder.py:51:1: W293 blank line contains whitespace
+backend/utils/pdf_builder.py:54:20: E231 missing whitespace after ','
+backend/utils/pdf_builder.py:54:28: E231 missing whitespace after ','
+backend/utils/pdf_builder.py:55:26: E231 missing whitespace after ','
+backend/utils/pdf_builder.py:55:33: E231 missing whitespace after ','
+backend/utils/pdf_builder.py:56:24: E231 missing whitespace after ','
+backend/utils/pdf_builder.py:56:31: E231 missing whitespace after ','
+backend/utils/pdf_builder.py:57:23: E231 missing whitespace after ','
+backend/utils/pdf_builder.py:57:31: E231 missing whitespace after ','
+backend/utils/pdf_builder.py:61:1: W293 blank line contains whitespace
+backend/utils/pdf_builder.py:63:89: E501 line too long (97 > 88 characters)
+backend/utils/pdf_builder.py:67:1: W293 blank line contains whitespace
+backend/utils/pdf_builder.py:69:89: E501 line too long (96 > 88 characters)
+backend/utils/pdf_builder.py:70:89: E501 line too long (96 > 88 characters)
+backend/utils/pdf_builder.py:72:1: W293 blank line contains whitespace
+backend/utils/pdf_builder.py:78:1: W293 blank line contains whitespace
+backend/utils/pdf_exporter.py:6:1: E302 expected 2 blank lines, found 1
+backend/utils/pdf_exporter.py:9:89: E501 line too long (95 > 88 characters)
+backend/utils/pdf_exporter.py:19:1: W293 blank line contains whitespace
+backend/utils/pdf_exporter.py:20:89: E501 line too long (89 > 88 characters)
+backend/utils/pdf_exporter.py:22:89: E501 line too long (144 > 88 characters)
+backend/utils/pdf_exporter.py:35:20: E231 missing whitespace after ','
+backend/utils/pdf_exporter.py:35:28: E231 missing whitespace after ','
+backend/utils/pdf_exporter.py:43:89: E501 line too long (128 > 88 characters)
+backend/utils/pdf_exporter.py:48:20: E231 missing whitespace after ','
+backend/utils/pdf_exporter.py:48:28: E231 missing whitespace after ','
+backend/utils/pdf_exporter.py:55:89: E501 line too long (125 > 88 characters)
+backend/utils/pdf_exporter.py:58:20: E231 missing whitespace after ','
+backend/utils/pdf_exporter.py:58:28: E231 missing whitespace after ','
+backend/utils/pdf_exporter.py:65:89: E501 line too long (134 > 88 characters)
+backend/utils/pdf_exporter.py:67:45: E231 missing whitespace after ','
+backend/utils/pdf_exporter.py:67:53: E231 missing whitespace after ','
+backend/utils/pdf_exporter.py:70:24: W292 no newline at end of file
+backend/utils/sms.py:4:1: E302 expected 2 blank lines, found 1
+backend/utils/sms.py:8:89: E501 line too long (104 > 88 characters)
+backend/utils/sms.py:11:1: W293 blank line contains whitespace
+1309

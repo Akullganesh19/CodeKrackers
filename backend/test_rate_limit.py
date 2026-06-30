@@ -1,7 +1,8 @@
-import requests
 import time
 
-url = "http://localhost:8000/api/v1/login/access-token"
+import requests
+
+url = "http://localhost:8000/api/login/access-token"
 data = {"username": "user@example.com", "password": "wrongpassword"}
 
 print("Testing Rate Limiting (5 per minute limit)...")

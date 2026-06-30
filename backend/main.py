@@ -1,20 +1,21 @@
+import asyncio
+
+import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .core.database import engine, Base
-from .api import auth, analytics, call, fir, evidence, honeypot
-from .scheduler import setup_scheduler
-import uvicorn
-import asyncio
 from sqlalchemy import select
-from .core.database import engine, Base, AsyncSessionLocal
+
+from .api import analytics, auth, call, evidence, fir, honeypot
+from .core.database import AsyncSessionLocal, Base, engine
 from .core.security import get_password_hash
 from .models.orm import User
+from .scheduler import setup_scheduler
 
 # Initialize FastAPI App
 app = FastAPI(
     title="VSDP - Vishing & Smishing Defense Platform",
     description="Cybersecurity backend for AI-driven scam detection and forensic reporting.",
-    version="2.0.0"
+    version="2.0.0",
 )
 
 # CORS Configuration
@@ -40,7 +41,26 @@ app.include_router(evidence.router, prefix="/api/evidence", tags=["evidence"])
 app.include_router(honeypot.router, prefix="/api/honeypot", tags=["honeypot"])
 
 # New Original Routers
-from .api import blacklist, canary, childlock, enclave, export, intel, legal, model_guard, openclaw, spam, threats, users, zk_privacy
+from .api import (
+    blacklist,
+    canary,
+    childlock,
+    detection,
+    enclave,
+    export,
+    honeypot_root,
+    honeypot_traps,
+    intel,
+    legal,
+    login,
+    model_guard,
+    openclaw,
+    spam,
+    threats,
+    users,
+    zk_privacy,
+)
+
 app.include_router(blacklist.router, prefix="/api/blacklist", tags=["blacklist"])
 app.include_router(canary.router, prefix="/api/canary", tags=["canary"])
 app.include_router(childlock.router, prefix="/api/childlock", tags=["childlock"])
@@ -54,6 +74,11 @@ app.include_router(spam.router, prefix="/api/spam", tags=["spam"])
 app.include_router(threats.router, prefix="/api/threats", tags=["threats"])
 app.include_router(users.router, prefix="/api/users", tags=["users"])
 app.include_router(zk_privacy.router, prefix="/api/zk", tags=["zk_privacy"])
+app.include_router(login.router, tags=["auth"])
+app.include_router(detection.router, prefix="/api/detect", tags=["detection"])
+app.include_router(honeypot_root.router, tags=["honeypot-root"])
+app.include_router(honeypot_traps.router, tags=["honeypot-traps"])
+
 
 @app.on_event("startup")
 async def startup_event():
@@ -64,7 +89,7 @@ async def startup_event():
     """
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    
+
     # Auto-seed admin user if not exists
     async with AsyncSessionLocal() as db:
         result = await db.execute(select(User).where(User.email == "admin@vsdp.org"))
@@ -74,22 +99,24 @@ async def startup_event():
                 hashed_password=get_password_hash("admin123"),
                 full_name="System Administrator",
                 role="admin",
-                rbac_level=4
+                rbac_level=4,
             )
             db.add(admin)
             await db.commit()
             print("Auto-seeded admin user: admin@vsdp.org / admin123")
-    
+
     # setup_scheduler()
     print("VSDP Backend Startup Complete (Scheduler Disabled for Demo).")
+
 
 @app.get("/")
 async def root():
     return {
         "status": "VSDP Backend Operational",
         "version": "2.0.0",
-        "documentation": "/docs"
+        "documentation": "/docs",
     }
+
 
 if __name__ == "__main__":
     uvicorn.run("backend.main:app", host="0.0.0.0", port=8000, reload=True)

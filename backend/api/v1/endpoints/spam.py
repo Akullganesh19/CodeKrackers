@@ -1,6 +1,7 @@
 """
 Spam Shield API — report, check, configure spam filtering.
 """
+
 import logging
 from typing import Any, List
 
@@ -8,11 +9,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from backend.api import deps
-from backend.models.spam import SpamFilter, SpamReport, SpamLog, SpamType
+from backend.core.logger import get_logger
+from backend.models.spam import SpamFilter, SpamLog, SpamReport, SpamType
 from backend.models.user import User
 from backend.services.spam_shield import check_spam
 
-logger = logging.getLogger("vas.spam_api")
+logger = get_logger("vas.spam_api")
 router = APIRouter()
 
 
@@ -37,6 +39,7 @@ def spam_check(
 
     return check_spam(db, phone, current_user.id, spam_type, content)
 
+
 @router.post("/check/live")
 def spam_check_live(
     body: dict,
@@ -48,7 +51,9 @@ def spam_check_live(
     transcript = body.get("transcript")
 
     if not phone or not transcript:
-        raise HTTPException(status_code=422, detail="phone_number and transcript required")
+        raise HTTPException(
+            status_code=422, detail="phone_number and transcript required"
+        )
 
     return check_spam(db, phone, current_user.id, SpamType.CALL, transcript)
 
@@ -79,8 +84,12 @@ def report_spam(
     db.commit()
     db.refresh(report)
 
-    total_reports = db.query(SpamReport).filter(SpamReport.phone_number == phone).count()
-    logger.info("SPAM_REPORTED phone=%s by=%d total=%d", phone, current_user.id, total_reports)
+    total_reports = (
+        db.query(SpamReport).filter(SpamReport.phone_number == phone).count()
+    )
+    logger.info(
+        "SPAM_REPORTED phone=%s by=%d total=%d", phone, current_user.id, total_reports
+    )
 
     return {"id": report.id, "phone_number": phone, "total_reports": total_reports}
 
@@ -93,7 +102,10 @@ def get_filter_settings(
     """Get user's spam filter settings."""
     f = db.query(SpamFilter).filter(SpamFilter.user_id == current_user.id).first()
     if not f:
-        return {"configured": False, "message": "No spam filter configured. Set one up to enable auto-blocking."}
+        return {
+            "configured": False,
+            "message": "No spam filter configured. Set one up to enable auto-blocking.",
+        }
     return {
         "configured": True,
         "is_active": f.is_active,
@@ -121,9 +133,14 @@ def update_filter(
         db.add(f)
 
     for field in [
-        "is_active", "block_unknown_callers", "block_international",
-        "block_voip", "block_premium_rate", "auto_block_reported_spam",
-        "silent_block", "auto_report_blocked",
+        "is_active",
+        "block_unknown_callers",
+        "block_international",
+        "block_voip",
+        "block_premium_rate",
+        "auto_block_reported_spam",
+        "silent_block",
+        "auto_report_blocked",
     ]:
         if field in body:
             setattr(f, field, body[field])
@@ -157,9 +174,13 @@ def spam_history(
     return [
         {
             "phone_number": l.phone_number,
-            "type": l.spam_type.value if hasattr(l.spam_type, 'value') else l.spam_type,
+            "type": l.spam_type.value if hasattr(l.spam_type, "value") else l.spam_type,
             "score": l.spam_score,
-            "action": l.action_taken.value if hasattr(l.action_taken, 'value') else l.action_taken,
+            "action": (
+                l.action_taken.value
+                if hasattr(l.action_taken, "value")
+                else l.action_taken
+            ),
             "reason": l.reason,
             "timestamp": l.created_at.isoformat() if l.created_at else None,
         }

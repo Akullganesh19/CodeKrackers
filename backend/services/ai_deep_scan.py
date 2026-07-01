@@ -1,12 +1,11 @@
 import logging
-from typing import Any, Dict
-
-import requests
+from typing import Dict, Any
 from groq import Groq
-
 from backend.core.config import settings
-from backend.core.resilience import circuit_breaker, with_retries
+from backend.core.resilience import with_retries, circuit_breaker
+
 from backend.services.ollama_scan import ollama_deep_scan
+import requests
 
 logger = logging.getLogger("vas.ai_scan")
 
@@ -23,9 +22,7 @@ def _call_groq_api(prompt: str) -> dict:
             },
             {"role": "user", "content": prompt},
         ],
-        model=(
-            settings.GROQ_MODEL if hasattr(settings, "GROQ_MODEL") else "llama3-8b-8192"
-        ),
+        model=getattr(settings, "GROQ_MODEL", "llama3-8b-8192"),
         response_format={"type": "json_object"},
     )
     import json
@@ -44,12 +41,12 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     try:
         # Quick check if Ollama is running
         requests.get("http://localhost:11434", timeout=1)
-        logger.info("Using Ollama...")
+        logger.info("Using local Ollama for analysis...")
         local_result = ollama_deep_scan(content, source_type)
         if local_result["score_increase"] > 0:
             return local_result
     except Exception:
-        logger.info("Ollama fallback")
+        logger.info("Ollama not reachable, falling back to Groq Cloud...")
 
     # ── Fallback to Groq ──
     if not settings.GROQ_API_KEY:

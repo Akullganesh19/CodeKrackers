@@ -1,23 +1,23 @@
+from datetime import timedelta
 import logging
 import random
-from datetime import timedelta
 from typing import Any, Optional
 
 import redis
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from pydantic import BaseModel
+from twilio.rest import Client
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
-from twilio.rest import Client
+from pydantic import BaseModel
 
 from backend.api import deps
-from backend.core import security
-from backend.core.config import settings
 from backend.core.limiter import limiter
-from backend.core.resilience import circuit_breaker, with_retries
-from backend.core.security import MAX_LOGIN_ATTEMPTS, get_lockout_time
+from backend.core import security
+from backend.core.security import get_lockout_time, MAX_LOGIN_ATTEMPTS
+from backend.core.config import settings
 from backend.models.orm import User, UserRole
+from backend.core.resilience import with_retries, circuit_breaker
 
 router = APIRouter()
 logger = logging.getLogger("vas.auth")

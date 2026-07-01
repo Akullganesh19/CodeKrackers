@@ -1,10 +1,8 @@
-import json
 import logging
-from typing import Any, Dict
-
 import requests
-
-from backend.core.resilience import circuit_breaker, with_retries
+import json
+from typing import Dict, Any
+from backend.core.resilience import with_retries, circuit_breaker
 
 logger = logging.getLogger("vas.ollama")
 
@@ -16,7 +14,7 @@ OLLAMA_MODEL = "llama3.1:8b"  # Upgraded for tool-calling support
 @circuit_breaker(5, 60.0)
 def _call_ollama_api(payload: dict) -> dict:
     response = requests.post(OLLAMA_URL, json=payload, timeout=30)
-    response.raise_for_status()  # Raise error for retries
+    response.raise_for_status()
     return response.json()
 
 
@@ -32,7 +30,7 @@ def ollama_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
         Respond ONLY with a JSON object:
         {{
             "is_scam": boolean,
-            "confidence": float,
+            "confidence": float (0.0 to 1.0),
             "reason": "short summary",
             "risk_factors": ["list"]
         }}
@@ -61,7 +59,7 @@ def ollama_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
             }
         except Exception as e:
             logger.warning(f"Ollama fail: {e}")
-            raise e  # re-raise to be caught by outer try
+            raise e
 
     except Exception as e:
         logger.error(f"Ollama Scan Error: {e}")

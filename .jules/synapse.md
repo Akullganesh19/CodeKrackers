@@ -1,0 +1,6 @@
+## 2025-07-01 — Auth to Threats Connection
+**Systems connected:** Auth ↔ Threats
+**Intelligence emerged:** Proactive threat detection from failed login attempts. When an account is locked due to brute force attacks, a Threat entity is automatically registered in the database, alerting administrators and enabling automated threat response.
+**Data flows:** When an account is locked, the Auth system emits an `account_locked` event containing `user_id`, `email`, and `ip_address`. The Threat system listens for this event and creates a `Threat` entity.
+**Coupling approach:** Event Bridge Pattern. The connection is implemented using an in-memory `EventBus`. The Auth system simply emits the event without needing to know about the Threat system, and the Threat system listens without modifying the Auth system's core logic.
+**Next connection:** Errors ↔ Users. Connecting error monitoring to the user system to proactively notify users when they encounter known bugs and to correlate error patterns with user segments.

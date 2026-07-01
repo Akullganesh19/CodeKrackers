@@ -17,6 +17,7 @@ from backend.core import security
 from backend.core.security import get_lockout_time, MAX_LOGIN_ATTEMPTS
 from backend.core.config import settings
 from backend.models.orm import User, UserRole
+from backend.core.events.bus import EventBus
 
 router = APIRouter()
 logger = logging.getLogger("vas.auth")
@@ -121,6 +122,12 @@ async def verify_otp(
             user.failed_login_attempts += 1
             if user.failed_login_attempts >= security.MAX_LOGIN_ATTEMPTS:
                 user.locked_until = security.get_lockout_time()
+                EventBus.emit(
+                    "account_locked",
+                    user_id=user.id,
+                    email=user.email,
+                    ip_address="unknown" # We don't have request here easily
+                )
             db.commit()
         logger.warning(f"Auth failure: Invalid OTP attempt for {otp_verify.identifier}")
         raise HTTPException(status_code=400, detail="Invalid or expired verification code")
@@ -201,6 +208,12 @@ async def login_access_token_password(
             user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
             if user.failed_login_attempts >= MAX_LOGIN_ATTEMPTS:
                 user.locked_until = get_lockout_time()
+                EventBus.emit(
+                    "account_locked",
+                    user_id=user.id,
+                    email=user.email,
+                    ip_address=request.client.host if request.client else "unknown"
+                )
             db.commit()
 
         raise HTTPException(

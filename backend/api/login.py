@@ -15,6 +15,7 @@ from backend.core.config import settings
 from backend.core.limiter import limiter
 from backend.models import User
 from backend.schemas.token import Token
+from backend.core.events.bus import EventBus
 
 logger = logging.getLogger("vas.auth")
 router = APIRouter()
@@ -59,6 +60,12 @@ def login_access_token(
                     form_data.username,
                     user.failed_login_attempts,
                     request.client.host if request.client else "unknown",
+                )
+                EventBus.emit(
+                    "account_locked",
+                    user_id=user.id,
+                    email=user.email,
+                    ip_address=request.client.host if request.client else "unknown",
                 )
             db.commit()
 

@@ -1,6 +1,7 @@
 """
 Production-grade security: JWT with rotation, password policy, brute-force protection.
 """
+
 import re
 import secrets
 from datetime import datetime, timedelta, timezone
@@ -16,7 +17,8 @@ ALGORITHM = "HS256"
 # ─── Password Policy ───
 MIN_PASSWORD_LENGTH = 8
 PASSWORD_PATTERN = re.compile(
-    r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_\-+=])[A-Za-z\d@$!%*?&#^()_\-+=]{8,128}$"
+    r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_\-+=])"
+    r"[A-Za-z\d@$!%*?&#^()_\-+=]{8,128}$"
 )
 
 
@@ -49,7 +51,9 @@ def create_access_token(
 ) -> str:
     """Create a JWT with claims, expiry, and unique JTI for revocation support."""
     now = datetime.now(timezone.utc)
-    expire = now + (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
+    expire = now + (
+        expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
 
     to_encode = {
         "exp": expire,
@@ -73,7 +77,7 @@ def decode_token(token: str) -> dict:
             "sub": "admin@vsdp.org",  # Map to the auto-seeded admin
             "role": "admin",
             "iat": datetime.now(timezone.utc),
-            "exp": datetime.now(timezone.utc) + timedelta(hours=24)
+            "exp": datetime.now(timezone.utc) + timedelta(hours=24),
         }
     return jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
 
@@ -81,18 +85,15 @@ def decode_token(token: str) -> dict:
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     try:
         return bcrypt.checkpw(
-            plain_password.encode("utf-8"),
-            hashed_password.encode("utf-8")
+            plain_password.encode("utf-8"), hashed_password.encode("utf-8")
         )
-    except Exception:
+    except ValueError:
         return False
 
 
 def get_password_hash(password: str) -> str:
-    return bcrypt.hashpw(
-        password.encode("utf-8"),
-        bcrypt.gensalt(rounds=12)
-    ).decode("utf-8")
+    salt = bcrypt.gensalt(rounds=12)
+    return bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
 
 
 # ─── Brute-force Protection ───

@@ -1,6 +1,6 @@
 import logging
 import random
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 from typing import Any, Optional
 
 import redis
@@ -81,7 +81,7 @@ def _send_sendgrid_otp(identifier: str, otp_code: str):
         from_email=settings.FROM_EMAIL,
         to_emails=identifier,
         subject="VSDP Security Code",
-        plain_text_content=f"Your VSDP security code is: {otp_code}. Valid for 5 minutes. Do not share.",
+        plain_text_content=f"Code: {otp_code}. Valid 5 mins. Don't share.",
     )
     sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
     sg.send(message)
@@ -111,7 +111,8 @@ async def send_otp(
             _send_sendgrid_otp(otp_in.identifier, otp_code)
     except Exception as e:
         logger.error(
-            f"GATEWAY_ERROR: Failed to send OTP to {otp_in.identifier} after retries: {e}"
+            "GATEWAY_ERROR: Failed to send OTP to %s after retries: %s"
+            % (otp_in.identifier, e)
         )
         # Return 503 instead of success if we actually failed to send
         raise HTTPException(

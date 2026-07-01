@@ -19,7 +19,7 @@ def _call_groq_api(prompt: str) -> dict:
         messages=[
             {
                 "role": "system",
-                "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection.",
+                "content": "You are a scam detection expert.",
             },
             {"role": "user", "content": prompt},
         ],
@@ -44,12 +44,12 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     try:
         # Quick check if Ollama is running
         requests.get("http://localhost:11434", timeout=1)
-        logger.info("Using local Ollama for analysis...")
+        logger.info("Using Ollama...")
         local_result = ollama_deep_scan(content, source_type)
         if local_result["score_increase"] > 0:
             return local_result
-    except:
-        logger.info("Ollama not reachable, falling back to Groq Cloud...")
+    except Exception:
+        logger.info("Ollama fallback")
 
     # ── Fallback to Groq ──
     if not settings.GROQ_API_KEY:
@@ -57,9 +57,9 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
 
     try:
         prompt = f"""
-        Analyze this {source_type} for potential scam/phishing intent. 
+        Analyze this {source_type} for potential scam/phishing intent.
         Content: "{content}"
-        
+
         Provide a JSON response with:
         1. "is_scam": boolean
         2. "confidence": float (0-1)

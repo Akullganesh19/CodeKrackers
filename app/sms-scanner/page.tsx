@@ -29,26 +29,86 @@ export default function SMSScannerPage() {
     tags: string[];
   }>(null)
 
+  // Prediction Cache: stores pending/resolved fetch promises keyed by trimmed text
+  const predictionCache = React.useRef<Record<string, Promise<Response>>>({});
+
+  // Predictive Pre-computation: watch user typing, when they pause, fetch the result ahead of time
+  React.useEffect(() => {
+    const trimmedText = text.trim();
+    if (trimmedText.length < 15) return; // Too short to analyze accurately
+
+    const timer = setTimeout(() => {
+      // Don't re-fetch if we already have a prediction running/cached for this exact text
+      if (predictionCache.current[trimmedText] !== undefined) return;
+
+      const token = typeof window !== 'undefined' ? localStorage.getItem('vsdp_token') || 'dummy_token' : 'dummy_token';
+
+      // Start the background fetch
+      const fetchPromise = fetch('http://localhost:8000/api/analytics/scan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ text: trimmedText })
+      })
+      .then(res => {
+        if (!res.ok) {
+          // If server error, delete from cache so manual click can retry
+          delete predictionCache.current[trimmedText];
+        }
+        return res;
+      })
+      .catch((err) => {
+        // Silent failure in background, delete from cache to allow retry
+        delete predictionCache.current[trimmedText];
+        return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+      });
+
+      // Add to cache
+      predictionCache.current[trimmedText] = fetchPromise;
+
+      // LRU Eviction: keep only last 5 entries to prevent unbounded memory growth
+      const keys = Object.keys(predictionCache.current);
+      if (keys.length > 5) {
+        delete predictionCache.current[keys[0]];
+      }
+
+    }, 400); // 400ms typing debounce
+
+    return () => clearTimeout(timer);
+  }, [text]);
+
   React.useEffect(() => {
     setMounted(true)
   }, [])
 
   const handleAnalyze = async () => {
-    if (!text.trim()) return
+    const trimmedText = text.trim();
+    if (!trimmedText) return
 
     setLoading(true)
     setResult(null)
 
     try {
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
+      let response: Response;
+
+      // Check prediction cache first
+      if (predictionCache.current[trimmedText] !== undefined) {
+        const cachedRes = await predictionCache.current[trimmedText];
+        response = cachedRes.clone(); // Clone to avoid "body stream already read" if reused
+      } else {
+        // Fallback to standard fetch
+        response = await fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text: trimmedText })
+        });
+      }
       
       console.log("Response Status:", response.status);
       if (!response.ok) {

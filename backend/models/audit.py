@@ -1,4 +1,5 @@
 """Audit log model for forensic-grade event tracking."""
+
 from sqlalchemy import Column, Integer, String, DateTime, Text, JSON, Index
 from sqlalchemy.sql import func
 
@@ -7,8 +8,11 @@ from backend.db.base_class import Base
 
 class AuditLog(Base):
     """Immutable audit trail for all security-sensitive events."""
+
     id = Column(Integer, primary_key=True, index=True)
-    timestamp = Column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
+    timestamp = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False, index=True
+    )
 
     # Who
     user_id = Column(Integer, nullable=True, index=True)
@@ -17,10 +21,12 @@ class AuditLog(Base):
     user_agent = Column(String(512), nullable=True)
 
     # What
-    action = Column(String(64), nullable=False, index=True)  # LOGIN_SUCCESS, THREAT_CREATED, FIR_GENERATED, etc.
+    action = Column(
+        String(64), nullable=False, index=True
+    )  # LOGIN_SUCCESS, THREAT_CREATED, FIR_GENERATED, etc.
     resource_type = Column(String(64), nullable=True)  # user, threat, fir, evidence
     resource_id = Column(Integer, nullable=True)
-    
+
     # Details
     details = Column(JSON, nullable=True)
     severity = Column(String(16), default="info")  # info, warning, critical

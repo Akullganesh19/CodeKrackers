@@ -1,4 +1,4 @@
 [flake8]
 ignore = E501, W291, W292, W293, E302, E305, E261, E231, E128, E251, E402, E722, E741, F401, E712, F841, C901, W503, F811, F541, E123, E226
-max-complexity = 10
+max-complexity = 15
 max-line-length = 88

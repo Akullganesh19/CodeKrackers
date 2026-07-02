@@ -37,7 +37,7 @@ def ollama_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
         if response.status_code == 200:
             result = response.json().get("response", "{}")
             data = json.loads(result)
-            
+
             return {
                 "score_increase": round(data.get("confidence", 0.0), 2) if data.get("is_scam") else 0.0,
                 "reason": data.get("reason", "Local AI Analysis complete"),

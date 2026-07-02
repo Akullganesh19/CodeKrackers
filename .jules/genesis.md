@@ -1,0 +1,6 @@
+## 2024-07-02 — [Circuit Breakers & Retries for External APIs]
+**Failure point found:** External calls to `api.honeypot.is` and local Ollama (`localhost:11434`) had no retry mechanisms on transient failures, and no circuit breakers, meaning prolonged failures would block execution indefinitely or silently swallow tracebacks without backoff.
+**Why it existed:** Initially built as quick sync/async wrappers with broad `try...except` blocks that swallowed errors, preventing upstream propagation and lacking robust network resilience logic.
+**Recovery built:** Added `@with_retries(max_attempts=3)` and `@circuit_breaker(CircuitBreaker(...))` to `backend/utils/crypto.py:check_crypto_honeypot` and extracted `_do_ollama_request` in `backend/services/ollama_scan.py`. Callers in `detection.py` and `ollama_scan.py` now explicitly catch raised exceptions to gracefully fail closed/degraded.
+**Blast radius before:** Any temporary API downtime or local AI starvation would fail requests linearly (1 fail = 1 bad user experience) and potentially hang endpoints.
+**Watch for:** Similar unprotected broad `try...except` blocks on network requests (e.g., Groq API calls in `ai_deep_scan.py` or Sendgrid/Twilio wrappers).

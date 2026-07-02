@@ -84,11 +84,7 @@ async def detect_sms(
     crypto_addresses = extract_crypto_addresses(content)
     crypto_results = []
     for addr in crypto_addresses:
-        try:
-            res = await check_crypto_honeypot(addr)
-        except Exception as e:
-            logger.error(f"Crypto honeypot check failed for {addr}: {e}")
-            res = {"error": str(e)}
+        res = await check_crypto_honeypot(addr)
         crypto_results.append({"address": addr, "analysis": res})
 
     crypto_is_scam = any(

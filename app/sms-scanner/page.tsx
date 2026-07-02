@@ -33,22 +33,74 @@ export default function SMSScannerPage() {
     setMounted(true)
   }, [])
 
+  const predictionCache = React.useRef<Record<string, Promise<Response>>>({});
+
+  // Oracle Predictive Engine: Pre-compute scan results during typing pauses
+  React.useEffect(() => {
+    const trimmedText = text.trim();
+    if (!trimmedText || trimmedText.length < 10) return;
+
+    const timer = setTimeout(() => {
+      if (predictionCache.current[trimmedText] !== undefined) return;
+
+      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+
+      const fetchPromise = fetch('http://localhost:8000/api/analytics/scan', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ text: trimmedText })
+      });
+
+      fetchPromise.catch(() => {
+        // Clean up cache if fetch completely fails (e.g., network down)
+        delete predictionCache.current[trimmedText];
+      });
+
+      fetchPromise.then(res => {
+        if (!res.ok) {
+          delete predictionCache.current[trimmedText];
+        }
+      });
+
+      predictionCache.current[trimmedText] = fetchPromise;
+
+      // Simple LRU: Keep max 5 predictions in memory
+      const keys = Object.keys(predictionCache.current);
+      if (keys.length > 5) {
+        delete predictionCache.current[keys[0]];
+      }
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [text]);
+
   const handleAnalyze = async () => {
-    if (!text.trim()) return
+    const trimmedText = text.trim();
+    if (!trimmedText) return
 
     setLoading(true)
     setResult(null)
 
     try {
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
+
+      let response: Response;
+      if (predictionCache.current[trimmedText] !== undefined) {
+        // Use predictive cache if available
+        response = (await predictionCache.current[trimmedText]).clone();
+      } else {
+        response = await fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text: trimmedText })
+        });
+      }
       
       console.log("Response Status:", response.status);
       if (!response.ok) {

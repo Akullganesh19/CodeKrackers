@@ -1,7 +1,8 @@
 import logging
-from typing import Callable, Dict, List, Any
+from typing import Callable, Dict, List
 
 logger = logging.getLogger("vas.events")
+
 
 class EventBus:
     _listeners: Dict[str, List[Callable]] = {}
@@ -16,7 +17,8 @@ class EventBus:
     @classmethod
     def publish(cls, event_type: str, **kwargs):
         if event_type in cls._listeners:
-            logger.info(f"Publishing event {event_type} to {len(cls._listeners[event_type])} listeners")
+            num_l = len(cls._listeners[event_type])
+            logger.info(f"Publishing event {event_type} to {num_l} listeners")
             for listener in cls._listeners[event_type]:
                 try:
                     listener(**kwargs)

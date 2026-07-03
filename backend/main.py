@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+import backend.core.events.listeners # noqa: F401
 from fastapi.middleware.cors import CORSMiddleware
 from .core.database import engine, Base
 from .api import auth, analytics, call, fir, evidence, honeypot

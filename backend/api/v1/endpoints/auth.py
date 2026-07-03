@@ -14,7 +14,9 @@ from pydantic import BaseModel
 from backend.api import deps
 from backend.core.limiter import limiter
 from backend.core import security
+from backend.core.events import EventBus
 from backend.core.security import get_lockout_time, MAX_LOGIN_ATTEMPTS
+from backend.core.events import EventBus
 from backend.core.config import settings
 from backend.models.user import User
 
@@ -115,6 +117,7 @@ async def verify_otp(
             user.failed_login_attempts += 1
             if user.failed_login_attempts >= security.MAX_LOGIN_ATTEMPTS:
                 user.locked_until = security.get_lockout_time()
+                EventBus.publish("user.account_locked", user_email=user.email, failed_attempts=user.failed_login_attempts, ip_address="unknown")
             db.commit()
         logger.warning(f"Auth failure: Invalid OTP attempt for {otp_verify.identifier}")
         raise HTTPException(status_code=400, detail="Invalid or expired verification code")
@@ -192,6 +195,7 @@ async def login_access_token_password(
             user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
             if user.failed_login_attempts >= MAX_LOGIN_ATTEMPTS:
                 user.locked_until = get_lockout_time()
+                EventBus.publish("user.account_locked", user_email=user.email, failed_attempts=user.failed_login_attempts, ip_address="unknown")
             db.commit()
 
         raise HTTPException(

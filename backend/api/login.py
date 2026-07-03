@@ -55,7 +55,11 @@ def login_access_token(
             user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
             if user.failed_login_attempts >= security.MAX_LOGIN_ATTEMPTS:
                 user.locked_until = security.get_lockout_time()
-                EventBus.publish("user.account_locked", user_email=user.email, failed_attempts=user.failed_login_attempts, ip_address=request.client.host if "request" in locals() and hasattr(request, "client") and request.client else "unknown")
+                try:
+                    ip = request.client.host if "request" in locals() and hasattr(request, "client") and request.client else "unknown"
+                except:
+                    ip = "unknown"
+                EventBus.publish("user.account_locked", user_email=user.email, failed_attempts=user.failed_login_attempts, ip_address=ip)
                 logger.critical(
                     "ACCOUNT_LOCKED email=%s attempts=%d ip=%s",
                     form_data.username,

@@ -22,7 +22,9 @@ class CircuitBreaker:
                     logger.info(f"Circuit HALF-OPEN for {func.__name__}")
                     self.state = "HALF-OPEN"
                 else:
-                    logger.warning(f"Circuit OPEN for {func.__name__}. Fast-failing.")
+                    logger.warning(
+                        f"Circuit OPEN for {func.__name__}. Fast-failing."
+                    )
                     raise Exception(f"Circuit OPEN for {func.__name__}")
 
             try:

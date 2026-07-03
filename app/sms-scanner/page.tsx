@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef } from 'react'
+import React, { useState } from 'react'
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
 import {
@@ -30,7 +30,7 @@ export default function SMSScannerPage() {
   }>(null)
 
   // Prediction Cache to hold prefetched responses
-  const predictionCache = useRef<Record<string, Promise<Response>>>({});
+  const predictionCache = React.useRef<Record<string, Promise<Response>>>({});
 
   React.useEffect(() => {
     setMounted(true)

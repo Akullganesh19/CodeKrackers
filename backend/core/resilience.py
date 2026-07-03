@@ -36,7 +36,10 @@ class CircuitBreaker:
                 self.failure_count += 1
                 self.last_failure_time = time.time()
                 if self.failure_count >= self.failure_threshold:
-                    logger.error(f"Circuit OPENED for {func.__name__} after {self.failure_count} failures")
+                    logger.error(
+                        f"Circuit OPENED for {func.__name__} after "
+                        f"{self.failure_count} failures"
+                    )
                     self.state = "OPEN"
                 raise e
 
@@ -56,7 +59,10 @@ def with_retries(max_attempts: int = 3, base_delay: float = 0.1):
                     if attempt == max_attempts:
                         raise e
                     delay = base_delay * (2 ** (attempt - 1))
-                    logger.warning(f"Retry {attempt}/{max_attempts} for {func.__name__} after {delay}s: {e}")
+                    logger.warning(
+                        f"Retry {attempt}/{max_attempts} for "
+                        f"{func.__name__} after {delay}s: {e}"
+                    )
                     time.sleep(delay)
         return wrapper
     return decorator

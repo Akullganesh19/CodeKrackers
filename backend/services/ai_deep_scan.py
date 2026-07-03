@@ -14,7 +14,10 @@ def _make_groq_request(prompt: str, source_type: str) -> Any:
     client = Groq(api_key=settings.GROQ_API_KEY)
     chat_completion = client.chat.completions.create(
         messages=[
-            {"role": "system", "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection."},
+            {
+                "role": "system",
+                "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection."
+            },
             {"role": "user", "content": prompt}
         ],
         model=settings.GROQ_MODEL,

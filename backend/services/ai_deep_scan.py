@@ -3,9 +3,24 @@ from typing import Dict, Any
 from groq import Groq
 from backend.core.config import settings
 from backend.services.ollama_scan import ollama_deep_scan
+from backend.core.resilience import circuit_breaker, with_retries
 import requests
 
 logger = logging.getLogger("vas.ai_scan")
+
+@circuit_breaker(failure_threshold=3, recovery_timeout=30)
+@with_retries(max_attempts=3, base_delay=0.1)
+def _make_groq_request(prompt: str, source_type: str) -> Any:
+    client = Groq(api_key=settings.GROQ_API_KEY)
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {"role": "system", "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection."},
+            {"role": "user", "content": prompt}
+        ],
+        model=settings.GROQ_MODEL,
+        response_format={"type": "json_object"}
+    )
+    return chat_completion
 
 def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     """
@@ -30,8 +45,6 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
         return {"score_increase": 0.0, "reason": "AI Scan disabled (No API Key)"}
 
     try:
-        client = Groq(api_key=settings.GROQ_API_KEY)
-        
         prompt = f"""
         Analyze this {source_type} for potential scam/phishing intent. 
         Content: "{content}"
@@ -43,14 +56,7 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
         4. "risk_factors": list of strings
         """
 
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection."},
-                {"role": "user", "content": prompt}
-            ],
-            model=settings.GROQ_MODEL,
-            response_format={"type": "json_object"}
-        )
+        chat_completion = _make_groq_request(prompt, source_type)
 
         import json
         result = json.loads(chat_completion.choices[0].message.content)

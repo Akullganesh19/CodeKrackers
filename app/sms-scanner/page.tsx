@@ -29,9 +29,55 @@ export default function SMSScannerPage() {
     tags: string[];
   }>(null)
 
+  // Prediction Cache to hold prefetched responses
+  const predictionCache = React.useRef<Record<string, Promise<Response>>>({});
+
   React.useEffect(() => {
     setMounted(true)
   }, [])
+
+  // Predictive Engine: Prefetch analysis when user pauses typing
+  React.useEffect(() => {
+    if (!text.trim() || text.length < 15) return;
+
+    const timeoutId = setTimeout(() => {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('vsdp_token') || 'dummy_token' : 'dummy_token';
+      const cacheKey = text.trim();
+
+      if (predictionCache.current[cacheKey] === undefined) {
+        console.log(`[Oracle] Predicting user action: Prefetching scan for: "${cacheKey.substring(0, 20)}..."`);
+        const fetchPromise = fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text: cacheKey })
+        });
+
+        predictionCache.current[cacheKey] = fetchPromise;
+
+        fetchPromise
+          .then(res => {
+            if (!res.ok) {
+              delete predictionCache.current[cacheKey];
+            }
+          })
+          .catch(() => {
+            // Graceful degradation on network error
+            delete predictionCache.current[cacheKey];
+          });
+
+        // LRU Eviction: Keep cache bounded to 5 items max
+        const keys = Object.keys(predictionCache.current);
+        if (keys.length > 5) {
+          delete predictionCache.current[keys[0]];
+        }
+      }
+    }, 800); // Wait for 800ms of typing pause
+
+    return () => clearTimeout(timeoutId);
+  }, [text]);
 
   const handleAnalyze = async () => {
     if (!text.trim()) return
@@ -41,14 +87,23 @@ export default function SMSScannerPage() {
 
     try {
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
+      const cacheKey = text.trim();
+      let response: Response;
+
+      if (predictionCache.current[cacheKey] !== undefined) {
+        console.log("[Oracle] Cache hit! Resolving predicted response.");
+        // Await the cached promise and clone it to prevent "body stream already read"
+        response = (await predictionCache.current[cacheKey]).clone();
+      } else {
+        response = await fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text })
+        });
+      }
       
       console.log("Response Status:", response.status);
       if (!response.ok) {

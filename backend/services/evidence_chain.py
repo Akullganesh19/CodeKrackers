@@ -166,10 +166,10 @@ class EvidenceChain:
             "threat_id": str(threat_id),
             "verification_status": verification,
             "complainant": {"name": user.full_name, "email": user.email, "phone": user.phone},
-            "incident": {c.name: getattr(threat, c.name) for c in threat.__table__.columns},
-            "fir_filing": {c.name: getattr(fir, c.name) for c in fir.__table__.columns} if fir else None,
+            "incident": {col.name: getattr(threat, col.name) for col in threat.__table__.columns},
+            "fir_filing": {col.name: getattr(fir, col.name) for col in fir.__table__.columns} if fir else None,
             "blockchain_audit_trail": [
-                {c.name: getattr(b, c.name) for b in b.__table__.columns} 
+                {col.name: getattr(b, col.name) for col in b.__table__.columns}
                 for b in blocks
             ]
         }

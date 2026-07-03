@@ -10,4 +10,3 @@ from backend.models.intel import UserConsent, DeviceInfo, PhoneLookup  # noqa
 from backend.models.spam import SpamReport, SpamFilter, SpamLog  # noqa
 from backend.models.childlock import ChildProfile, ChildActivityLog  # noqa
 from backend.models.canary import CanaryToken  # noqa
-from backend.models.honeypot import HoneypotAccess  # noqa

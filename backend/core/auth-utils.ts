@@ -103,7 +103,7 @@ export async function refreshToken(): Promise<boolean> {
   }
 
   try {
-    const response = await fetch('/api/v1/auth/refresh-token', {
+    const response = await fetch('/api/auth/refresh-token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

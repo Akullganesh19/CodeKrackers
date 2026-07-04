@@ -9,6 +9,7 @@ These endpoints handle:
 The tracking URLs are embedded inside fake database records. When an attacker
 exfiltrates data and then accesses the tracking URL, we get an immediate alert.
 """
+from backend.core.logger import get_logger
 import logging
 from typing import Optional
 from fastapi import APIRouter, Request, Depends, HTTPException, Query
@@ -21,7 +22,7 @@ from backend.models.canary import CanaryToken
 from backend.models.user import User, UserRole
 from backend.services import canary_service
 
-logger = logging.getLogger("vas.canary")
+logger = get_logger("vas.canary")
 router = APIRouter()
 
 

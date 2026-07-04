@@ -1,6 +1,7 @@
 """
 Child Lock API — parental controls for calls and messages.
 """
+from backend.core.logger import get_logger
 import logging
 from typing import Any, List
 
@@ -11,7 +12,7 @@ from backend.api import deps
 from backend.models.orm import ChildProfile, ChildActivityLog, ChildLockMode, User
 from backend.services.childlock import check_call_allowed, check_sms_allowed
 
-logger = logging.getLogger("vas.childlock_api")
+logger = get_logger("vas.childlock_api")
 router = APIRouter()
 
 

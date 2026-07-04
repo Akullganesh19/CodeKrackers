@@ -17,13 +17,14 @@ import json
 import time
 import hmac
 import hashlib
+from backend.core.logger import get_logger
 import logging
 import secrets
 from typing import Optional, Tuple, Dict, List, Any
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
-logger = logging.getLogger("vas.zk_privacy")
+logger = get_logger("vas.zk_privacy")
 
 # Domain separation constants — each data type gets its own hash domain
 # Ensures you can't correlate hashes across different data types

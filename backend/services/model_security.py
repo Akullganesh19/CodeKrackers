@@ -12,6 +12,7 @@ import os
 import json
 import time
 import hashlib
+from backend.core.logger import get_logger
 import logging
 try:
     import numpy as np
@@ -26,7 +27,7 @@ from sqlalchemy.orm import Session
 
 from backend.models import ModelVersion, ModelInferenceLog
 
-logger = logging.getLogger("vas.model_security")
+logger = get_logger("vas.model_security")
 
 
 # ─── Watermarking ─────────────────────────────────────────────────

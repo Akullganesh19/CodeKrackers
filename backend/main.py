@@ -4,11 +4,14 @@ from .core.database import engine, Base
 from .api import auth, analytics, call, fir, evidence, honeypot
 from .scheduler import setup_scheduler
 import uvicorn
+from .core.logger import setup_logging
 import asyncio
 from sqlalchemy import select
 from .core.database import engine, Base, AsyncSessionLocal
 from .core.security import get_password_hash
 from .models.orm import User
+
+setup_logging(json_logs=True)
 
 # Initialize FastAPI App
 app = FastAPI(

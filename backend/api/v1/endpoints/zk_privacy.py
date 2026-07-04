@@ -12,6 +12,7 @@ Endpoints:
   POST /zk/hash                 — Hash PII for the client (never stored)
 """
 import time
+from backend.core.logger import get_logger
 import logging
 from typing import Optional
 from fastapi import APIRouter, Request, Depends, HTTPException, Query
@@ -35,7 +36,7 @@ from backend.core.zk_privacy import (
     DOMAIN_SENDER_NUMBER,
 )
 
-logger = logging.getLogger("vas.zk_privacy_api")
+logger = get_logger("vas.zk_privacy_api")
 router = APIRouter()
 
 

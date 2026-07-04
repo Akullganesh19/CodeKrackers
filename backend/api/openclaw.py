@@ -1,9 +1,10 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
+from backend.core.logger import get_logger
 import logging
 
-logger = logging.getLogger("vas.openclaw")
+logger = get_logger("vas.openclaw")
 router = APIRouter()
 
 class OpenClawMessage(BaseModel):

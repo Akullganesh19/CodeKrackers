@@ -13,6 +13,7 @@ Endpoints:
 """
 import time
 import hashlib
+from backend.core.logger import get_logger
 import logging
 from typing import Optional, List
 from fastapi import APIRouter, Request, Depends, HTTPException, Query, BackgroundTasks
@@ -32,7 +33,7 @@ from backend.services.model_security import (
     ADVERSARIAL_PERTURBATIONS,
 )
 
-logger = logging.getLogger("vas.model_guard")
+logger = get_logger("vas.model_guard")
 router = APIRouter()
 
 

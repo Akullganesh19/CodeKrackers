@@ -1,4 +1,6 @@
+
 'use client'
+import { Oracle } from '@/app/lib/oracle'
 
 import React, { useState } from 'react'
 import Sidebar from '@/components/Sidebar'
@@ -33,6 +35,14 @@ export default function SMSScannerPage() {
     setMounted(true)
   }, [])
 
+  React.useEffect(() => {
+    if (!text.trim()) return;
+    const timeoutId = setTimeout(() => {
+      Oracle.preComputeScan(text);
+    }, 500); // Wait for typing to stop
+    return () => clearTimeout(timeoutId);
+  }, [text]);
+
   const handleAnalyze = async () => {
     if (!text.trim()) return
 
@@ -40,15 +50,20 @@ export default function SMSScannerPage() {
     setResult(null)
 
     try {
-      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
+      const hash = text.trim();
+      const fallbackFetch = async () => {
+        const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+        return fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text })
+        });
+      };
+
+      const response = await Oracle.resolvePrediction(hash, fallbackFetch);
       
       console.log("Response Status:", response.status);
       if (!response.ok) {

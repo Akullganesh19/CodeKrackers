@@ -3,10 +3,13 @@ from typing import Dict, Any
 from groq import Groq
 from backend.core.config import settings
 from backend.services.ollama_scan import ollama_deep_scan
+from backend.core.resilience import circuit_breaker, with_retries
 import requests
 
 logger = logging.getLogger("vas.ai_scan")
 
+@circuit_breaker(failure_threshold=3, recovery_timeout=60.0)
+@with_retries(max_attempts=3, initial_backoff=1.0, backoff_factor=2.0)
 def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     """
     Hybrid AI Analysis:
@@ -22,8 +25,8 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
         local_result = ollama_deep_scan(content, source_type)
         if local_result["score_increase"] > 0:
             return local_result
-    except:
-        logger.info("Ollama not reachable, falling back to Groq Cloud...")
+    except Exception as e:
+        logger.info(f"Ollama not reachable or failed ({e}), falling back to Groq Cloud...")
 
     # ── Fallback to Groq ──
     if not settings.GROQ_API_KEY:
@@ -62,4 +65,4 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
         }
     except Exception as e:
         logger.error(f"Cloud AI Scan Error: {e}")
-        return {"score_increase": 0.0, "reason": f"AI Scan failed: {e}"}
+        raise e

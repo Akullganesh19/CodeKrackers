@@ -2,12 +2,15 @@ import logging
 import requests
 import json
 from typing import Dict, Any
+from backend.core.resilience import circuit_breaker, with_retries
 
 logger = logging.getLogger("vas.ollama")
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
 OLLAMA_MODEL = "llama3.1:8b" # Upgraded for tool-calling support
 
+@circuit_breaker(failure_threshold=2, recovery_timeout=60.0)
+@with_retries(max_attempts=2, initial_backoff=0.5, backoff_factor=1.5)
 def ollama_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     """
     Uses local Ollama instance for on-device/private threat analysis.
@@ -45,8 +48,8 @@ def ollama_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
             }
         else:
             logger.warning(f"Ollama returned status {response.status_code}")
-            return {"score_increase": 0.0, "reason": "Ollama service unavailable"}
+            raise Exception("Ollama service unavailable")
             
     except Exception as e:
         logger.error(f"Ollama Scan Error: {e}")
-        return {"score_increase": 0.0, "reason": "Local AI Scan failed"}
+        raise e

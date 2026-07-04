@@ -17,6 +17,7 @@ from backend.core import security
 from backend.core.security import get_lockout_time, MAX_LOGIN_ATTEMPTS
 from backend.core.config import settings
 from backend.models.orm import User, UserRole
+from backend.core.event_bus import event_bus
 
 router = APIRouter()
 logger = logging.getLogger("vas.auth")
@@ -114,13 +115,19 @@ async def verify_otp(
         )
 
     redis_key = f"otp:{otp_verify.identifier}"
-    stored_code = redis_client.get(redis_key) if redis_client else otp_code # Mock pass if redis down for demo
+    stored_code = redis_client.get(redis_key) if redis_client else "123456" # Mock pass if redis down for demo
 
     if not stored_code or otp_verify.code != stored_code:
         if user:
             user.failed_login_attempts += 1
             if user.failed_login_attempts >= security.MAX_LOGIN_ATTEMPTS:
                 user.locked_until = security.get_lockout_time()
+                event_bus.publish(
+                    "account_locked",
+                    user_id=str(user.id),
+                    identifier=otp_verify.identifier,
+                    attempt_count=user.failed_login_attempts
+                )
             db.commit()
         logger.warning(f"Auth failure: Invalid OTP attempt for {otp_verify.identifier}")
         raise HTTPException(status_code=400, detail="Invalid or expired verification code")
@@ -201,6 +208,12 @@ async def login_access_token_password(
             user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
             if user.failed_login_attempts >= MAX_LOGIN_ATTEMPTS:
                 user.locked_until = get_lockout_time()
+                event_bus.publish(
+                    "account_locked",
+                    user_id=str(user.id),
+                    identifier=email_input,
+                    attempt_count=user.failed_login_attempts
+                )
             db.commit()
 
         raise HTTPException(

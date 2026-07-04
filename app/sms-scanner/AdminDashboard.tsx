@@ -1,5 +1,5 @@
 'use client'
-import { phantomFetch } from "@/app/lib/fetch";
+import { phantomFetch } from "@/app/lib/fetch";;
 
 import React, { useEffect, useState } from 'react';
 import {

@@ -182,18 +182,15 @@ def check_spam(
         # ── Layer 5.5: AI Deep Scan (Groq Llama 3) ──
         # We trigger AI scan if the content is suspicious but not yet critical
         if 0.1 <= spam_score < 0.9:
-            try:
-                ai_result = ai_deep_scan(content, "sms" if spam_type == SpamType.SMS else "call_transcript")
-                if ai_result["score_increase"] > 0:
-                    points = ai_result["score_increase"]
-                    spam_score += points
-                    breakdown.append({
-                        "factor": f"AI Deep Scan: {ai_result['reason']}",
-                        "points": f"+{points}",
-                        "type": "negative"
-                    })
-            except Exception as e:
-                logger.error(f"AI Deep Scan failed or circuit open, falling back: {e}")
+            ai_result = ai_deep_scan(content, "sms" if spam_type == SpamType.SMS else "call_transcript")
+            if ai_result["score_increase"] > 0:
+                points = ai_result["score_increase"]
+                spam_score += points
+                breakdown.append({
+                    "factor": f"AI Deep Scan: {ai_result['reason']}",
+                    "points": f"+{points}",
+                    "type": "negative"
+                })
 
     # ── Layer 6: Unknown caller check ──
     if user_filter and user_filter.block_unknown_callers and spam_type == SpamType.CALL:
@@ -249,15 +246,12 @@ def _result(
         # Trigger real-time notification to the user's phone
         user = db.query(User).filter(User.id == user_id).first()
         if user and user.phone_number:
-            try:
-                send_threat_alert(
-                    phone_number=user.phone_number,
-                    threat_type="Smishing/Malicious SMS",
-                    score=score,
-                    original_sender=phone
-                )
-            except Exception as e:
-                logger.error(f"Failed to send threat alert (circuit open or repeated failures): {e}")
+            send_threat_alert(
+                phone_number=user.phone_number,
+                threat_type="Smishing/Malicious SMS",
+                score=score,
+                original_sender=phone
+            )
     else:
         logger.info("SPAM_CHECK phone=%s action=%s score=%.2f", phone, action.value, score)
 

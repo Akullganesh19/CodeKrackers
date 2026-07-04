@@ -1,12 +1,9 @@
 import logging
 from twilio.rest import Client
 from backend.core.config import settings
-from backend.core.resilience import circuit_breaker, with_retries
 
 logger = logging.getLogger("vas.notifier")
 
-@circuit_breaker(failure_threshold=3, recovery_timeout=30.0)
-@with_retries(max_attempts=3, initial_backoff=0.5, backoff_factor=2.0)
 def send_threat_alert(phone_number: str, threat_type: str, score: float, original_sender: str):
     """
     Sends a high-priority alert notification to the user's phone via Twilio SMS.
@@ -36,7 +33,7 @@ def send_threat_alert(phone_number: str, threat_type: str, score: float, origina
         return True
     except Exception as e:
         logger.error(f"Failed to send notification: {e}")
-        raise e
+        return False
 
 def send_otp(phone_number: str) -> str:
     """

@@ -1,0 +1,11 @@
+--- backend/api/v1/endpoints/canary.py
++++ backend/api/v1/endpoints/canary.py
+@@ -58,7 +58,7 @@
+         db.commit()
+
+     # Return a transparent 1x1 GIF
+-    gif_data = (
++    _ = (
+         b"GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00"
+         b"!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;"
+     )

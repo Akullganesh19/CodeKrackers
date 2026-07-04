@@ -26,7 +26,7 @@ def get_dashboard_summary(
     """Comprehensive dashboard statistics with trend data."""
     now = datetime.now(timezone.utc)
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-    _ = now - timedelta(days=7)
+    week_ago = now - timedelta(days=7)
 
     # Aggregate counts by type
     type_counts = dict(

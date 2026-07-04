@@ -1,4 +1,6 @@
+
 'use client'
+import { Oracle } from '@/app/lib/oracle'
 
 import { useState, useEffect, useCallback } from 'react'
 import Sidebar from '@/components/Sidebar'
@@ -176,9 +178,10 @@ export default function Dashboard() {
     async function fetchSummary() {
       try {
         const token = typeof window !== 'undefined' ? localStorage.getItem('vsdp_token') : null
-        const res = await fetch('http://localhost:8000/api/analytics/dashboard-summary', {
+        const fallbackFetch = async () => fetch('http://localhost:8000/api/analytics/dashboard-summary', {
           headers: { 'Authorization': `Bearer ${token || 'dummy_token'}` }
         })
+        const res = await Oracle.resolvePrediction('/api/analytics/dashboard-summary', fallbackFetch)
         if (res.ok) {
           const data = await res.json()
           setSummary(data)

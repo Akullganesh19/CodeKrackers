@@ -1,4 +1,6 @@
+
 'use client'
+import { Oracle } from '@/app/lib/oracle'
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
@@ -154,6 +156,7 @@ export default function Sidebar() {
             <Link
               key={item.name}
               href={item.href}
+              onMouseEnter={() => Oracle.prefetchRouteData(item.href)}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg font-mono text-[0.6rem] uppercase tracking-[0.2em] transition-all ${
                 isActive 
                   ? 'bg-[#7c3aed]/10 border border-[#7c3aed]/30 text-[#a78bfa]' 

@@ -1,4 +1,6 @@
+
 'use client'
+import { Oracle } from '@/app/lib/oracle'
 
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
@@ -28,13 +30,16 @@ export default function Analytics() {
     async function fetchData() {
       try {
         const token = localStorage.getItem('vsdp_token') || 'dummy_token'
+        const fallbackSummary = async () => fetch('http://localhost:8000/api/analytics/dashboard-summary', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const fallbackMap = async () => fetch('http://localhost:8000/api/analytics/threat_map', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
         const [summaryRes, mapRes] = await Promise.all([
-          fetch('http://localhost:8000/api/analytics/dashboard-summary', {
-            headers: { 'Authorization': `Bearer ${token}` }
-          }),
-          fetch('http://localhost:8000/api/analytics/threat_map', {
-            headers: { 'Authorization': `Bearer ${token}` }
-          })
+          Oracle.resolvePrediction('/api/analytics/dashboard-summary', fallbackSummary),
+          Oracle.resolvePrediction('/api/analytics/threat_map', fallbackMap)
         ])
         
         if (summaryRes.ok) setSummary(await summaryRes.json())

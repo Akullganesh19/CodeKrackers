@@ -1,0 +1,11 @@
+--- backend/api/v1/endpoints/honeypot_traps.py
++++ backend/api/v1/endpoints/honeypot_traps.py
+@@ -183,7 +183,7 @@
+     """
+     log_trap_access(request, "api_v1_admin_reset")
+
+-    canary = secrets.token_urlsafe(32)
++    _ = secrets.token_urlsafe(32)
+
+     return JSONResponse(
+         status_code=status.HTTP_401_UNAUTHORIZED,

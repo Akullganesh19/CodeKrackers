@@ -1,0 +1,11 @@
+--- backend/api/v1/endpoints/analytics.py
++++ backend/api/v1/endpoints/analytics.py
+@@ -26,7 +26,7 @@
+         raise HTTPException(status_code=403, detail="Not enough permissions")
+
+     now = datetime.utcnow()
+-    week_ago = now - timedelta(days=7)
++    _ = now - timedelta(days=7)
+
+     total_threats = db.query(Threat).count()
+     high_risk = db.query(Threat).filter(Threat.confidence_score >= 0.8).count()

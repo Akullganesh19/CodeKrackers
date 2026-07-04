@@ -187,8 +187,8 @@ def check_spam(
                 points = ai_result["score_increase"]
                 spam_score += points
                 breakdown.append({
-                    "factor": f"AI Deep Scan: {ai_result['reason']}", 
-                    "points": f"+{points}", 
+                    "factor": f"AI Deep Scan: {ai_result['reason']}",
+                    "points": f"+{points}",
                     "type": "negative"
                 })
 

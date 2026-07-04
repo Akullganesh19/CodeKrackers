@@ -16,9 +16,7 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
 from backend.api import deps
-from backend.db.session import get_db
-from backend.models.canary import CanaryToken
-from backend.models.user import User, UserRole
+from backend.models.orm import CanaryTrap as CanaryToken, User, UserRole
 from backend.services import canary_service
 
 logger = logging.getLogger("vas.canary")
@@ -29,14 +27,14 @@ router = APIRouter()
 async def track_canary(
     token: str,
     request: Request,
-    db: Session = Depends(get_db),
+    db: Session = Depends(deps.get_db_sync),
 ):
     """
     Tracking URL embedded in fake database records.
-    
+
     When an attacker accesses this URL (e.g., by clicking a link in
     exfiltrated data), we capture their IP, User-Agent, and timestamp.
-    
+
     Returns a 1x1 transparent GIF to avoid detection.
     """
     client_ip = request.client.host if request.client else "unknown"
@@ -58,7 +56,7 @@ async def track_canary(
 
     # Return a 1x1 transparent GIF to avoid detection
     # This makes the tracking request look like a broken image or tracking pixel
-    _ = (
+    gif_data = (
         b"\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x80\x00"
         b"\x00\xff\xff\xff\x00\x00\x00\x21\xf9\x04\x00\x00"
         b"\x00\x00\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00"
@@ -77,8 +75,8 @@ async def track_canary(
 
 @router.get("/status")
 def canary_status(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(deps.get_current_active_superuser),
+    db: Session = Depends(deps.get_db_sync),
+    current_user: User = Depends(deps.get_current_active_admin),
 ):
     """Get status of all planted canary tokens."""
     tokens = db.query(CanaryToken).all()
@@ -109,8 +107,8 @@ def canary_status(
 @router.post("/plant")
 def plant_canary(
     request: Request,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(deps.get_current_active_superuser),
+    db: Session = Depends(deps.get_db_sync),
+    current_user: User = Depends(deps.get_current_active_admin),
     token_type: str = Query("custom", description="Type of canary token"),
     description: Optional[str] = Query(None, description="Description"),
     planted_in: Optional[str] = Query(None, description="Where this is planted"),
@@ -133,7 +131,7 @@ def plant_canary(
 
 @router.post("/seed")
 def seed_canaries(
-    db: Session = Depends(get_db),
+    db: Session = Depends(deps.get_db_sync),
     current_user: User = Depends(deps.get_current_active_superuser),
 ):
     """Plant the full set of initial canary tokens."""

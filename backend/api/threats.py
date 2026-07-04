@@ -1,6 +1,7 @@
 """
 Threat management endpoints with RBAC, pagination, and status workflow.
 """
+from backend.core.logger import get_logger
 import logging
 from typing import Any, List
 
@@ -12,7 +13,7 @@ from backend.core.ws import manager
 from backend.models import Threat, ThreatStatus, User, UserRole
 from backend.schemas.threat import Threat as ThreatSchema, ThreatCreate
 
-logger = logging.getLogger("vas.threats")
+logger = get_logger("vas.threats")
 router = APIRouter()
 
 

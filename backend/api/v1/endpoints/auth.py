@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from backend.core.logger import get_logger
 import logging
 import random
 from typing import Any, Optional
@@ -19,7 +20,7 @@ from backend.core.config import settings
 from backend.models.user import User
 
 router = APIRouter()
-logger = logging.getLogger("vas.auth")
+logger = get_logger("vas.auth")
 
 redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True)
 

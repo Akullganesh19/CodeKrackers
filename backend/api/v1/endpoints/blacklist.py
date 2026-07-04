@@ -1,6 +1,7 @@
 """
 Blacklist management and threat intelligence endpoints.
 """
+from backend.core.logger import get_logger
 import logging
 from typing import Any, List
 
@@ -12,7 +13,7 @@ from backend.models.blacklist import BlacklistEntry, BlacklistType
 from backend.models.user import User, UserRole
 from backend.services.threat_intel import auto_blacklist, calculate_threat_score
 
-logger = logging.getLogger("vas.blacklist")
+logger = get_logger("vas.blacklist")
 router = APIRouter()
 
 

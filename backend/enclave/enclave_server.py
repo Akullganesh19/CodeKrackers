@@ -17,11 +17,12 @@ import os
 import json
 import time
 import hashlib
+from backend.core.logger import get_logger
 import logging
 import secrets
 from typing import Optional, Dict, Any
 
-logger = logging.getLogger("vas.enclave")
+logger = get_logger("vas.enclave")
 
 # ─── Enclave AES-256-GCM Key ─────────────────────────────────────
 # Generated fresh on every enclave boot — never leaves the enclave

@@ -13,6 +13,7 @@ This works like Thinkst Canary / canarytokens.org — self-hosted and free.
 import uuid
 import time
 import json
+from backend.core.logger import get_logger
 import logging
 import secrets
 from typing import Optional, List, Dict, Any
@@ -23,7 +24,7 @@ from sqlalchemy.orm import Session
 from backend.models.orm import CanaryTrap as CanaryToken
 from backend.core.config import settings
 
-logger = logging.getLogger("vas.canary_service")
+logger = get_logger("vas.canary_service")
 
 
 # ─── Token Generators ─────────────────────────────────────────────

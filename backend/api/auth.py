@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from backend.core.logger import get_logger
 import logging
 import random
 from typing import Any, Optional
@@ -19,7 +20,7 @@ from backend.core.config import settings
 from backend.models.orm import User, UserRole
 
 router = APIRouter()
-logger = logging.getLogger("vas.auth")
+logger = get_logger("vas.auth")
 
 try:
     redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True)
@@ -114,7 +115,7 @@ async def verify_otp(
         )
 
     redis_key = f"otp:{otp_verify.identifier}"
-    stored_code = redis_client.get(redis_key) if redis_client else otp_code # Mock pass if redis down for demo
+    stored_code = redis_client.get(redis_key) if redis_client else None
 
     if not stored_code or otp_verify.code != stored_code:
         if user:

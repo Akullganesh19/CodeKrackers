@@ -1,7 +1,7 @@
 """
 Child Lock models — parental controls for calls and messages.
 """
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, JSON, Time, Enum, Index
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, JSON, Enum, Index
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import enum
@@ -29,7 +29,8 @@ class ChildProfile(TimestampMixin, Base):
     device_id = Column(String(256), nullable=True)  # Linked device
 
     # Lock mode
-    lock_mode = Column(Enum(ChildLockMode), default=ChildLockMode.FILTERED, nullable=False)
+    lock_mode = Column(Enum(ChildLockMode),
+                       default=ChildLockMode.FILTERED, nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
     pin_hash = Column(String(256), nullable=True)  # PIN to change settings
 
@@ -37,7 +38,8 @@ class ChildProfile(TimestampMixin, Base):
     block_all_calls = Column(Boolean, default=False)
     block_unknown_calls = Column(Boolean, default=True)
     block_international_calls = Column(Boolean, default=True)
-    allow_emergency_calls = Column(Boolean, default=True)   # 100, 112, 1098 always allowed
+    # 100, 112, 1098 always allowed
+    allow_emergency_calls = Column(Boolean, default=True)
 
     # SMS controls
     block_all_sms = Column(Boolean, default=False)
@@ -71,8 +73,10 @@ class ChildActivityLog(TimestampMixin, Base):
     __tablename__ = "child_activity_log"
 
     id = Column(Integer, primary_key=True, index=True)
-    child_profile_id = Column(Integer, ForeignKey("child_profile.id"), nullable=False, index=True)
-    event_type = Column(String(32), nullable=False)  # call_blocked, sms_blocked, sms_filtered, call_allowed
+    child_profile_id = Column(Integer, ForeignKey(
+        "child_profile.id"), nullable=False, index=True)
+    # call_blocked, sms_blocked, sms_filtered, call_allowed
+    event_type = Column(String(32), nullable=False)
     phone_number = Column(String(64), nullable=True)
     content_snippet = Column(String(200), nullable=True)
     reason = Column(String(256), nullable=True)

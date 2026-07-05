@@ -17,13 +17,15 @@ class BlacklistEntry(TimestampMixin, Base):
     """Community-powered blacklist of known scammer identifiers."""
     id = Column(Integer, primary_key=True, index=True)
     type = Column(Enum(BlacklistType), nullable=False, index=True)
-    value = Column(String(256), nullable=False, index=True)  # phone number, IP, domain, or wallet address
+    # phone number, IP, domain, or wallet address
+    value = Column(String(256), nullable=False, index=True)
     reason = Column(Text, nullable=True)
     reported_by = Column(Integer, nullable=True)  # user_id who reported
     report_count = Column(Integer, default=1, nullable=False)
     confidence = Column(Float, default=0.5, nullable=False)
     is_verified = Column(Boolean, default=False, nullable=False)
-    source = Column(String(128), default="user_report")  # user_report, ai_detection, honeypot, external_feed
+    # user_report, ai_detection, honeypot, external_feed
+    source = Column(String(128), default="user_report")
 
     __table_args__ = (
         Index("ix_blacklist_type_value", "type", "value", unique=True),
@@ -38,7 +40,8 @@ class ThreatIntelFeed(TimestampMixin, Base):
     __tablename__ = "threat_intel_feed"
 
     id = Column(Integer, primary_key=True, index=True)
-    source_name = Column(String(128), nullable=False, index=True)  # e.g. "honeypot.is", "cybercrime.gov.in"
+    # e.g. "honeypot.is", "cybercrime.gov.in"
+    source_name = Column(String(128), nullable=False, index=True)
     indicator_type = Column(String(64), nullable=False)  # phone, domain, ip, hash
     indicator_value = Column(String(512), nullable=False, index=True)
     threat_type = Column(String(64), nullable=True)

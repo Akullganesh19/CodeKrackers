@@ -235,8 +235,10 @@ def register_device(
         sim_operator=body.get("sim_operator"),
         sim_country=body.get("sim_country"),
         # Location (only if consent)
-        latitude=body.get("latitude") if check_user_consent(db, current_user.id, "consent_location") else None,
-        longitude=body.get("longitude") if check_user_consent(db, current_user.id, "consent_location") else None,
+        latitude=body.get("latitude") if check_user_consent(
+            db, current_user.id, "consent_location") else None,
+        longitude=body.get("longitude") if check_user_consent(
+            db, current_user.id, "consent_location") else None,
         city=body.get("city"),
         state=body.get("state"),
         # Browser

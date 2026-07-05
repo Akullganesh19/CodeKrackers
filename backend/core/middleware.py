@@ -1,17 +1,15 @@
 """Security middleware for request sanitization, audit logging, header hardening, and RASP."""
 import re
 import time
-import json
 import logging
 import hashlib
-from typing import Optional, List, Tuple, Set
+from typing import Optional, List, Tuple
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response, JSONResponse
 from starlette.status import HTTP_403_FORBIDDEN
 
-from .config import settings
-from .anomaly_detector import get_anomaly_detector, APIAnomalyDetector
+from .anomaly_detector import get_anomaly_detector
 
 logger = logging.getLogger("vas.security")
 
@@ -148,7 +146,8 @@ class RAPSMiddleware(BaseHTTPMiddleware):
 
     # ─── Command Injection / RCE Patterns ───
     RCE_PATTERNS = [
-        re.compile(r"[;&|`](\s*)(whoami|id|uname|cat\s+/etc/passwd|ls\s+-la)", re.IGNORECASE),
+        re.compile(
+            r"[;&|`](\s*)(whoami|id|uname|cat\s+/etc/passwd|ls\s+-la)", re.IGNORECASE),
         re.compile(r"exec\s*\(", re.IGNORECASE),
         re.compile(r"eval\s*\(", re.IGNORECASE),
         re.compile(r"system\s*\(", re.IGNORECASE),
@@ -403,7 +402,8 @@ class RAPSMiddleware(BaseHTTPMiddleware):
 
                 if is_anomaly:
                     attack_indicators.append(f"ml_anomaly:score={anomaly_score:.2f}")
-                    risk_score += int(anomaly_score * 40)  # Up to 40 additional risk points
+                    # Up to 40 additional risk points
+                    risk_score += int(anomaly_score * 40)
                     logger.warning(
                         "RASP ML ANOMALY from %s path=%s score=%.4f",
                         client_ip, path, anomaly_score,
@@ -417,7 +417,8 @@ class RAPSMiddleware(BaseHTTPMiddleware):
 
         # ─── 7. Block or allow ───
         if risk_score >= 50:  # High-confidence attack
-            self._log_attack(request, client_ip, attack_indicators, risk_score, start_time)
+            self._log_attack(request, client_ip, attack_indicators,
+                             risk_score, start_time)
             return JSONResponse(
                 status_code=HTTP_403_FORBIDDEN,
                 content={
@@ -428,7 +429,8 @@ class RAPSMiddleware(BaseHTTPMiddleware):
         elif risk_score >= 30:  # Suspicious - log warning
             logger.warning(
                 "RASP SUSPICIOUS request from %s (risk=%d): %s %s indicators=%s",
-                client_ip, risk_score, request.method, path, ",".join(attack_indicators),
+                client_ip, risk_score, request.method, path, ",".join(
+                    attack_indicators),
             )
 
         # ─── 8. Continue ───

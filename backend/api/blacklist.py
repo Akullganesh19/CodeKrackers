@@ -2,9 +2,9 @@
 Blacklist management and threat intelligence endpoints.
 """
 import logging
-from typing import Any, List
+from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from backend.api import deps
@@ -47,7 +47,8 @@ def report_scammer(
         source="user_report",
     )
 
-    logger.info("SCAMMER_REPORTED by=%d type=%s value=%s", current_user.id, id_type, identifier)
+    logger.info("SCAMMER_REPORTED by=%d type=%s value=%s",
+                current_user.id, id_type, identifier)
     return {
         "id": entry.id,
         "type": entry.type,
@@ -96,7 +97,8 @@ def list_blacklist(
     if current_user.role not in {UserRole.ADMIN, UserRole.OFFICER, UserRole.SUPER_ADMIN}:
         query = query.filter(BlacklistEntry.is_verified == True)
 
-    entries = query.order_by(BlacklistEntry.confidence.desc()).offset(skip).limit(limit).all()
+    entries = query.order_by(BlacklistEntry.confidence.desc()
+                             ).offset(skip).limit(limit).all()
     return [
         {
             "id": e.id,

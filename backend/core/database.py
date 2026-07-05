@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import sessionmaker
 from .config import settings
 
 # Database URLs
@@ -15,8 +15,8 @@ engine = create_async_engine(
 )
 
 AsyncSessionLocal = sessionmaker(
-    engine, 
-    class_=AsyncSession, 
+    engine,
+    class_=AsyncSession,
     expire_on_commit=False
 )
 
@@ -34,7 +34,6 @@ SessionLocal = sessionmaker(
     bind=sync_engine
 )
 
-from ..models.orm import Base
 
 async def get_db():
     async with AsyncSessionLocal() as session:
@@ -42,6 +41,7 @@ async def get_db():
             yield session
         finally:
             await session.close()
+
 
 def get_db_sync():
     db = SessionLocal()

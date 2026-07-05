@@ -6,15 +6,13 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from fastapi import APIRouter, Depends, Query, HTTPException
-from sqlalchemy import func, case, select
-from sqlalchemy.orm import Session
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.api import deps
-from backend.models.orm import FIR, Threat, User, Blacklist, BlacklistType, ThreatType, ThreatSeverity
+from backend.models.orm import FIR, Threat, User, ThreatType, ThreatSeverity
 from backend.utils.ai import client as groq_client
 import json
-import os
 
 logger = logging.getLogger("vas.analytics")
 router = APIRouter()
@@ -148,7 +146,7 @@ async def get_hourly_trend(
             .filter(Threat.type == ThreatType.SMISHING, Threat.detected_at.between(hour_start, hour_end))
         )
         smishing = smishing_res.scalar() or 0
-        
+
         vishing_res = await db.execute(
             select(func.count(Threat.id))
             .filter(Threat.type == ThreatType.VISHING, Threat.detected_at.between(hour_start, hour_end))
@@ -163,6 +161,7 @@ async def get_hourly_trend(
 
     return data
 
+
 @router.post("/scan-voice")
 async def scan_voice(body: dict, db: AsyncSession = Depends(deps.get_db)):
     """Analyze call transcript for vishing threats using AI."""
@@ -174,7 +173,8 @@ async def scan_voice(body: dict, db: AsyncSession = Depends(deps.get_db)):
         completion = groq_client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
-                {"role": "system", "content": "You are a Vishing (Voice Scam) Detection Expert. Analyze the transcript and return JSON: {risk_score: 0.0-1.0, verdict: 'SAFE'|'CAUTION'|'SCAM', analysis: 'short explanation', tags: [list]}"},
+                {"role": "system",
+                    "content": "You are a Vishing (Voice Scam) Detection Expert. Analyze the transcript and return JSON: {risk_score: 0.0-1.0, verdict: 'SAFE'|'CAUTION'|'SCAM', analysis: 'short explanation', tags: [list]}"},
                 {"role": "user", "content": transcript}
             ],
             response_format={"type": "json_object"}
@@ -196,7 +196,8 @@ async def scan_voice(body: dict, db: AsyncSession = Depends(deps.get_db)):
     if result["risk_score"] > 0.4:
         threat = Threat(
             type=ThreatType.VISHING,
-            severity=ThreatSeverity.CRITICAL if result["risk_score"] > 0.85 else ThreatSeverity.HIGH if result["risk_score"] > 0.7 else ThreatSeverity.MEDIUM,
+            severity=ThreatSeverity.CRITICAL if result["risk_score"] > 0.85 else ThreatSeverity.HIGH if result[
+                "risk_score"] > 0.7 else ThreatSeverity.MEDIUM,
             raw_content=transcript,
             risk_score=result["risk_score"],
             confidence=0.85,
@@ -207,9 +208,11 @@ async def scan_voice(body: dict, db: AsyncSession = Depends(deps.get_db)):
 
     return result
 
+
 @router.post("/scan-vishing")
 async def scan_vishing(body: dict, db: AsyncSession = Depends(deps.get_db)):
     return await scan_voice(body, db)
+
 
 @router.post("/scan")
 async def scan_sms(
@@ -262,7 +265,8 @@ async def scan_sms(
     if result["isScam"] and result["confidence"] > 40:
         threat = Threat(
             type=ThreatType.SMISHING,
-            severity=ThreatSeverity.CRITICAL if result["confidence"] > 85 else ThreatSeverity.HIGH if result["confidence"] > 70 else ThreatSeverity.MEDIUM,
+            severity=ThreatSeverity.CRITICAL if result["confidence"] > 85 else ThreatSeverity.HIGH if result[
+                "confidence"] > 70 else ThreatSeverity.MEDIUM,
             raw_content=text,
             risk_score=result["confidence"] / 100.0,
             confidence=result["confidence"] / 100.0,

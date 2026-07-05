@@ -15,7 +15,6 @@ Demo: Run as a standalone Python process (mock_enclave mode)
 """
 import os
 import json
-import time
 import hashlib
 import logging
 import secrets
@@ -85,12 +84,12 @@ def _mock_decrypt(data: bytes) -> bytes:
 def classify_sms_enclave(text: str) -> Dict[str, Any]:
     """
     Classify SMS text inside the enclave.
-    
+
     In production with Nitro Enclaves:
       - The model weights are loaded at boot from the EIF image
       - No disk access — everything is in encrypted memory
       - The host OS CANNOT see the model weights or the input text
-    
+
     This function is the core of what runs in hardware isolation.
     """
     # ─── Keyword-based classifier (works without GPU) ─────
@@ -111,7 +110,7 @@ def classify_sms_enclave(text: str) -> Dict[str, Any]:
     text_lower = text.lower()
     keyword_hits = sum(1 for kw in scam_keywords if kw in text_lower)
     url_hits = sum(1 for p in url_patterns if p in text_lower)
-    
+
     confidence = min((keyword_hits * 0.15) + (url_hits * 0.2), 1.0)
     is_scam = confidence >= 0.3
 
@@ -179,7 +178,7 @@ def classify_voice_enclave(transcript: str) -> Dict[str, Any]:
 def get_attestation_document(user_data: bytes = b"") -> Dict[str, Any]:
     """
     Request attestation document from the Nitro hypervisor.
-    
+
     In production: subprocess call to nitro-cli
     In mock mode: returns a simulated attestation
     """
@@ -218,7 +217,7 @@ def get_attestation_document(user_data: bytes = b"") -> Dict[str, Any]:
 def vsock_server(port: int = 5000):
     """
     Start the vsock server inside the Nitro Enclave.
-    
+
     vsock is the ONLY communication channel into a Nitro Enclave.
     No TCP/IP, no HTTP, no filesystem — just this pipe.
     """

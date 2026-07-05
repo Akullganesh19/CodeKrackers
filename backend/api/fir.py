@@ -11,8 +11,10 @@ from ..models.orm import FIR
 
 router = APIRouter(tags=["FIR Management"])
 
+
 class FIRRequest(BaseModel):
     threat_id: uuid.UUID
+
 
 @router.post("/generate")
 async def generate_fir_endpoint(request: FIRRequest, db: AsyncSession = Depends(get_db)):
@@ -32,6 +34,7 @@ async def generate_fir_endpoint(request: FIRRequest, db: AsyncSession = Depends(
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to generate FIR: {str(e)}")
+
 
 @router.get("/{fir_id}/pdf")
 async def download_fir_pdf(fir_id: uuid.UUID, db: AsyncSession = Depends(get_db)):

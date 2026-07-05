@@ -2,9 +2,9 @@
 Spam Shield API — report, check, configure spam filtering.
 """
 import logging
-from typing import Any, List
+from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from backend.api import deps
@@ -36,6 +36,7 @@ def spam_check(
 
     return check_spam(db, phone, current_user.id, spam_type, content)
 
+
 @router.post("/check/live")
 def spam_check_live(
     body: dict,
@@ -47,7 +48,8 @@ def spam_check_live(
     transcript = body.get("transcript")
 
     if not phone or not transcript:
-        raise HTTPException(status_code=422, detail="phone_number and transcript required")
+        raise HTTPException(
+            status_code=422, detail="phone_number and transcript required")
 
     return check_spam(db, phone, current_user.id, SpamType.CALL, transcript)
 
@@ -78,8 +80,10 @@ def report_spam(
     db.commit()
     db.refresh(report)
 
-    total_reports = db.query(SpamReport).filter(SpamReport.phone_number == phone).count()
-    logger.info("SPAM_REPORTED phone=%s by=%d total=%d", phone, current_user.id, total_reports)
+    total_reports = db.query(SpamReport).filter(
+        SpamReport.phone_number == phone).count()
+    logger.info("SPAM_REPORTED phone=%s by=%d total=%d",
+                phone, current_user.id, total_reports)
 
     return {"id": report.id, "phone_number": phone, "total_reports": total_reports}
 

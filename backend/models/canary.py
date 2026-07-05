@@ -1,7 +1,5 @@
 """Canary tokens for detecting database breaches and data leakage."""
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, Index
-from sqlalchemy.sql import func
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Index
 
 from backend.db.base_class import Base, TimestampMixin
 
@@ -14,7 +12,8 @@ class CanaryToken(Base, TimestampMixin):
 
     # Token tracking
     token = Column(String(64), unique=True, index=True, nullable=False)
-    token_type = Column(String(32), nullable=False, index=True)  # user, threat, evidence, fir
+    # user, threat, evidence, fir
+    token_type = Column(String(32), nullable=False, index=True)
 
     # Fake data that looks realistic
     fake_email = Column(String(320), nullable=True)

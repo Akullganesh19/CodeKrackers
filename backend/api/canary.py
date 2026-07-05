@@ -11,12 +11,12 @@ exfiltrates data and then accesses the tracking URL, we get an immediate alert.
 """
 import logging
 from typing import Optional
-from fastapi import APIRouter, Request, Depends, HTTPException, Query
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi import APIRouter, Request, Depends, Query
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from backend.api import deps
-from backend.models.orm import CanaryTrap as CanaryToken, User, UserRole
+from backend.models.orm import CanaryTrap as CanaryToken, User
 from backend.services import canary_service
 
 logger = logging.getLogger("vas.canary")
@@ -31,10 +31,10 @@ async def track_canary(
 ):
     """
     Tracking URL embedded in fake database records.
-    
+
     When an attacker accesses this URL (e.g., by clicking a link in
     exfiltrated data), we capture their IP, User-Agent, and timestamp.
-    
+
     Returns a 1x1 transparent GIF to avoid detection.
     """
     client_ip = request.client.host if request.client else "unknown"

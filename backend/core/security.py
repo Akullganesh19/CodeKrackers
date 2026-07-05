@@ -55,7 +55,8 @@ def create_access_token(
 ) -> str:
     """Create a JWT with claims, expiry, and unique JTI for revocation support."""
     now = datetime.now(timezone.utc)
-    expire = now + (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
+    expire = now + \
+        (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
 
     to_encode = {
         "exp": expire,

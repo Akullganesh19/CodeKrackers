@@ -3,7 +3,7 @@ Threat Intelligence Service — aggregates signals from multiple engines.
 """
 import logging
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from sqlalchemy.orm import Session
 from backend.models.orm import Blacklist as BlacklistEntry, BlacklistType
@@ -66,11 +66,13 @@ def calculate_threat_score(
     scores["urgency"] = min(urgency_hits * 0.15, 1.0)
 
     # ── Engine 3: Impersonation Detection ──
-    impersonation_hits = sum(1 for target in IMPERSONATION_TARGETS if target in content_lower)
+    impersonation_hits = sum(
+        1 for target in IMPERSONATION_TARGETS if target in content_lower)
     scores["impersonation"] = min(impersonation_hits * 0.25, 1.0)
 
     # ── Engine 4: URL Analysis ──
-    urls = re.findall(r"https?://[^\s]+|bit\.ly/[^\s]+|tinyurl\.com/[^\s]+", content_lower)
+    urls = re.findall(
+        r"https?://[^\s]+|bit\.ly/[^\s]+|tinyurl\.com/[^\s]+", content_lower)
     suspicious_tlds = [".xyz", ".tk", ".ml", ".ga", ".cf", ".top", ".buzz"]
     url_score = 0.0
     for url in urls:
@@ -91,7 +93,8 @@ def calculate_threat_score(
         )
         if bl_entry:
             blacklist_score = bl_entry.confidence
-            logger.warning("BLACKLIST_HIT sender=%s confidence=%.2f", sender, bl_entry.confidence)
+            logger.warning("BLACKLIST_HIT sender=%s confidence=%.2f",
+                           sender, bl_entry.confidence)
     scores["blacklist"] = blacklist_score
 
     # ── Composite Score ──
@@ -132,7 +135,8 @@ def auto_blacklist(
         existing.report_count += 1
         existing.confidence = min(existing.confidence + 0.1, 1.0)
         db.commit()
-        logger.info("BLACKLIST_UPDATED %s=%s count=%d conf=%.2f", identifier_type, identifier, existing.report_count, existing.confidence)
+        logger.info("BLACKLIST_UPDATED %s=%s count=%d conf=%.2f", identifier_type,
+                    identifier, existing.report_count, existing.confidence)
         return existing
 
     entry = BlacklistEntry(
@@ -146,5 +150,6 @@ def auto_blacklist(
     db.add(entry)
     db.commit()
     db.refresh(entry)
-    logger.warning("BLACKLIST_ADDED %s=%s conf=%.2f source=%s", identifier_type, identifier, confidence, source)
+    logger.warning("BLACKLIST_ADDED %s=%s conf=%.2f source=%s",
+                   identifier_type, identifier, confidence, source)
     return entry

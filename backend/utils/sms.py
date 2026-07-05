@@ -1,6 +1,7 @@
 from twilio.rest import Client
 from backend.core.config import settings
 
+
 def send_alert_sms(to_number: str, message_body: str):
     """
     Send an alert SMS using Twilio.
@@ -8,7 +9,7 @@ def send_alert_sms(to_number: str, message_body: str):
     if not all([settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN, settings.TWILIO_PHONE_NUMBER]):
         print("Twilio credentials not fully configured. Skipping SMS.")
         return None
-    
+
     try:
         client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
         message = client.messages.create(

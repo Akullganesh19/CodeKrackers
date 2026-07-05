@@ -85,15 +85,18 @@ def analyze_phone_number(phone_raw: str) -> Dict[str, Any]:
         result["is_possible"] = phonenumbers.is_possible_number(parsed)
 
         if not result["is_valid"] and not result["is_possible"]:
-            result["risk_assessment"]["fraud_indicators"].append("Invalid phone number format")
+            result["risk_assessment"]["fraud_indicators"].append(
+                "Invalid phone number format")
             result["risk_assessment"]["score"] = "high"
             result["risk_assessment"]["base_risk"] = 0.7
             return result
 
         # Formatting
         result["country_code"] = phonenumbers.region_code_for_number(parsed)
-        result["national_format"] = phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.NATIONAL)
-        result["international_format"] = phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.INTERNATIONAL)
+        result["national_format"] = phonenumbers.format_number(
+            parsed, phonenumbers.PhoneNumberFormat.NATIONAL)
+        result["international_format"] = phonenumbers.format_number(
+            parsed, phonenumbers.PhoneNumberFormat.INTERNATIONAL)
 
         # Carrier
         carrier_name = carrier.name_for_number(parsed, "en")
@@ -119,7 +122,8 @@ def analyze_phone_number(phone_raw: str) -> Dict[str, Any]:
 
         # VoIP detection
         if result["carrier"]["is_voip"]:
-            fraud_indicators.append("VoIP number - commonly used by scammers to hide identity")
+            fraud_indicators.append(
+                "VoIP number - commonly used by scammers to hide identity")
             base_risk = max(base_risk, 0.8)
 
         # Premium rate
@@ -141,7 +145,8 @@ def analyze_phone_number(phone_raw: str) -> Dict[str, Any]:
 
         # Unknown carrier
         if not carrier_name:
-            fraud_indicators.append("Carrier not identified - possible virtual/spoofed number")
+            fraud_indicators.append(
+                "Carrier not identified - possible virtual/spoofed number")
             base_risk = max(base_risk, 0.4)
 
         # Determine score label
@@ -161,7 +166,8 @@ def analyze_phone_number(phone_raw: str) -> Dict[str, Any]:
         return result
 
     except phonenumbers.NumberParseException as e:
-        result["risk_assessment"]["fraud_indicators"].append(f"Cannot parse number: {str(e)}")
+        result["risk_assessment"]["fraud_indicators"].append(
+            f"Cannot parse number: {str(e)}")
         result["risk_assessment"]["score"] = "high"
         result["risk_assessment"]["base_risk"] = 0.8
         return result

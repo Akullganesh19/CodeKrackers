@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 import logging
 import random
 from typing import Any, Optional
@@ -28,14 +28,17 @@ except Exception as e:
     logger.warning(f"REDIS_OFFLINE: {e}. Auth will use local fallback.")
     redis_client = None
 
+
 class OTPSend(BaseModel):
     identifier: str
     role: str = "citizen"
+
 
 class OTPVerify(BaseModel):
     identifier: str
     code: str
     role: str = "citizen"
+
 
 class LoginRequest(BaseModel):
     username: str = ""
@@ -43,11 +46,13 @@ class LoginRequest(BaseModel):
     password: str
     role: str = "citizen"
 
+
 class UserRegister(BaseModel):
     email: str
     password: str
     phone_number: Optional[str] = None
     role: str = "citizen"
+
 
 @router.post("/send")
 @limiter.limit(settings.RATE_LIMIT_AUTH)
@@ -61,7 +66,7 @@ async def send_otp(
     Generates a 6-digit OTP and stores it in Redis with a TTL.
     """
     otp_code = f"{random.randint(100000, 999999)}"
-    
+
     redis_key = f"otp:{otp_in.identifier}"
     if redis_client:
         redis_client.setex(redis_key, settings.OTP_EXPIRE_SECONDS, otp_code)
@@ -75,7 +80,8 @@ async def send_otp(
                 to=otp_in.identifier
             )
         except Exception as e:
-            logger.error(f"SMS_GATEWAY_ERROR: Failed to send OTP to {otp_in.identifier}: {e}")
+            logger.error(
+                f"SMS_GATEWAY_ERROR: Failed to send OTP to {otp_in.identifier}: {e}")
 
     if "@" in otp_in.identifier and settings.SENDGRID_API_KEY:
         try:
@@ -88,11 +94,13 @@ async def send_otp(
             sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
             sg.send(message)
         except Exception as e:
-            logger.error(f"EMAIL_GATEWAY_ERROR: Failed to send OTP to {otp_in.identifier}: {e}")
+            logger.error(
+                f"EMAIL_GATEWAY_ERROR: Failed to send OTP to {otp_in.identifier}: {e}")
 
     logger.info(f"SECURITY: Generated OTP for {otp_in.identifier} -> {otp_code}")
-    
+
     return {"message": "OTP sent successfully"}
+
 
 @router.post("/verify")
 async def verify_otp(
@@ -104,7 +112,8 @@ async def verify_otp(
     Verifies the OTP and issues a signed JWT access token.
     """
     user = db.query(User).filter(
-        (User.email == otp_verify.identifier) | (User.phone_number == otp_verify.identifier)
+        (User.email == otp_verify.identifier) | (
+            User.phone_number == otp_verify.identifier)
     ).first()
 
     if user and security.check_account_locked(user.locked_until):
@@ -123,7 +132,8 @@ async def verify_otp(
                 user.locked_until = security.get_lockout_time()
             db.commit()
         logger.warning(f"Auth failure: Invalid OTP attempt for {otp_verify.identifier}")
-        raise HTTPException(status_code=400, detail="Invalid or expired verification code")
+        raise HTTPException(
+            status_code=400, detail="Invalid or expired verification code")
 
     if not user:
         user = User(
@@ -145,12 +155,13 @@ async def verify_otp(
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return {
         "access_token": security.create_access_token(
-            user.id, 
-            role=user.role.value, 
+            user.id,
+            role=user.role.value,
             expires_delta=access_token_expires
         ),
         "token_type": "bearer",
     }
+
 
 @router.post("/refresh-token")
 async def refresh_access_token(
@@ -177,6 +188,7 @@ async def refresh_access_token(
         expires_delta=access_token_expires,
     )
     return {"access_token": new_access_token, "token_type": "bearer"}
+
 
 @router.post("/login")
 @limiter.limit(settings.RATE_LIMIT_AUTH)
@@ -214,7 +226,8 @@ async def login_access_token_password(
 
     role_val = user.role.value if hasattr(user.role, 'value') else str(user.role)
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    token = security.create_access_token(subject=str(user.id), role=role_val, expires_delta=access_token_expires)
+    token = security.create_access_token(subject=str(
+        user.id), role=role_val, expires_delta=access_token_expires)
 
     return {
         "access_token": token,
@@ -226,6 +239,7 @@ async def login_access_token_password(
             "role": role_val,
         }
     }
+
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 @limiter.limit(settings.RATE_LIMIT_AUTH)
@@ -244,9 +258,11 @@ async def register_user(
         raise HTTPException(status_code=400, detail="Email already registered.")
 
     if user_in.phone_number:
-        existing_phone = db.query(User).filter(User.phone_number == user_in.phone_number).first()
+        existing_phone = db.query(User).filter(
+            User.phone_number == user_in.phone_number).first()
         if existing_phone:
-            raise HTTPException(status_code=400, detail="Phone number already registered.")
+            raise HTTPException(
+                status_code=400, detail="Phone number already registered.")
 
     new_user = User(
         email=user_in.email,

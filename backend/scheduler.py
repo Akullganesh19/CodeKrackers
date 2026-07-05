@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 # Initialize the AsyncIOScheduler which works natively with FastAPI's event loop
 scheduler = AsyncIOScheduler()
 
+
 def setup_scheduler():
     """
     Configures the scheduler to run forensic audits.
@@ -20,7 +21,7 @@ def setup_scheduler():
         replace_existing=True,
         misfire_grace_time=3600  # Allow the job to run up to an hour late if the server was down
     )
-    
+
     scheduler.add_job(
         record_daily_safety_scores,
         CronTrigger(hour=23, minute=59),  # Run just before midnight
@@ -36,6 +37,6 @@ def setup_scheduler():
         replace_existing=True,
         misfire_grace_time=3600
     )
-    
+
     scheduler.start()
     logger.info("VSDP Scheduler started: Daily integrity audit scheduled for midnight.")

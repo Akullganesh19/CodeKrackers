@@ -2,9 +2,9 @@
 Child Lock API — parental controls for calls and messages.
 """
 import logging
-from typing import Any, List
+from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from backend.api import deps
@@ -29,7 +29,8 @@ def create_child_profile(
     try:
         mode = ChildLockMode(body.get("lock_mode", "filtered"))
     except ValueError:
-        raise HTTPException(status_code=422, detail=f"Invalid lock_mode. Options: {[m.value for m in ChildLockMode]}")
+        raise HTTPException(
+            status_code=422, detail=f"Invalid lock_mode. Options: {[m.value for m in ChildLockMode]}")
 
     profile = ChildProfile(
         parent_id=current_user.id,
@@ -54,7 +55,8 @@ def create_child_profile(
     db.commit()
     db.refresh(profile)
 
-    logger.info("CHILD_PROFILE_CREATED id=%d parent=%d name=%s mode=%s", profile.id, current_user.id, name, mode.value)
+    logger.info("CHILD_PROFILE_CREATED id=%d parent=%d name=%s mode=%s",
+                profile.id, current_user.id, name, mode.value)
     return {"id": profile.id, "child_name": name, "lock_mode": mode.value, "message": "Child profile created"}
 
 
@@ -64,7 +66,8 @@ def list_child_profiles(
     current_user: User = Depends(deps.get_current_active_user),
 ) -> Any:
     """List all child profiles for the current parent."""
-    profiles = db.query(ChildProfile).filter(ChildProfile.parent_id == current_user.id).all()
+    profiles = db.query(ChildProfile).filter(
+        ChildProfile.parent_id == current_user.id).all()
     return [
         {
             "id": p.id,
@@ -91,10 +94,12 @@ def check_child_call(
     profile_id = body.get("profile_id")
     phone = body.get("phone_number", "")
     if not profile_id or not phone:
-        raise HTTPException(status_code=422, detail="profile_id and phone_number required")
+        raise HTTPException(
+            status_code=422, detail="profile_id and phone_number required")
 
     # Verify parent owns this profile
-    profile = db.query(ChildProfile).filter(ChildProfile.id == profile_id, ChildProfile.parent_id == current_user.id).first()
+    profile = db.query(ChildProfile).filter(ChildProfile.id == profile_id,
+                                            ChildProfile.parent_id == current_user.id).first()
     if not profile:
         raise HTTPException(status_code=404, detail="Child profile not found")
 
@@ -112,9 +117,11 @@ def check_child_sms(
     phone = body.get("phone_number", "")
     content = body.get("content", "")
     if not profile_id or not phone:
-        raise HTTPException(status_code=422, detail="profile_id and phone_number required")
+        raise HTTPException(
+            status_code=422, detail="profile_id and phone_number required")
 
-    profile = db.query(ChildProfile).filter(ChildProfile.id == profile_id, ChildProfile.parent_id == current_user.id).first()
+    profile = db.query(ChildProfile).filter(ChildProfile.id == profile_id,
+                                            ChildProfile.parent_id == current_user.id).first()
     if not profile:
         raise HTTPException(status_code=404, detail="Child profile not found")
 
@@ -129,7 +136,8 @@ def update_child_profile(
     current_user: User = Depends(deps.get_current_active_user),
 ) -> Any:
     """Update child profile settings."""
-    profile = db.query(ChildProfile).filter(ChildProfile.id == profile_id, ChildProfile.parent_id == current_user.id).first()
+    profile = db.query(ChildProfile).filter(ChildProfile.id == profile_id,
+                                            ChildProfile.parent_id == current_user.id).first()
     if not profile:
         raise HTTPException(status_code=404, detail="Child profile not found")
 
@@ -159,7 +167,8 @@ def get_child_activity(
     current_user: User = Depends(deps.get_current_active_user),
 ) -> Any:
     """Get activity log for a child profile (what was blocked/allowed)."""
-    profile = db.query(ChildProfile).filter(ChildProfile.id == profile_id, ChildProfile.parent_id == current_user.id).first()
+    profile = db.query(ChildProfile).filter(ChildProfile.id == profile_id,
+                                            ChildProfile.parent_id == current_user.id).first()
     if not profile:
         raise HTTPException(status_code=404, detail="Child profile not found")
 

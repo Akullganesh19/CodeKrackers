@@ -4,7 +4,7 @@ Child Lock Service — parental controls for calls and messages.
 import logging
 import re
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from sqlalchemy.orm import Session
 
@@ -62,12 +62,14 @@ def check_call_allowed(
     if profile.emergency_contacts:
         for ec in profile.emergency_contacts:
             if re.sub(r"[\s\-()]", "", ec) in clean_number:
-                _log_activity(db, profile.id, "call_allowed", phone_number, "Emergency contact")
+                _log_activity(db, profile.id, "call_allowed",
+                              phone_number, "Emergency contact")
                 return {"allowed": True, "reason": "Emergency contact"}
 
     # Full lockdown — block everything except emergency
     if profile.lock_mode == ChildLockMode.FULL_LOCKDOWN:
-        _log_activity(db, profile.id, "call_blocked", phone_number, "Full lockdown mode")
+        _log_activity(db, profile.id, "call_blocked",
+                      phone_number, "Full lockdown mode")
         return {"allowed": False, "reason": "Full lockdown mode - only emergency calls allowed"}
 
     # Block all calls
@@ -80,7 +82,7 @@ def check_call_allowed(
         now_time = datetime.now(timezone.utc).strftime("%H:%M")
         if not (profile.allowed_call_start <= now_time <= profile.allowed_call_end):
             _log_activity(db, profile.id, "call_blocked", phone_number,
-                         f"Outside allowed hours ({profile.allowed_call_start}-{profile.allowed_call_end})")
+                          f"Outside allowed hours ({profile.allowed_call_start}-{profile.allowed_call_end})")
             return {
                 "allowed": False,
                 "reason": f"Calls not allowed at this time. Allowed: {profile.allowed_call_start} - {profile.allowed_call_end}",
@@ -91,7 +93,8 @@ def check_call_allowed(
         if profile.whitelisted_contacts:
             for wl in profile.whitelisted_contacts:
                 if re.sub(r"[\s\-()]", "", wl) in clean_number:
-                    _log_activity(db, profile.id, "call_allowed", phone_number, "Whitelisted contact")
+                    _log_activity(db, profile.id, "call_allowed",
+                                  phone_number, "Whitelisted contact")
                     return {"allowed": True, "reason": "Whitelisted contact"}
         _log_activity(db, profile.id, "call_blocked", phone_number, "Not in whitelist")
         return {"allowed": False, "reason": "Number not in approved contacts list"}
@@ -104,12 +107,14 @@ def check_call_allowed(
                 for wl in profile.whitelisted_contacts
             )
             if not is_known:
-                _log_activity(db, profile.id, "call_blocked", phone_number, "Unknown caller")
+                _log_activity(db, profile.id, "call_blocked",
+                              phone_number, "Unknown caller")
                 return {"allowed": False, "reason": "Unknown caller blocked"}
 
     # Block international
     if profile.block_international_calls and not clean_number.startswith("+91") and clean_number.startswith("+"):
-        _log_activity(db, profile.id, "call_blocked", phone_number, "International call blocked")
+        _log_activity(db, profile.id, "call_blocked",
+                      phone_number, "International call blocked")
         return {"allowed": False, "reason": "International calls are blocked"}
 
     _log_activity(db, profile.id, "call_allowed", phone_number, "Passed all checks")
@@ -143,19 +148,22 @@ def check_sms_allowed(
 
     # Full lockdown
     if profile.lock_mode == ChildLockMode.FULL_LOCKDOWN:
-        _log_activity(db, profile.id, "sms_blocked", phone_number, "Full lockdown", content[:100])
+        _log_activity(db, profile.id, "sms_blocked", phone_number,
+                      "Full lockdown", content[:100])
         return {"allowed": False, "reason": "Full lockdown mode", "filtered_content": None}
 
     # Block all SMS
     if profile.block_all_sms:
-        _log_activity(db, profile.id, "sms_blocked", phone_number, "All SMS blocked", content[:100])
+        _log_activity(db, profile.id, "sms_blocked", phone_number,
+                      "All SMS blocked", content[:100])
         return {"allowed": False, "reason": "All SMS are blocked"}
 
     # Time restriction
     if profile.enforce_time_limits:
         now_time = datetime.now(timezone.utc).strftime("%H:%M")
         if not (profile.allowed_sms_start <= now_time <= profile.allowed_sms_end):
-            _log_activity(db, profile.id, "sms_blocked", phone_number, "Outside hours", content[:100])
+            _log_activity(db, profile.id, "sms_blocked", phone_number,
+                          "Outside hours", content[:100])
             return {"allowed": False, "reason": f"SMS not allowed at this time"}
 
     # Whitelist-only
@@ -166,13 +174,15 @@ def check_sms_allowed(
                 for wl in profile.whitelisted_contacts
             )
             if not is_whitelisted:
-                _log_activity(db, profile.id, "sms_blocked", phone_number, "Not whitelisted", content[:100])
+                _log_activity(db, profile.id, "sms_blocked", phone_number,
+                              "Not whitelisted", content[:100])
                 return {"allowed": False, "reason": "Sender not in approved contacts"}
 
     # Block URLs in SMS
     if profile.block_urls_in_sms:
         if re.search(r"https?://|www\.|bit\.ly|tinyurl", content, re.IGNORECASE):
-            _log_activity(db, profile.id, "sms_blocked", phone_number, "Contains URL", content[:100])
+            _log_activity(db, profile.id, "sms_blocked",
+                          phone_number, "Contains URL", content[:100])
             return {"allowed": False, "reason": "Message contains a link (blocked for safety)"}
 
     # Content filtering

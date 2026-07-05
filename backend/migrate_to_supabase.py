@@ -1,3 +1,4 @@
+from backend.core.config import settings
 import sys
 import os
 
@@ -6,7 +7,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from backend.db.base import Base  # noqa
 from backend.db.session import engine  # noqa
-from backend.core.config import settings
+
 
 def migrate():
     print(f"Connecting to: {settings.DATABASE_URL.split('@')[-1]}")
@@ -17,6 +18,7 @@ def migrate():
         print(f"[SUCCESS] Tables created successfully in {db_type}!")
     except Exception as e:
         print(f"[ERROR] Error creating tables: {e}")
+
 
 if __name__ == "__main__":
     if "[PASSWORD]" in settings.DATABASE_URL:

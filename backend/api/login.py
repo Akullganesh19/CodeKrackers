@@ -73,7 +73,8 @@ def login_access_token(
         )
 
     if not user.is_active:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account deactivated")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Account deactivated")
 
     # Success: reset failed attempts, update last login
     user.failed_login_attempts = 0

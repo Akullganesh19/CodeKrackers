@@ -29,7 +29,8 @@ def export_threats_csv(
 
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(["ID", "Type", "Source", "Severity", "Confidence", "Status", "Timestamp", "Content"])
+    writer.writerow(["ID", "Type", "Source", "Severity",
+                    "Confidence", "Status", "Timestamp", "Content"])
 
     for t in threats:
         writer.writerow([
@@ -38,7 +39,8 @@ def export_threats_csv(
             t.source_number,
             t.severity.value if hasattr(t.severity, "value") else t.severity,
             t.confidence_score,
-            t.status.value if hasattr(t.status, "value") else getattr(t, "status", "detected"),
+            t.status.value if hasattr(t.status, "value") else getattr(
+                t, "status", "detected"),
             t.timestamp.isoformat() if t.timestamp else "",
             (t.content or "")[:200],
         ])

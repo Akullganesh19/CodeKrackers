@@ -12,6 +12,7 @@ oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/auth/verify"
 )
 
+
 async def get_current_token_payload(
     token: str = Depends(oauth2_scheme)
 ) -> Dict[str, Any]:
@@ -28,11 +29,13 @@ async def get_current_token_payload(
             detail="Invalid session or expired token",
         )
 
+
 class RoleChecker:
     """
     Class-based dependency to check for specific roles.
     Usage: Depends(RoleChecker(["admin", "officer"]))
     """
+
     def __init__(self, allowed_roles: List[str]):
         self.allowed_roles = allowed_roles
 

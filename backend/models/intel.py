@@ -2,7 +2,7 @@
 User consent and device intelligence models.
 All data collection requires explicit user consent (GDPR/IT Act compliant).
 """
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, Text, JSON, Index
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, JSON, Index
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -89,7 +89,8 @@ class PhoneLookup(TimestampMixin, Base):
     country_code = Column(String(8), nullable=True)
     national_format = Column(String(64), nullable=True)
     carrier_name = Column(String(256), nullable=True)
-    carrier_type = Column(String(32), nullable=True)  # mobile, landline, voip, toll-free
+    # mobile, landline, voip, toll-free
+    carrier_type = Column(String(32), nullable=True)
     is_voip = Column(Boolean, default=False)           # VoIP = high scam signal
     caller_name = Column(String(256), nullable=True)
 

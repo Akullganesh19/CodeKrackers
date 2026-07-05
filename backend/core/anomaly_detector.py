@@ -15,7 +15,6 @@ Features extracted per request:
   - Time of day (hour) deviation
   - User-agent entropy (unusual vs common)
 """
-import os
 import time
 import json
 import logging
@@ -105,7 +104,7 @@ class APIAnomalyDetector:
         ts = request_info.get("timestamp", time.time())
 
         if np is None:
-            return None # Return None if numpy is not available
+            return None  # Return None if numpy is not available
 
         features = np.zeros(N_FEATURES)
         idx = 0
@@ -253,7 +252,8 @@ class APIAnomalyDetector:
         from sklearn.ensemble import IsolationForest
 
         X = np.array(self._request_buffer)
-        logger.info("Training Isolation Forest on %d samples (dim=%d)", X.shape[0], X.shape[1])
+        logger.info("Training Isolation Forest on %d samples (dim=%d)",
+                    X.shape[0], X.shape[1])
 
         self.model = IsolationForest(
             n_estimators=100,

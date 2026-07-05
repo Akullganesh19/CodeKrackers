@@ -60,7 +60,7 @@ def create_canary_token(
     who exfiltrate data. The tracking URL is embedded in the fake data.
     """
     token_val = generate_token(token_type)
-    tracking_url = generate_tracking_url(token_val)
+    # tracking_url = generate_tracking_url(token_val)
 
     # Embed tracking URL into one of the fake fields if not otherwise specified
     if not any([fake_email, fake_phone, fake_ssn, fake_credit_card, fake_wallet_address, fake_ip]):

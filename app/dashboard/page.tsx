@@ -5,6 +5,7 @@ import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
 import OpenClawStatus from '@/components/OpenClawStatus'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Oracle } from '@/app/lib/oracle'
 import {
   ShieldAlert,
   Users,
@@ -175,10 +176,16 @@ export default function Dashboard() {
 
     async function fetchSummary() {
       try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('vsdp_token') : null
-        const res = await fetch('http://localhost:8000/api/analytics/dashboard-summary', {
-          headers: { 'Authorization': `Bearer ${token || 'dummy_token'}` }
-        })
+        const token = typeof window !== 'undefined' ? localStorage.getItem('vsdp_token') : null;
+        const apiUrl = '/api/analytics/dashboard-summary';
+
+        let res = await Oracle.resolveRouteData(apiUrl);
+        if (!res) {
+          res = await fetch(`http://localhost:8000${apiUrl}`, {
+            headers: { 'Authorization': `Bearer ${token || 'dummy_token'}` }
+          });
+        }
+
         if (res.ok) {
           const data = await res.json()
           setSummary(data)

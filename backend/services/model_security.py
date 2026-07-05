@@ -208,7 +208,7 @@ def approve_model(db: Session, model_id: int, approved_by: str) -> Optional[Mode
     model.approved_at = datetime.now(timezone.utc)
     
     # Verify watermark as part of approval
-    fp_hash = hashlib.sha384(model.watermark_embedding).hexdigest() if model.watermark_embedding else ""
+    # fp_hash = hashlib.sha384(model.watermark_embedding).hexdigest() if model.watermark_embedding else ""
     model.watermark_verified = True
     
     db.commit()
@@ -438,7 +438,7 @@ class ExtractionDetector:
                 reasons.append(f"high_duplicate_inputs:{duplicate_ratio:.2f}")
         
         # 3. Model-specific query concentration
-        model_key = f"{model_name}:{client_ip}"
+        # model_key = f"{model_name}:{client_ip}"
         # Track per-model queries from this IP
         self._ip_model_queries[client_ip][model_name] += 1
         

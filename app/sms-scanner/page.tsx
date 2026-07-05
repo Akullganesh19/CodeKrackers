@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
+import { phantomFetch } from '../lib/fetch'
 import {
   ShieldAlert,
   ShieldCheck,
@@ -41,7 +42,7 @@ export default function SMSScannerPage() {
 
     try {
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
+      const response = await phantomFetch('http://localhost:8000/api/analytics/scan', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

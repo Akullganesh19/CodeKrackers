@@ -1,6 +1,9 @@
-import pytest
 import asyncio
+
+import pytest
+
 from backend.core.event_bus import event_bus
+
 
 @pytest.mark.asyncio
 async def test_event_bus_sync():
@@ -13,6 +16,7 @@ async def test_event_bus_sync():
     event_bus.publish("test_sync", test_key="sync_val")
 
     assert "sync_val" in data
+
 
 @pytest.mark.asyncio
 async def test_event_bus_async():

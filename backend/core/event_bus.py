@@ -1,8 +1,9 @@
 import asyncio
 import logging
-from typing import Callable, Dict, List, Any
+from typing import Any, Callable, Dict, List
 
 logger = logging.getLogger("vas.event_bus")
+
 
 class EventBus:
     _instance = None
@@ -34,7 +35,9 @@ class EventBus:
                 else:
                     callback(**kwargs)
             except Exception as e:
-                logger.error(f"Error in event listener for {event_type}: {e}", exc_info=True)
+                logger.error(
+                    f"Error in event listener for {event_type}: {e}", exc_info=True
+                )
 
     @staticmethod
     async def _run_async(callback: Callable, **kwargs):
@@ -42,5 +45,6 @@ class EventBus:
             await callback(**kwargs)
         except Exception as e:
             logger.error(f"Error in async event listener: {e}", exc_info=True)
+
 
 event_bus = EventBus()

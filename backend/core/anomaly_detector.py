@@ -15,7 +15,7 @@ Features extracted per request:
   - Time of day (hour) deviation
   - User-agent entropy (unusual vs common)
 """
-import os
+
 import time
 import json
 import logging
@@ -23,6 +23,7 @@ import pickle
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from collections import defaultdict, deque
+
 try:
     import numpy as np
 except ImportError:
@@ -63,17 +64,21 @@ class APIAnomalyDetector:
         self._samples_since_train = 0
 
         # Per-IP rate tracking for feature extraction
-        self._ip_rate_buckets: Dict[str, deque] = defaultdict(
-            lambda: deque(maxlen=60)
-        )
+        self._ip_rate_buckets: Dict[str, deque] = defaultdict(lambda: deque(maxlen=60))
         # Path-frequency map for baseline
         self._path_counts: Dict[str, int] = defaultdict(int)
         self._total_requests = 0
 
         # Common user agents (for entropy calculation)
         self._common_uas = {
-            "Mozilla/5.0", "Mozilla/4.0", "curl/", "python-requests",
-            "PostmanRuntime", "Wget/", "okhttp/", "Go-http-client",
+            "Mozilla/5.0",
+            "Mozilla/4.0",
+            "curl/",
+            "python-requests",
+            "PostmanRuntime",
+            "Wget/",
+            "okhttp/",
+            "Go-http-client",
         }
 
         # Try to load existing model
@@ -105,7 +110,7 @@ class APIAnomalyDetector:
         ts = request_info.get("timestamp", time.time())
 
         if np is None:
-            return None # Return None if numpy is not available
+            return None  # Return None if numpy is not available
 
         features = np.zeros(N_FEATURES)
         idx = 0
@@ -141,8 +146,13 @@ class APIAnomalyDetector:
 
         # [4] Method encoded: GET=0, POST=1, PUT=2, DELETE=3, PATCH=4, OPTIONS=5, HEAD=6, other=7
         method_map = {
-            "GET": 0, "POST": 1, "PUT": 2, "DELETE": 3,
-            "PATCH": 4, "OPTIONS": 5, "HEAD": 6,
+            "GET": 0,
+            "POST": 1,
+            "PUT": 2,
+            "DELETE": 3,
+            "PATCH": 4,
+            "OPTIONS": 5,
+            "HEAD": 6,
         }
         features[idx] = method_map.get(method.upper(), 7) / 7.0
         idx += 1
@@ -192,10 +202,14 @@ class APIAnomalyDetector:
         # [12] X-Forwarded-For / proxy header presence
         has_xff = 0
         if isinstance(headers, dict):
-            has_xff = 1.0 if any(
-                h.lower() in ("x-forwarded-for", "x-real-ip", "cf-connecting-ip")
-                for h in headers
-            ) else 0.0
+            has_xff = (
+                1.0
+                if any(
+                    h.lower() in ("x-forwarded-for", "x-real-ip", "cf-connecting-ip")
+                    for h in headers
+                )
+                else 0.0
+            )
         features[idx] = has_xff
         idx += 1
 
@@ -215,8 +229,7 @@ class APIAnomalyDetector:
         for c in text:
             freq[c] = freq.get(c, 0) + 1
         entropy = -sum(
-            (count / text_len) * np.log2(count / text_len)
-            for count in freq.values()
+            (count / text_len) * np.log2(count / text_len) for count in freq.values()
         )
         return entropy
 
@@ -253,7 +266,9 @@ class APIAnomalyDetector:
         from sklearn.ensemble import IsolationForest
 
         X = np.array(self._request_buffer)
-        logger.info("Training Isolation Forest on %d samples (dim=%d)", X.shape[0], X.shape[1])
+        logger.info(
+            "Training Isolation Forest on %d samples (dim=%d)", X.shape[0], X.shape[1]
+        )
 
         self.model = IsolationForest(
             n_estimators=100,
@@ -303,12 +318,15 @@ class APIAnomalyDetector:
         try:
             MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
             with open(MODEL_PATH, "wb") as f:
-                pickle.dump({
-                    "model": self.model,
-                    "n_features": N_FEATURES,
-                    "n_samples": len(self._request_buffer),
-                    "timestamp": time.time(),
-                }, f)
+                pickle.dump(
+                    {
+                        "model": self.model,
+                        "n_features": N_FEATURES,
+                        "n_samples": len(self._request_buffer),
+                        "timestamp": time.time(),
+                    },
+                    f,
+                )
             logger.info("Anomaly model saved to %s", MODEL_PATH)
         except Exception as e:
             logger.warning("Failed to save anomaly model: %s", e)
@@ -401,7 +419,10 @@ def _seed_baseline(detector: APIAnomalyDetector):
             "query_params": {},
             "body_size": random.randint(0, 1024) if method in ("POST", "PUT") else 0,
             "user_agent": ua,
-            "headers": {"content-type": "application/json", "accept": "application/json"},
+            "headers": {
+                "content-type": "application/json",
+                "accept": "application/json",
+            },
             "timestamp": time.time() - random.randint(0, 86400),
         }
         features = detector.extract_features(info)

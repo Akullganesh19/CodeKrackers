@@ -1,0 +1,4 @@
+1. Review the memory guidelines which state: `When designing authentication fallback mechanisms (e.g., Redis offline during OTP verification), strictly ensure the system fails closed (e.g., resolving to None or denying access) rather than attempting mock bypasses that introduce undefined variable crashes or security bypasses.`
+2. The error in `backend/api/auth.py` at line 117 is due to using `otp_code` which is undefined in the `verify_otp` function. This should fallback to `None` and fail closed.
+3. The error in `backend/services/evidence_chain.py` at line 172 `[c.name: getattr(b, c.name) for b in b.__table__.columns]` uses `c` instead of `c` in the loop `for c in b.__table__.columns`. It should be `{c.name: getattr(b, c.name) for c in b.__table__.columns}`.
+4. I'll make these fixes and then submit again.

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
+import { phantomFetch } from '../lib/fetch'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Phone as LucidePhone, 
@@ -120,7 +121,7 @@ export default function VishingMonitor() {
     if (!manualText.trim()) return
     setIsAnalyzing(true)
     try {
-      const response = await fetch('http://localhost:8000/api/analytics/scan-voice', {
+      const response = await phantomFetch('http://localhost:8000/api/analytics/scan-voice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ transcript: manualText })

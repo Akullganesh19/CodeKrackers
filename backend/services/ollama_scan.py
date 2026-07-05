@@ -1,12 +1,21 @@
 import logging
 import requests
 import json
+from backend.core.resilience import circuit_breaker, with_retries
+from requests.exceptions import RequestException, Timeout, ConnectionError
 from typing import Dict, Any
 
 logger = logging.getLogger("vas.ollama")
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
 OLLAMA_MODEL = "llama3.1:8b" # Upgraded for tool-calling support
+
+@circuit_breaker(failure_threshold=3, recovery_timeout=60)
+@with_retries(max_attempts=2, initial_delay=0.5, exceptions=(RequestException, Timeout, ConnectionError))
+def _post_ollama(payload):
+    response = requests.post(OLLAMA_URL, json=payload, timeout=30)
+    response.raise_for_status()
+    return response
 
 def ollama_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     """
@@ -33,7 +42,7 @@ def ollama_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
             "format": "json"
         }
         
-        response = requests.post(OLLAMA_URL, json=payload, timeout=30)
+        response = _post_ollama(payload)
         if response.status_code == 200:
             result = response.json().get("response", "{}")
             data = json.loads(result)

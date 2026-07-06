@@ -1,9 +1,8 @@
 """
 Audit service for persistent forensic event logging.
 """
-
 import logging
-from typing import Optional
+from typing import Any, Optional
 
 from sqlalchemy.orm import Session
 

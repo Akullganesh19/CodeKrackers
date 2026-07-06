@@ -9,7 +9,7 @@ class RiskScorer:
         model_confidence: float,
         risk_factors: list,
         has_suspicious_url: bool,
-        sender_in_blacklist: bool,
+        sender_in_blacklist: bool
     ) -> dict:
         """
         Computes risk for Smishing threats using a weighted formula.
@@ -24,14 +24,17 @@ class RiskScorer:
         final_score = min(base_score + url_score + factor_score + blacklist_score, 1.0)
         severity = self._get_severity(final_score)
 
-        return {"risk_score": round(final_score, 4), "severity": severity}
+        return {
+            "risk_score": round(final_score, 4),
+            "severity": severity
+        }
 
     def compute_voice_risk(
         self,
         model_confidence: float,
         deepfake_score: float,
         flagged_phrases_count: int,
-        caller_spoofed: bool,
+        caller_spoofed: bool
     ) -> dict:
         """
         Computes risk for Vishing or AI Voice threats using a weighted formula.
@@ -46,7 +49,10 @@ class RiskScorer:
         final_score = min(base_score + deep_score + phrase_score + spoof_score, 1.0)
         severity = self._get_severity(final_score)
 
-        return {"risk_score": round(final_score, 4), "severity": severity}
+        return {
+            "risk_score": round(final_score, 4),
+            "severity": severity
+        }
 
     def _get_severity(self, score: float) -> str:
         """

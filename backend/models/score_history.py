@@ -4,7 +4,6 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from core.database import Base
 
-
 class ScoreHistory(Base):
     __tablename__ = "score_history"
 

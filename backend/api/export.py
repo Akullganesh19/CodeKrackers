@@ -1,7 +1,6 @@
 """
 Data export endpoints for reports, evidence, and compliance.
 """
-
 import csv
 import io
 import logging
@@ -30,36 +29,19 @@ def export_threats_csv(
 
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(
-        [
-            "ID",
-            "Type",
-            "Source",
-            "Severity",
-            "Confidence",
-            "Status",
-            "Timestamp",
-            "Content",
-        ]
-    )
+    writer.writerow(["ID", "Type", "Source", "Severity", "Confidence", "Status", "Timestamp", "Content"])
 
     for t in threats:
-        writer.writerow(
-            [
-                t.id,
-                t.type.value if hasattr(t.type, "value") else t.type,
-                t.source_number,
-                t.severity.value if hasattr(t.severity, "value") else t.severity,
-                t.confidence_score,
-                (
-                    t.status.value
-                    if hasattr(t.status, "value")
-                    else getattr(t, "status", "detected")
-                ),
-                t.timestamp.isoformat() if t.timestamp else "",
-                (t.content or "")[:200],
-            ]
-        )
+        writer.writerow([
+            t.id,
+            t.type.value if hasattr(t.type, "value") else t.type,
+            t.source_number,
+            t.severity.value if hasattr(t.severity, "value") else t.severity,
+            t.confidence_score,
+            t.status.value if hasattr(t.status, "value") else getattr(t, "status", "detected"),
+            t.timestamp.isoformat() if t.timestamp else "",
+            (t.content or "")[:200],
+        ])
 
     output.seek(0)
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
@@ -88,9 +70,7 @@ def export_threats_json(
             "id": t.id,
             "type": t.type.value if hasattr(t.type, "value") else t.type,
             "source_number": t.source_number,
-            "severity": (
-                t.severity.value if hasattr(t.severity, "value") else t.severity
-            ),
+            "severity": t.severity.value if hasattr(t.severity, "value") else t.severity,
             "confidence_score": t.confidence_score,
             "timestamp": t.timestamp.isoformat() if t.timestamp else None,
             "content": t.content,
@@ -100,8 +80,4 @@ def export_threats_json(
     ]
 
     logger.info("EXPORT_JSON user=%d count=%d", current_user.id, len(threats))
-    return {
-        "export_time": datetime.now(timezone.utc).isoformat(),
-        "count": len(data),
-        "threats": data,
-    }
+    return {"export_time": datetime.now(timezone.utc).isoformat(), "count": len(data), "threats": data}

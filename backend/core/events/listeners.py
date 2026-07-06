@@ -1,8 +1,9 @@
 import logging
-from backend.core.events.bus import bus
-from backend.models.orm import Blacklist, BlacklistType
-from backend.models.audit import AuditLog
+
 from backend.core.database import SessionLocal
+from backend.core.events.bus import bus
+from backend.models.audit import AuditLog
+from backend.models.orm import Blacklist, BlacklistType
 
 logger = logging.getLogger("vas.events.listeners")
 
@@ -13,7 +14,7 @@ def handle_account_locked(user_id: int, identifier: str, ip_address: str) -> Non
     Records an AuditLog and adds the IP to Blacklist.
     """
     logger.info(
-        f"Cross-system intelligence: account_locked event triggered for user {user_id}, ip {ip_address}"
+        f"Cross-system intelligence: account_locked event triggered for user {user_id}"
     )
     with SessionLocal() as db:
         # Log to AuditLog

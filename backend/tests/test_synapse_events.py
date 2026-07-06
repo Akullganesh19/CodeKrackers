@@ -7,6 +7,7 @@ from backend.core.events.bus import EventBus
 from backend.models.orm import Base, Threat, ThreatType, ThreatSeverity
 from backend.core.database import SessionLocal, get_db_sync, sync_engine
 
+
 @pytest.fixture
 def db_session():
     # Setup in-memory sqlite for tests
@@ -17,6 +18,7 @@ def db_session():
 
     # We have to patch backend.core.events.listeners.SessionLocal
     import backend.core.events.listeners as listeners
+
     original_session_local = listeners.SessionLocal
     listeners.SessionLocal = TestingSessionLocal
 
@@ -33,10 +35,9 @@ def test_auth_lockout_generates_threat(db_session):
     test_identifier = "test@example.com"
 
     # Simulate the event that Auth would emit
-    EventBus.publish("account_locked", {
-        "user_id": test_user_id,
-        "identifier": test_identifier
-    })
+    EventBus.publish(
+        "account_locked", {"user_id": test_user_id, "identifier": test_identifier}
+    )
 
     # Check if Threat intelligence system caught it
     threats = db_session.query(Threat).filter(Threat.user_id == test_user_id).all()

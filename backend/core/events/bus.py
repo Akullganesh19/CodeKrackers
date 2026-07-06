@@ -2,6 +2,7 @@ import logging
 
 logger = logging.getLogger("vas.events")
 
+
 class EventBus:
     _listeners = {}
 

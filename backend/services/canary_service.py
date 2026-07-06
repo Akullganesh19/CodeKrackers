@@ -10,12 +10,11 @@ If those links are accessed, we get immediate notification of:
 
 This works like Thinkst Canary / canarytokens.org — self-hosted and free.
 """
-import uuid
+
 import time
-import json
 import logging
 import secrets
-from typing import Optional, List, Dict, Any
+from typing import Optional, List
 from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
@@ -27,6 +26,7 @@ logger = logging.getLogger("vas.canary_service")
 
 
 # ─── Token Generators ─────────────────────────────────────────────
+
 
 def generate_token(token_type: str = "generic") -> str:
     """Generate a unique canary token string."""
@@ -40,6 +40,7 @@ def generate_tracking_url(token: str) -> str:
 
 
 # ─── CRUD Operations ──────────────────────────────────────────────
+
 
 def create_canary_token(
     db: Session,
@@ -55,15 +56,24 @@ def create_canary_token(
 ) -> CanaryToken:
     """
     Create and plant a new canary token.
-    
+
     The token will be invisible to normal users but detectable by attackers
     who exfiltrate data. The tracking URL is embedded in the fake data.
     """
     token_val = generate_token(token_type)
-    tracking_url = generate_tracking_url(token_val)
+    generate_tracking_url(token_val)
 
     # Embed tracking URL into one of the fake fields if not otherwise specified
-    if not any([fake_email, fake_phone, fake_ssn, fake_credit_card, fake_wallet_address, fake_ip]):
+    if not any(
+        [
+            fake_email,
+            fake_phone,
+            fake_ssn,
+            fake_credit_card,
+            fake_wallet_address,
+            fake_ip,
+        ]
+    ):
         fake_email = f"user_{token_val[:8]}@vas-system.local"
 
     canary = CanaryToken(
@@ -85,7 +95,9 @@ def create_canary_token(
     db.refresh(canary)
     logger.info(
         "CANARY CREATED id=%s type=%s planted_in=%s",
-        canary.id, token_type, planted_in,
+        canary.id,
+        token_type,
+        planted_in,
     )
     return canary
 
@@ -104,7 +116,7 @@ def trigger_canary(
 ) -> Optional[CanaryToken]:
     """
     Mark a canary token as accessed/triggered.
-    
+
     This is called when the tracking URL is requested or when token
     values are detected in incoming request data (indicating exfiltration).
     """
@@ -220,6 +232,7 @@ def plant_seed_tokens(db: Session):
 
 # ─── Scanning for leaked tokens ────────────────────────────────────
 
+
 def scan_request_for_tokens(
     db: Session,
     request_data: str,
@@ -229,14 +242,12 @@ def scan_request_for_tokens(
 ) -> List[CanaryToken]:
     """
     Scan a string (query params, body, headers) for known canary token values.
-    
+
     If a token value is found in incoming data, it means the attacker has
     exfiltrated data and is now using it — immediate alert.
     """
     triggered: List[CanaryToken] = []
-    tokens = db.query(CanaryToken).filter(
-        CanaryToken.accessed == False
-    ).all()
+    tokens = db.query(CanaryToken).filter(CanaryToken.accessed == False).all()
 
     for canary in tokens:
         # Check if any of the fake data fields appear in the request

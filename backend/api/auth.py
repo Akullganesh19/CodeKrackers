@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 import logging
 import random
 from typing import Any, Optional
@@ -103,7 +103,7 @@ async def send_otp(
                 f"EMAIL_GATEWAY_ERROR: Failed to send OTP to {otp_in.identifier}: {e}"
             )
 
-    logger.info("SECURITY: Generated OTP", identifier=otp_in.identifier)
+    logger.info(f"SECURITY: Generated OTP for {otp_in.identifier} -> {otp_code}")
 
     return {"message": "OTP sent successfully"}
 

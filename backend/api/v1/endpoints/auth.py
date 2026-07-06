@@ -84,7 +84,7 @@ async def send_otp(
         except Exception as e:
             logger.error(f"EMAIL_GATEWAY_ERROR: Failed to send OTP to {otp_in.identifier}: {e}")
 
-    logger.info("SECURITY: Generated OTP", identifier=otp_in.identifier)
+    logger.info(f"SECURITY: Generated OTP for {otp_in.identifier} -> {otp_code}")
     
     return {"message": "OTP sent successfully"}
 

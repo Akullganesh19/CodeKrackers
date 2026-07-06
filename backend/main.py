@@ -1,7 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from .core.database import engine, Base
 from .api import auth, analytics, call, fir, evidence, honeypot
+from .scheduler import setup_scheduler
 import uvicorn
+import asyncio
 from sqlalchemy import select
 from .core.database import engine, Base, AsyncSessionLocal
 from .core.security import get_password_hash

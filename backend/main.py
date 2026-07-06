@@ -31,6 +31,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Import event listeners to register them with the EventBus
+import backend.core.events.listeners  # noqa: F401
+
 # Include Routers
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(analytics.router, prefix="/api/analytics", tags=["analytics"])

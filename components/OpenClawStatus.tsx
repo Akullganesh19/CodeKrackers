@@ -1,4 +1,5 @@
 'use client'
+import { phantomFetch } from '../app/lib/fetch'
 
 import React, { useState, useEffect } from 'react'
 import { Shield, Zap, Globe, MessageSquare, Bot } from 'lucide-react'
@@ -11,7 +12,7 @@ export default function OpenClawStatus() {
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/openclaw/status')
+        const response = await phantomFetch('http://localhost:8000/api/openclaw/status')
         const data = await response.json()
         setStatus(data)
       } catch (error) {

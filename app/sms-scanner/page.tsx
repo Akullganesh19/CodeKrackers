@@ -16,6 +16,7 @@ import {
   Loader2
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { oracle } from '@/app/lib/oracle'
 
 export default function SMSScannerPage() {
   const [mounted, setMounted] = useState(false)
@@ -29,9 +30,22 @@ export default function SMSScannerPage() {
     tags: string[];
   }>(null)
 
+
   React.useEffect(() => {
     setMounted(true)
   }, [])
+
+  // 🔮 Oracle: Predict that the user will click "ANALYZE" after they finish pasting/typing
+  React.useEffect(() => {
+    if (text.trim().length > 10) {
+      const timeout = setTimeout(() => {
+        const token = localStorage.getItem('vsdp_token') || 'dummy_token'
+        oracle.preComputeScan(text, token)
+      }, 500) // 500ms debounce
+      return () => clearTimeout(timeout)
+    }
+  }, [text])
+
 
   const handleAnalyze = async () => {
     if (!text.trim()) return
@@ -41,14 +55,21 @@ export default function SMSScannerPage() {
 
     try {
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
+
+      // 🔮 Oracle: Try to get pre-computed response first
+      let response = await oracle.resolvePrediction(text);
+
+      if (!response) {
+        // Fallback to normal fetch if prediction wasn't ready
+        response = await fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text })
+        });
+      }
       
       console.log("Response Status:", response.status);
       if (!response.ok) {

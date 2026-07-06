@@ -1,11 +1,8 @@
 import pytest
-from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from backend.core.events.bus import EventBus
 from backend.models.orm import Base, Threat, ThreatType, ThreatSeverity
-from backend.core.database import SessionLocal, get_db_sync, sync_engine
 
 
 @pytest.fixture
@@ -29,7 +26,7 @@ def db_session():
 
 
 def test_auth_lockout_generates_threat(db_session):
-    import backend.core.events.listeners
+    import backend.core.events.listeners  # noqa: F401
 
     test_user_id = "test-user-uuid"
     test_identifier = "test@example.com"

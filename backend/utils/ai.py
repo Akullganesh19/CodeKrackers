@@ -17,7 +17,7 @@ async def transcribe_audio(file_path: str) -> str:
     """
     if not client:
         return ""
-    
+
     with open(file_path, "rb") as file:
         transcription = client.audio.transcriptions.create(
             file=(os.path.basename(file_path), file.read()),

@@ -21,7 +21,7 @@ class EinsteinBot:
             # Check if client exists
             if not groq_client:
                 return "Oh dear, my hearing aid is buzzing. What did you say?"
-                
+
             completion = groq_client.chat.completions.create(
                 model="llama3-8b-8192",
                 messages=[

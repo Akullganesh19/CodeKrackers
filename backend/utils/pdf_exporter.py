@@ -16,7 +16,7 @@ def generate_admin_report_pdf(data: dict, output_path: str):
     header_style = ParagraphStyle('HeaderStyle', parent=styles['Heading1'], alignment=1)
     elements.append(Paragraph("VSDP Platform - Admin Dashboard Report", header_style))
     elements.append(Spacer(1, 12))
-    
+
     elements.append(Paragraph(f"Generated at: {data['generated_at']}", styles['Normal']))
     filter_info = data['stats']['filter_applied']
     elements.append(Paragraph(f"Filters Applied: Month={filter_info['month'] or 'All'}, Year={filter_info['year'] or 'All'}", styles['Normal']))

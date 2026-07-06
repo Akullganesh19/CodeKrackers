@@ -10,8 +10,8 @@ router = APIRouter(prefix="/api/evidence", tags=["Evidence Ledger"])
 
 @router.get("/{threat_id}/verify")
 async def verify_threat_evidence(
-    threat_id: uuid.UUID, 
-    db: AsyncSession = Depends(get_db), 
+    threat_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
     """
@@ -24,8 +24,8 @@ async def verify_threat_evidence(
 
 @router.get("/{threat_id}/report")
 async def get_forensic_package(
-    threat_id: uuid.UUID, 
-    db: AsyncSession = Depends(get_db), 
+    threat_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
     """

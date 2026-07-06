@@ -8,12 +8,12 @@ import os
 class VoiceDeepfakeDetector:
     def __init__(self, model_name: str = "facebook/wav2vec2-base"):
         self.feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained(model_name)
-        
+
         # For simplicity, we'll use a dummy classification head.
         # In a real scenario, this would be a fine-tuned model.
         # Example: A simple linear layer on top of Wav2Vec2's pooled output.
         self.classification_head = torch.nn.Linear(768, 2) # Wav2Vec2-base output size is 768
-        
+
         # Load custom weights if they exist
         # if os.path.exists("./models/voice_model/classification_head.pth"):
         #     self.classification_head.load_state_dict(torch.load("./models/voice_model/classification_head.pth"))
@@ -34,7 +34,7 @@ class VoiceDeepfakeDetector:
         # For now, we'll generate a random deepfake probability.
         deepfake_probability = np.random.uniform(0.1, 0.9)
         is_deepfake = deepfake_probability > 0.5
-        
+
         # Simulate confidence (e.g., distance from 0.5)
         confidence = abs(deepfake_probability - 0.5) * 2 * 100 # Scale to 0-100%
 

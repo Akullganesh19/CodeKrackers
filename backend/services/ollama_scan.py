@@ -25,19 +25,19 @@ def ollama_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
             "risk_factors": ["list"]
         }}
         """
-        
+
         payload = {
             "model": OLLAMA_MODEL,
             "prompt": prompt,
             "stream": False,
             "format": "json"
         }
-        
+
         response = requests.post(OLLAMA_URL, json=payload, timeout=30)
         if response.status_code == 200:
             result = response.json().get("response", "{}")
             data = json.loads(result)
-            
+
             return {
                 "score_increase": round(data.get("confidence", 0.0), 2) if data.get("is_scam") else 0.0,
                 "reason": data.get("reason", "Local AI Analysis complete"),
@@ -46,7 +46,7 @@ def ollama_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
         else:
             logger.warning(f"Ollama returned status {response.status_code}")
             return {"score_increase": 0.0, "reason": "Ollama service unavailable"}
-            
+
     except Exception as e:
         logger.error(f"Ollama Scan Error: {e}")
         return {"score_increase": 0.0, "reason": "Local AI Scan failed"}

@@ -1,7 +1,7 @@
 """initial migration
 
 Revision ID: 001
-Revises: 
+Revises:
 Create Date: 2024-05-21 12:00:00.000000
 
 """

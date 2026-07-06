@@ -130,6 +130,7 @@ async def verify_otp(
     # Use a dummy code if redis is down AND the user wasn't mocked properly,
     # though in a real scenario we'd either reject or use a DB fallback.
     # We maintain the existing behavior from the original file for the 'mock pass'.
+    redis_key = f"otp:{otp_verify.identifier}"
     fallback_code = otp_verify.code # Allows bypass if redis is offline for demo purposes
     stored_code = redis_client.get(redis_key) if redis_client else fallback_code
 

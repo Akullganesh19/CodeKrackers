@@ -1,8 +1,15 @@
 import logging
 from twilio.rest import Client
 from backend.core.config import settings
+from backend.core.resilience import circuit_breaker, with_retries
 
 logger = logging.getLogger("vas.notifier")
+
+@circuit_breaker(failure_threshold=3, recovery_timeout=60.0)
+@with_retries(max_attempts=3, base_delay=1.0, max_delay=5.0, exceptions=(Exception,))
+def _send_twilio_sms(client, body: str, from_: str, to: str):
+    return client.messages.create(body=body, from_=from_, to=to)
+
 
 def send_threat_alert(phone_number: str, threat_type: str, score: float, original_sender: str):
     """
@@ -23,11 +30,7 @@ def send_threat_alert(phone_number: str, threat_type: str, score: float, origina
             f"⚠️ DO NOT click any links or share OTPs. This message has been logged for evidence."
         )
 
-        message = client.messages.create(
-            body=alert_msg,
-            from_=settings.TWILIO_PHONE_NUMBER,
-            to=phone_number
-        )
+        message = _send_twilio_sms(client, alert_msg, settings.TWILIO_PHONE_NUMBER, phone_number)
         
         logger.info(f"Notification sent to {phone_number}. SID: {message.sid}")
         return True
@@ -56,11 +59,7 @@ def send_otp(phone_number: str) -> str:
             "Valid for 5 minutes. DO NOT share this with anyone."
         )
 
-        client.messages.create(
-            body=msg_body,
-            from_=settings.TWILIO_PHONE_NUMBER,
-            to=phone_number
-        )
+        _send_twilio_sms(client, msg_body, settings.TWILIO_PHONE_NUMBER, phone_number)
         
         logger.info(f"OTP sent to {phone_number}")
         return otp_code

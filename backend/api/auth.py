@@ -68,11 +68,10 @@ async def send_otp(
 
     if "@" not in otp_in.identifier and settings.TWILIO_ACCOUNT_SID and settings.TWILIO_AUTH_TOKEN:
         try:
-            client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-            client.messages.create(
-                body=f"VSDP Security Code: {otp_code}. Valid for 5 minutes. Do not share.",
-                from_=settings.TWILIO_PHONE_NUMBER,
-                to=otp_in.identifier
+            from backend.services.notifier import send_sms_reliable
+            send_sms_reliable(
+                to_number=otp_in.identifier,
+                body=f"VSDP Security Code: {otp_code}. Valid for 5 minutes. Do not share."
             )
         except Exception as e:
             logger.error(f"SMS_GATEWAY_ERROR: Failed to send OTP to {otp_in.identifier}: {e}")

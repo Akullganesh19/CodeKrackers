@@ -23,154 +23,83 @@ import {
   AlertCircle
 } from 'lucide-react'
 
-// --- HELPER COMPONENTS ---
-
-function Sparkline({ color = '#c4b5fd' }: { color?: string }) {
-  const [pathData, setPathData] = useState("")
-
-  useEffect(() => {
-    const points = Array.from({ length: 15 }).map(() => Math.random() * 40 + 10)
-    const data = `M 0 ${points[0]} ${points.map((p, i) => `L ${i * 10} ${p}`).join(' ')}`
-    setPathData(data)
-  }, [])
-
-  if (!pathData) return <div className="h-8" />
-
-  return (
-    <svg className="w-full h-8 overflow-visible">
-      <motion.path
-        d={pathData}
-        fill="none"
-        stroke={color}
-        strokeWidth="1.5"
-        initial={{ pathLength: 0 }}
-        animate={{ pathLength: 1 }}
-        transition={{ duration: 2, ease: "easeInOut" }}
-      />
-    </svg>
-  )
-}
-
-function GridMap() {
-  const [hotspots, setHotspots] = useState<any[]>([])
-
-  useEffect(() => {
-    const newHotspots = Array.from({ length: 12 }).map(() => ({
-      left: `${10 + Math.random() * 80}%`,
-      top: `${10 + Math.random() * 80}%`,
-      duration: 2 + Math.random() * 3,
-      delay: Math.random() * 2
-    }))
-    setHotspots(newHotspots)
-  }, [])
-
-  return (
-    <div className="relative w-full h-[500px] bg-white/[0.01] border border-white/5 rounded-lg overflow-hidden group">
-      <div className="absolute inset-0 grid grid-cols-20 grid-rows-15 gap-0 opacity-20">
-        {Array.from({ length: 300 }).map((_, i) => (
-          <div key={i} className="border-[0.5px] border-white/10" />
-        ))}
-      </div>
-
-      {/* Simulated Threat Hotspots */}
-      <div className="absolute inset-0">
-        {hotspots.map((spot, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-4 h-4 rounded-full bg-accent/40 blur-xl"
-            animate={{
-              scale: [1, 1.5, 1],
-              opacity: [0.2, 0.5, 0.2]
-            }}
-            transition={{
-              duration: spot.duration,
-              repeat: Infinity,
-              delay: spot.delay
-            }}
-            style={{
-              left: spot.left,
-              top: spot.top
-            }}
-          />
-        ))}
-      </div>
-
-      <div className="absolute top-8 left-10 space-y-2">
-        <h3 className="font-space text-2xl font-black text-white/40 uppercase italic tracking-tighter">Live Threat Topology</h3>
-        <div className="font-mono text-[0.5rem] text-muted uppercase tracking-[0.4em]">Sector Grid India_Core_01</div>
-      </div>
-
-      <div className="absolute bottom-8 right-10 flex items-center gap-6">
-        <div className="flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-          <span className="font-mono text-[0.5rem] text-accent uppercase tracking-widest">Active Node</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-danger" />
-          <span className="font-mono text-[0.5rem] text-danger uppercase tracking-widest">Critical Breach</span>
-        </div>
-      </div>
+// Sub-components
+const CommandMetric = ({ label, val, sub, trend, colorClass = "text-accent" }: any) => (
+  <div className="vsdp-card p-6 group hover:border-white/20 transition-all cursor-pointer relative overflow-hidden">
+    <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+      <ArrowUpRight size={16} className="text-muted" />
     </div>
-  )
-}
+    <div className="font-mono text-[0.6rem] text-muted uppercase tracking-widest mb-4 flex justify-between">
+      {label}
+      <span className={trend.startsWith('+') ? 'text-success' : 'text-danger'}>{trend}</span>
+    </div>
+    <div className={`font-space text-4xl font-black ${colorClass} tracking-tighter mb-1`}>{val}</div>
+    <div className="font-mono text-xs text-white/40">{sub}</div>
+  </div>
+)
 
-import Link from 'next/link'
+const GridMap = () => (
+  <div className="vsdp-card p-0 overflow-hidden relative group h-[400px]">
+    <div className="absolute inset-0 bg-[url('https://upload.wikimedia.org/wikipedia/commons/e/e4/India_location_map.svg')] bg-center bg-contain bg-no-repeat opacity-10 grayscale invert brightness-200" />
+    <div className="absolute inset-0 bg-gradient-to-t from-bg via-transparent to-bg" />
 
-function CommandMetric({ label, val, sub, trend, href, colorClass = "text-accent" }: any) {
-  const content = (
-    <div className={`vsdp-card p-6 flex flex-col justify-between group h-40 transition-all ${href ? 'hover:border-accent/40 hover:bg-accent/5 cursor-pointer' : ''}`}>
+    <div className="absolute inset-0 p-8 flex flex-col justify-between z-10">
       <div className="flex justify-between items-start">
-        <div className="space-y-1">
-          <div className="font-space text-3xl font-black">{val}</div>
-          <div className="font-mono text-[0.5rem] text-muted uppercase tracking-[0.2em]">{label}</div>
+        <div>
+          <h3 className="font-space text-lg font-bold uppercase tracking-tight">Active Node Grid</h3>
+          <p className="font-mono text-[0.6rem] text-muted uppercase tracking-widest">Real-time threat interception map</p>
         </div>
-        <div className="flex flex-col items-end gap-1">
-          <div className={`font-mono text-[0.45rem] font-bold ${trend.startsWith('+') ? 'text-success' : 'text-danger'}`}>
-            {trend}
-          </div>
-          {href && <ArrowUpRight size={10} className="text-accent opacity-0 group-hover:opacity-100 transition-opacity" />}
+        <div className="px-3 py-1 bg-white/5 border border-white/10 rounded font-mono text-[0.6rem] uppercase tracking-widest flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-success animate-pulse" /> Live
         </div>
       </div>
-      <div className="space-y-4">
-        <Sparkline color={colorClass === 'text-accent' ? '#c4b5fd' : colorClass === 'text-danger' ? '#ff3c6e' : '#7fff6e'} />
-        <div className="font-mono text-[0.45rem] text-muted/40 uppercase tracking-widest">{sub}</div>
+
+      <div className="grid grid-cols-3 gap-4">
+        {[
+          { reg: 'North', val: '43%', risk: 'High' },
+          { reg: 'South', val: '28%', risk: 'Medium' },
+          { reg: 'West', val: '19%', risk: 'Low' },
+        ].map((r, i) => (
+          <div key={i} className="p-4 bg-black/40 backdrop-blur border border-white/5 rounded-lg">
+            <div className="font-mono text-[0.5rem] text-muted uppercase tracking-widest mb-1">{r.reg} Sector</div>
+            <div className="flex justify-between items-end">
+              <span className="font-space text-xl font-bold">{r.val}</span>
+              <span className={`font-mono text-[0.5rem] uppercase ${r.risk === 'High' ? 'text-danger' : r.risk === 'Medium' ? 'text-accent' : 'text-success'}`}>{r.risk}</span>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
-  )
+  </div>
+)
 
-  if (href) return <Link href={href}>{content}</Link>
-  return content
-}
-
-export default function Dashboard() {
+export default function DashboardPage() {
   const [mounted, setMounted] = useState(false)
-  const [loading, setLoading] = useState(true)
   const [summary, setSummary] = useState<any>(null)
-  const [selectedSector, setSelectedSector] = useState('01')
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     setMounted(true)
-    // Fallback mock data when backend is unavailable
+
+    // Mock initial data so the UI looks alive while fetching
     const mockSummary = {
       stats: {
-        smishing: 1847,
-        vishing: 342,
-        crypto_scam: 156,
-        firs_filed: 89,
-        protected_users: 12453,
-        total_threats: 2400000,
+        total_threats: 2439120,
+        smishing: 154,
+        vishing: 42,
+        crypto_scam: 12,
+        firs_filed: 843,
+        protected_users: 125000,
       },
       trends: {
-        smishing_today: 127,
-        vishing_today: 23,
+        smishing_today: 43,
+        vishing_today: 12
       },
-      avg_confidence: 0.91,
+      avg_confidence: 0.94,
       recent_detections: [
-        { source: '91+9876543210', type: 'SMISHING', severity: 'HIGH', confidence: 0.94, timestamp: new Date().toISOString() },
-        { source: '91+9123456789', type: 'VISHING', severity: 'CRITICAL', confidence: 0.97, timestamp: new Date().toISOString() },
-        { source: '91+9988776655', type: 'CRYPTO_SCAM', severity: 'MEDIUM', confidence: 0.82, timestamp: new Date().toISOString() },
-        { source: '91+9876501234', type: 'SMISHING', severity: 'HIGH', confidence: 0.88, timestamp: new Date().toISOString() },
-        { source: '91+9123450987', type: 'SMISHING', severity: 'LOW', confidence: 0.65, timestamp: new Date().toISOString() },
+        { type: 'Vishing', source: '+91 98*** **341', severity: 'CRITICAL', timestamp: new Date().toISOString() },
+        { type: 'Smishing', source: 'VK-HDFCBK', severity: 'HIGH', timestamp: new Date(Date.now() - 300000).toISOString() },
+        { type: 'Crypto', source: '0x34...9f2a', severity: 'MEDIUM', timestamp: new Date(Date.now() - 900000).toISOString() },
       ],
     }
 

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
+import { Oracle } from '@/app/lib/oracle'
 import {
   ShieldAlert,
   ShieldCheck,
@@ -16,7 +17,6 @@ import {
   Loader2
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Oracle } from '@/app/lib/oracle'
 
 export default function SMSScannerPage() {
   const [mounted, setMounted] = useState(false)
@@ -43,7 +43,6 @@ export default function SMSScannerPage() {
     }, 800);
     return () => clearTimeout(timer);
   }, [text, loading]);
-
 
   const handleAnalyze = async () => {
     if (!text.trim()) return
@@ -72,35 +71,24 @@ export default function SMSScannerPage() {
       
       console.log("Response Status:", response.status);
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Server Error:", errorText);
-        alert(`Server Error (${response.status}): ${errorText}`);
-        return;
+        throw new Error('Analysis failed');
       }
-      
+
       const data = await response.json();
-      console.log("Scanner Data Received:", data);
-      
-      // Ensure we have valid data before setting result
-      if (data && typeof data.isScam !== 'undefined') {
-        setResult(data);
-      } else {
-        console.error("Malformed backend response", data);
-        alert("Server error: Malformed response from AI engine.");
-      }
-    } catch (error) {
-      console.error("Connection Error:", error);
-      alert(`Connection failed: Make sure the backend is running on port 8000.\nDetails: ${error instanceof Error ? error.message : String(error)}`);
+      setResult(data);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to analyze SMS');
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
   const loadSample = (type: 'scam' | 'safe') => {
     if (type === 'scam') {
-      setText('URGENT: Your SBI account will be blocked in 24hrs. Update KYC now: http://sbi-kyc-update.xyz/verify')
+      setText("URGENT: Your HDFC Bank account has been blocked due to suspicious activity. Click here to update your KYC immediately: http://bit.ly/hdfc-kyc-update")
     } else {
-      setText('Your OTP for SBI NetBanking is 847291. Valid 10 min. Do not share with anyone. -SBI')
+      setText("Hi Rahul, we are meeting at 6 PM for dinner at the new cafe. Let me know if you are joining.")
     }
   }
 
@@ -121,12 +109,10 @@ export default function SMSScannerPage() {
         })
       });
       if (response.ok) {
-        alert("🚨 REPORTED: Scam details sent to the Cybercrime branch and number blacklisted.");
-      } else {
-        alert("Failed to report scam.");
+        alert("Reported to global blacklist successfully.");
       }
-    } catch (e) {
-      alert("Connectivity error.");
+    } catch(err) {
+      alert("Failed to report.");
     }
   }
 
@@ -148,60 +134,38 @@ export default function SMSScannerPage() {
       } else {
         alert("Blockchain logging failed.");
       }
-    } catch (e) {
-      alert("Connectivity error.");
+    } catch(err) {
+      alert("Error contacting blockchain relayer.");
     }
   }
 
-  if (!mounted) return (
-    <div className="min-h-screen bg-bg flex flex-col items-center justify-center gap-6">
-      <div className="w-12 h-12 border-2 border-accent/20 border-t-accent rounded-full animate-spin" />
-      <div className="font-mono text-[0.6rem] text-accent uppercase tracking-[0.5em] animate-pulse">Initializing_AI_Scanner...</div>
-    </div>
-  )
+  if (!mounted) return null
 
   return (
-    <div className="flex min-h-screen bg-bg text-white">
+    <div className="flex min-h-screen bg-bg text-white selection:bg-cyan-500/30">
       <Sidebar />
-      <main className="flex-1 ml-[240px]">
-        <Topbar title="SMS Smishing Scanner" />
+      <main className="flex-1 ml-[240px] flex flex-col">
+        <Topbar title="SMS Scanner" />
 
-        <div className="p-8 max-w-[1200px] mx-auto space-y-12">
-          {/* Header Section */}
-          <div className="space-y-2 text-center md:text-left">
-            <h1 className="font-space text-4xl font-black uppercase italic tracking-tight">
-              SMS SMISHING SCANNER
-            </h1>
-            <p className="font-mono text-sm text-muted/80 font-medium">
-              Powered by <span className="text-accent">BERT/DistilBERT</span> fine-tuned on Indian scam SMS datasets
-            </p>
-          </div>
+        <div className="flex-1 p-10 max-w-5xl mx-auto w-full space-y-10">
 
-          {/* Scanner Card */}
-          <div className="vsdp-card max-w-[700px] mx-auto overflow-hidden">
+          <div className="vsdp-card p-0 overflow-hidden relative">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-blue-500" />
+
             <div className="p-8 space-y-6">
-              <div className="flex justify-between items-center">
-                <label className="font-mono text-xs font-bold text-cyan-400 uppercase tracking-widest flex items-center gap-2">
-                  <Search size={14} /> PASTE SMS TO ANALYZE
-                </label>
-                <div className="font-mono text-[10px] text-muted uppercase">
-                  v2.4.0 Live
-                </div>
+              <div className="flex items-center gap-4 text-cyan-400">
+                <Search size={24} />
+                <h2 className="font-space text-2xl font-bold uppercase tracking-tight">Paste Message Data</h2>
               </div>
 
-              <div className="relative group">
-                <textarea
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  placeholder="Paste suspicious SMS here..."
-                  className="w-full bg-surface/50 border border-white/10 rounded-lg p-5 font-mono text-sm min-height-[140px] focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder:text-white/10 resize-none h-40"
-                />
-                <div className="absolute bottom-4 right-4 font-mono text-[10px] text-muted/50 italic">
-                  {text.length} characters
-                </div>
-              </div>
+              <textarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder="Initialize input sequence..."
+                className="w-full h-40 bg-black/40 border border-white/10 rounded-lg p-6 font-mono text-sm resize-none focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition-all text-white/80 placeholder:text-white/20"
+              />
 
-              <div className="flex flex-wrap gap-3">
+              <div className="flex gap-4">
                 <button
                   onClick={() => loadSample('scam')}
                   className="px-4 py-2 rounded border border-red-500/30 text-red-400 font-mono text-[0.65rem] uppercase tracking-wider hover:bg-red-500/10 transition-colors flex items-center gap-2"

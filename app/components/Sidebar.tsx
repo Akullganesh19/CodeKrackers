@@ -4,8 +4,8 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/backend/core/AuthProvider'
-import { motion } from 'framer-motion'
 import { Oracle } from '@/app/lib/oracle'
+import { motion } from 'framer-motion'
 import NotificationSettings from '@/app/components/NotificationSettings'
 import { 
   LayoutDashboard, 

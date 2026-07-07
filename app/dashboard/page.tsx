@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
 import OpenClawStatus from '@/components/OpenClawStatus'
+import { Oracle } from '@/app/lib/oracle'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ShieldAlert,
@@ -176,9 +177,16 @@ export default function Dashboard() {
     async function fetchSummary() {
       try {
         const token = typeof window !== 'undefined' ? localStorage.getItem('vsdp_token') : null
-        const res = await fetch('http://localhost:8000/api/analytics/dashboard-summary', {
-          headers: { 'Authorization': `Bearer ${token || 'dummy_token'}` }
-        })
+
+        // 🛸 Oracle: Try to resolve from prediction cache first
+        let res = await Oracle.resolvePrediction('http://localhost:8000/api/analytics/dashboard-summary');
+
+        if (!res) {
+          res = await fetch('http://localhost:8000/api/analytics/dashboard-summary', {
+            headers: { 'Authorization': `Bearer ${token || 'dummy_token'}` }
+          });
+        }
+
         if (res.ok) {
           const data = await res.json()
           setSummary(data)

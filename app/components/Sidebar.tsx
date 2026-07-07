@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/backend/core/AuthProvider'
 import { motion } from 'framer-motion'
+import { Oracle } from '@/app/lib/oracle'
 import NotificationSettings from '@/app/components/NotificationSettings'
 import { 
   LayoutDashboard, 
@@ -154,6 +155,15 @@ export default function Sidebar() {
             <Link
               key={item.name}
               href={item.href}
+              onMouseEnter={() => {
+                // 🛸 Oracle: Predict user navigation and prefetch data
+                if (item.href === '/dashboard') {
+                  Oracle.prefetchRouteData('http://localhost:8000/api/analytics/dashboard-summary');
+                } else if (item.href === '/analytics') {
+                  Oracle.prefetchRouteData('http://localhost:8000/api/analytics/threat_map');
+                  Oracle.prefetchRouteData('http://localhost:8000/api/analytics/dashboard-summary');
+                }
+              }}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg font-mono text-[0.6rem] uppercase tracking-[0.2em] transition-all ${
                 isActive 
                   ? 'bg-[#7c3aed]/10 border border-[#7c3aed]/30 text-[#a78bfa]' 

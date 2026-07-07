@@ -1,6 +1,6 @@
 import logging
 import random
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 from typing import Any, Optional
 
 import redis
@@ -79,7 +79,10 @@ async def send_otp(
         try:
             client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
             client.messages.create(
-                body=f"VSDP Security Code: {otp_code}. Valid for 5 minutes. Do not share.",
+                body=(
+                    f"VSDP Security Code: {otp_code}. Valid for 5 minutes. "
+                    f"Do not share."
+                ),
                 from_=settings.TWILIO_PHONE_NUMBER,
                 to=otp_in.identifier,
             )
@@ -94,7 +97,10 @@ async def send_otp(
                 from_email=settings.FROM_EMAIL,
                 to_emails=otp_in.identifier,
                 subject="VSDP Security Code",
-                plain_text_content=f"Your VSDP security code is: {otp_code}. Valid for 5 minutes. Do not share.",
+                plain_text_content=(
+                    f"Your VSDP security code is: {otp_code}. Valid for 5 minutes. "
+                    f"Do not share."
+                ),
             )
             sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
             sg.send(message)

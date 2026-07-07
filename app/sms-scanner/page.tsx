@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
 import {
@@ -16,6 +16,7 @@ import {
   Loader2
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Oracle } from '@/app/lib/oracle'
 
 export default function SMSScannerPage() {
   const [mounted, setMounted] = useState(false)
@@ -29,9 +30,20 @@ export default function SMSScannerPage() {
     tags: string[];
   }>(null)
 
-  React.useEffect(() => {
+  useEffect(() => {
     setMounted(true)
   }, [])
+
+  useEffect(() => {
+    // 🛸 Oracle: Predict intent when user stops typing for 800ms
+    const timer = setTimeout(() => {
+      if (text.length > 15 && !loading) {
+        Oracle.predictSmsScan(text);
+      }
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [text, loading]);
+
 
   const handleAnalyze = async () => {
     if (!text.trim()) return
@@ -40,6 +52,14 @@ export default function SMSScannerPage() {
     setResult(null)
 
     try {
+      // 🛸 Oracle: Check for pre-computed result first
+      const predictedResult = await Oracle.resolveSmsScan(text);
+      if (predictedResult) {
+        setResult(predictedResult);
+        setLoading(false);
+        return;
+      }
+
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
       const response = await fetch('http://localhost:8000/api/analytics/scan', {
         method: 'POST',
@@ -57,10 +77,10 @@ export default function SMSScannerPage() {
         alert(`Server Error (${response.status}): ${errorText}`);
         return;
       }
-      
+
       const data = await response.json();
       console.log("Scanner Data Received:", data);
-      
+
       // Ensure we have valid data before setting result
       if (data && typeof data.isScam !== 'undefined') {
         setResult(data);

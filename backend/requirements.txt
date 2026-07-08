@@ -19,3 +19,10 @@ librosa
 scipy
 aiosqlite
 python-dotenv
+redis
+twilio
+sendgrid
+slowapi
+groq
+phonenumbers
+email-validator

@@ -1,7 +1,7 @@
 from typing import List, Dict, Any
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError
+import jwt
 
 from backend.core import security
 from backend.core.config import settings
@@ -11,6 +11,7 @@ from backend.core.config import settings
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/auth/verify"
 )
+
 
 async def get_current_token_payload(
     token: str = Depends(oauth2_scheme)
@@ -22,11 +23,12 @@ async def get_current_token_payload(
     try:
         payload = security.decode_token(token)
         return payload
-    except JWTError:
+    except jwt.InvalidTokenError:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Invalid session or expired token",
         )
+
 
 class RoleChecker:
     """
@@ -36,7 +38,9 @@ class RoleChecker:
     def __init__(self, allowed_roles: List[str]):
         self.allowed_roles = allowed_roles
 
-    def __call__(self, payload: Dict[str, Any] = Depends(get_current_token_payload)) -> Dict[str, Any]:
+    def __call__(
+        self, payload: Dict[str, Any] = Depends(get_current_token_payload)
+    ) -> Dict[str, Any]:
         if payload.get("role") not in self.allowed_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

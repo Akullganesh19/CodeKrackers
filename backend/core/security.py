@@ -6,23 +6,18 @@ import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Any, Optional, Union
 
-from jose import jwt
-from passlib.context import CryptContext
+import bcrypt
+import jwt
 
 from backend.core.config import settings
-
-pwd_context = CryptContext(
-    schemes=["bcrypt"],
-    deprecated="auto",
-    bcrypt__rounds=12,  # Production-grade cost factor
-)
 
 ALGORITHM = "HS256"
 
 # ─── Password Policy ───
 MIN_PASSWORD_LENGTH = 8
 PASSWORD_PATTERN = re.compile(
-    r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_\-+=])[A-Za-z\d@$!%*?&#^()_\-+=]{8,128}$"
+    r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_\-+=])"
+    r"[A-Za-z\d@$!%*?&#^()_\-+=]{8,128}$"
 )
 
 
@@ -55,7 +50,9 @@ def create_access_token(
 ) -> str:
     """Create a JWT with claims, expiry, and unique JTI for revocation support."""
     now = datetime.now(timezone.utc)
-    expire = now + (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
+    expire = now + (
+        expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
 
     to_encode = {
         "exp": expire,
@@ -85,11 +82,18 @@ def decode_token(token: str) -> dict:
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        return bcrypt.checkpw(
+            plain_password.encode('utf-8'), hashed_password.encode('utf-8')
+        )
+    except Exception:
+        return False
 
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    return bcrypt.hashpw(
+        password.encode('utf-8'), bcrypt.gensalt(rounds=12)
+    ).decode('utf-8')
 
 
 # ─── Brute-force Protection ───

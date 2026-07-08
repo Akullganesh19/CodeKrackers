@@ -1,8 +1,9 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
+import { Oracle } from '@/app/lib/oracle'
 import {
   ShieldAlert,
   ShieldCheck,
@@ -21,6 +22,19 @@ export default function SMSScannerPage() {
   const [mounted, setMounted] = useState(false)
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(false)
+
+  // ORACLE: Watch user input to predict intent
+  useEffect(() => {
+    // Debounce to prevent API spamming on every keystroke
+    const timer = setTimeout(() => {
+      if (text.length > 20) {
+        // Predict: If they typed 20+ chars, they are going to hit Analyze
+        const endpoint = 'http://localhost:8000/api/analytics/scan';
+        Oracle.preComputeScan(text, endpoint);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [text]);
   const [result, setResult] = useState<null | {
     isScam: boolean;
     confidence: number;
@@ -40,15 +54,21 @@ export default function SMSScannerPage() {
     setResult(null)
 
     try {
-      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
+      const endpoint = 'http://localhost:8000/api/analytics/scan';
+      let response = await Oracle.resolvePrediction(text, endpoint);
+
+      if (!response) {
+        // Cache miss: prediction didn't fire in time or expired. Fallback to normal fetch.
+        const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+        response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text })
+        });
+      }
       
       console.log("Response Status:", response.status);
       if (!response.ok) {

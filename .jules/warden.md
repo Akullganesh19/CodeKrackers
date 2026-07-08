@@ -1,0 +1,6 @@
+## 2026-07-08 — PII Leak in Logs (Emails, Phone numbers, OTPs)
+**Data traced:** PII (Email addresses, Phone numbers) and highly sensitive OTP tokens (security codes).
+**Exposure found:** PII values and OTP tokens were logged in plaintext in system logs (stdout/stderr) which can leak to central log aggregators and observability platforms, causing a severe data governance failure.
+**Fix:** Created `backend.core.redaction.redact_pii`, a regex-based `structlog` processor, and added it to `backend/core/logger.py` pipeline (after exception formatting) to permanently mask emails, phone numbers, and OTP codes before they are emitted to output streams.
+**Coverage confirmed:** Tested the `structlog` pipeline locally using the modified `logger.py` script. Verified both dictionary-based log values and string exception logs are sanitized correctly (e.g. `test@example.com` becomes `t***@example.com`, OTP codes are replaced with `[REDACTED]`).
+**Still exposed elsewhere:** Currently the fix applies to the structural backend logging layer. PII might still exist in persistent datastores, database query logs, frontend console logs, or historical raw log files on disk which were not covered by this session.

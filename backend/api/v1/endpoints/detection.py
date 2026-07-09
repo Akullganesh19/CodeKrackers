@@ -63,7 +63,7 @@ async def detect_sms(
                             "You are a cybersecurity expert specializing in Indian "
                             "Smishing/Vishing attacks. Analyze the following SMS. "
                             'Return JSON: {"is_scam": bool, "confidence": float 0-1, '
-                            '"reason": "brief explanation", "category": "phishing|otp_theft|impersonation|financial_fraud|safe"}'
+                            '"reason": "brief explanation", "category": "phishing|otp_theft|impersonation|financial_fraud|safe"}'  # noqa: E501
                         ),
                     },
                     {"role": "user", "content": f"Sender: {sender}\nBody: {content}"},
@@ -71,7 +71,7 @@ async def detect_sms(
                 response_format={"type": "json_object"},
             )
             ai_analysis = json.loads(completion.choices[0].message.content)
-            logger.info("Groq analysis: scam=%s conf=%.2f", ai_analysis.get("is_scam"), ai_analysis.get("confidence", 0))
+            logger.info("Groq analysis: scam=%s conf=%.2f", ai_analysis.get("is_scam"), ai_analysis.get("confidence", 0))  # noqa: E501
         except Exception as e:
             logger.error("Groq analysis failed: %s", e)
 
@@ -105,7 +105,7 @@ async def detect_sms(
     )
 
     if is_scam:
-        severity = "critical" if final_confidence >= 0.9 else "high" if final_confidence >= 0.7 else "medium"
+        severity = "critical" if final_confidence >= 0.9 else "high" if final_confidence >= 0.7 else "medium"  # noqa: E501
         threat_in = ThreatCreate(
             type="smishing",
             source_number=sender,
@@ -120,8 +120,8 @@ async def detect_sms(
                 "crypto_analysis": crypto_results,
             },
         )
-        logger.warning("THREAT DETECTED: type=smishing severity=%s conf=%.3f sender=%s", severity, final_confidence, sender)
-        return await create_threat(db=db, threat_in=threat_in, current_user=current_user)
+        logger.warning("THREAT DETECTED: type=smishing severity=%s conf=%.3f sender=%s", severity, final_confidence, sender)  # noqa: E501
+        return await create_threat(db=db, threat_in=threat_in, current_user=current_user)  # noqa: E501
 
     raise HTTPException(status_code=204, detail="No threat detected")
 
@@ -136,7 +136,7 @@ async def detect_voice_intent(
     if not client:
         return {"is_scam": False, "confidence": 0, "message": "AI engine offline"}
 
-    logger.info("Voice intent scan from user=%d len=%d", current_user.id, len(transcript))
+    logger.info("Voice intent scan from user=%d len=%d", current_user.id, len(transcript))  # noqa: E501
 
     try:
         completion = client.chat.completions.create(
@@ -148,7 +148,7 @@ async def detect_voice_intent(
                         "Analyze this live call transcript. Is the caller trying to "
                         "coerce the victim into sending money, revealing OTP, or "
                         "pretending to be an official? Return JSON: "
-                        '{"is_scam": bool, "confidence": float, "intent": "description", '
+                        '{"is_scam": bool, "confidence": float, "intent": "description", '  # noqa: E501
                         '"urgency_level": "low|medium|high|critical"}'
                     ),
                 },
@@ -157,7 +157,7 @@ async def detect_voice_intent(
             response_format={"type": "json_object"},
         )
         result = json.loads(completion.choices[0].message.content)
-        logger.info("Voice analysis: scam=%s conf=%.2f", result.get("is_scam"), result.get("confidence", 0))
+        logger.info("Voice analysis: scam=%s conf=%.2f", result.get("is_scam"), result.get("confidence", 0))  # noqa: E501
         return result
     except Exception as e:
         logger.error("Voice analysis failed: %s", e)

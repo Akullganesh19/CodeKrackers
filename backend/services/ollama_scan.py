@@ -1,20 +1,17 @@
-import json
 import logging
-from typing import Any, Dict
-
 import requests
-
+import json
 from backend.core.resilience import circuit_breaker, with_retries
+from typing import Dict, Any
 
 logger = logging.getLogger("vas.ollama")
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
-OLLAMA_MODEL = "llama3.1:8b"  # Upgraded for tool-calling support
-
+OLLAMA_MODEL = "llama3.1:8b" # Upgraded for tool-calling support
 
 @circuit_breaker(failure_threshold=3, recovery_timeout=60.0)
 @with_retries(max_attempts=3, initial_backoff=0.5)
-def _call_ollama(payload: Dict[str, Any]) -> Dict[str, Any]:
+def _call_ollama(payload: dict) -> dict:
     response = requests.post(OLLAMA_URL, json=payload, timeout=30)
     if response.status_code != 200:
         raise Exception(f"Ollama returned status {response.status_code}")
@@ -43,20 +40,22 @@ def ollama_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
             "model": OLLAMA_MODEL,
             "prompt": prompt,
             "stream": False,
-            "format": "json",
+            "format": "json"
         }
 
-        response_json = _call_ollama(payload)
-        result = response_json.get("response", "{}")
-        data = json.loads(result)
+        response = requests.post(OLLAMA_URL, json=payload, timeout=30)
+        if response.status_code == 200:
+            result = response.json().get("response", "{}")
+            data = json.loads(result)
 
-        return {
-            "score_increase": (
-                round(data.get("confidence", 0.0), 2) if data.get("is_scam") else 0.0
-            ),
-            "reason": data.get("reason", "Local AI Analysis complete"),
-            "risk_factors": data.get("risk_factors", []),
-        }
+            return {
+                "score_increase": round(data.get("confidence", 0.0), 2) if data.get("is_scam") else 0.0,  # noqa: E501
+                "reason": data.get("reason", "Local AI Analysis complete"),
+                "risk_factors": data.get("risk_factors", [])
+            }
+        else:
+            logger.warning(f"Ollama returned status {response.status_code}")
+            return {"score_increase": 0.0, "reason": "Ollama service unavailable"}
 
     except Exception as e:
         logger.error(f"Ollama Scan Error: {e}")

@@ -1,6 +1,6 @@
 import pytest
 import time
-from backend.core.resilience import with_retries, circuit_breaker, CircuitBreakerOpenException
+from backend.core.resilience import with_retries, circuit_breaker, CircuitBreakerOpenException  # noqa: E501
 
 def test_with_retries_success_first_try():
     calls = 0

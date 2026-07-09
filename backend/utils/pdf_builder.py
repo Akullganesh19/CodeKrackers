@@ -32,8 +32,8 @@ def generate_fir_pdf(data: dict, output_path: str):
     content = []
     
     # Header
-    content.append(Paragraph("VSDP - Vishing & Smishing Defense Platform", header_style))
-    content.append(Paragraph(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", header_style))
+    content.append(Paragraph("VSDP - Vishing & Smishing Defense Platform", header_style))  # noqa: E501
+    content.append(Paragraph(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", header_style))  # noqa: E501
     content.append(Spacer(1, 20))
     
     # Title
@@ -60,14 +60,14 @@ def generate_fir_pdf(data: dict, output_path: str):
     content.append(Spacer(1, 20))
     
     # Legal Sections
-    content.append(Paragraph("<b>Relevant Legal Sections (IPC/IT Act):</b>", styles['Heading3']))
+    content.append(Paragraph("<b>Relevant Legal Sections (IPC/IT Act):</b>", styles['Heading3']))  # noqa: E501
     for section in data.get("ipc_sections", []):
         content.append(Paragraph(f"• {section}", styles['Normal']))
     content.append(Spacer(1, 20))
     
     # Incident Details
-    content.append(Paragraph("<b>Incident Description / Raw Evidence:</b>", styles['Heading3']))
-    content.append(Paragraph(data.get("raw_content", "No content captured."), styles['Normal']))
+    content.append(Paragraph("<b>Incident Description / Raw Evidence:</b>", styles['Heading3']))  # noqa: E501
+    content.append(Paragraph(data.get("raw_content", "No content captured."), styles['Normal']))  # noqa: E501
     content.append(Spacer(1, 40))
     
     # Footer / Signature Placeholder

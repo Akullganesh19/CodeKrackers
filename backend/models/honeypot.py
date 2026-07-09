@@ -10,7 +10,7 @@ class HoneypotAccess(Base):
     __tablename__ = "honeypot_access"
 
     id = Column(Integer, primary_key=True, index=True)
-    timestamp = Column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
+    timestamp = Column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)  # noqa: E501
 
     # Attacker identity
     ip_address = Column(String(45), nullable=False, index=True)
@@ -18,7 +18,7 @@ class HoneypotAccess(Base):
     x_forwarded_for = Column(String(255), nullable=True)
 
     # Honeypot endpoint details
-    endpoint = Column(String(256), nullable=False, index=True)  # /api/v1/admin/export-users
+    endpoint = Column(String(256), nullable=False, index=True)  # /api/v1/admin/export-users  # noqa: E501
     method = Column(String(16), nullable=False)
 
     # Request analysis
@@ -41,4 +41,4 @@ class HoneypotAccess(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<HoneypotAccess(id={self.id}, endpoint={self.endpoint}, ip={self.ip_address})>"
+        return f"<HoneypotAccess(id={self.id}, endpoint={self.endpoint}, ip={self.ip_address})>"  # noqa: E501

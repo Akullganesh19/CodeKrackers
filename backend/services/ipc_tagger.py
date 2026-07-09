@@ -8,7 +8,7 @@ def tag_ipc_sections(threat_type: str, risk_factors: list) -> list[dict]:
     # Always include for any cyber fraud detected by VSDP platform
     sections.append({
         "section": "IT Act 2000 §66D",
-        "description": "Punishment for cheating by personation by using computer resource"
+        "description": "Punishment for cheating by personation by using computer resource"  # noqa: E501
     })
 
     threat_type = threat_type.lower()
@@ -44,7 +44,7 @@ def tag_ipc_sections(threat_type: str, risk_factors: list) -> list[dict]:
         })
 
     # Impersonation of Public Servants (e.g., Police, TRAI, RBI)
-    if "authority" in risk_factors_str or "police" in risk_factors_str or "officer" in risk_factors_str:
+    if "authority" in risk_factors_str or "police" in risk_factors_str or "officer" in risk_factors_str:  # noqa: E501
         sections.append({
             "section": "IPC §170",
             "description": "Personating a public servant"

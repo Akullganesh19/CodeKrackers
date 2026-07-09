@@ -60,16 +60,16 @@ async def send_otp(
     redis_key = f"otp:{otp_in.identifier}"
     redis_client.setex(redis_key, settings.OTP_EXPIRE_SECONDS, otp_code)
 
-    if "@" not in otp_in.identifier and settings.TWILIO_ACCOUNT_SID and settings.TWILIO_AUTH_TOKEN:
+    if "@" not in otp_in.identifier and settings.TWILIO_ACCOUNT_SID and settings.TWILIO_AUTH_TOKEN:  # noqa: E501
         try:
             client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
             client.messages.create(
-                body=f"VSDP Security Code: {otp_code}. Valid for 5 minutes. Do not share.",
+                body=f"VSDP Security Code: {otp_code}. Valid for 5 minutes. Do not share.",  # noqa: E501
                 from_=settings.TWILIO_PHONE_NUMBER,
                 to=otp_in.identifier
             )
         except Exception as e:
-            logger.error(f"SMS_GATEWAY_ERROR: Failed to send OTP to {otp_in.identifier}: {e}")
+            logger.error(f"SMS_GATEWAY_ERROR: Failed to send OTP to {otp_in.identifier}: {e}")  # noqa: E501
 
     if "@" in otp_in.identifier and settings.SENDGRID_API_KEY:
         try:
@@ -77,12 +77,12 @@ async def send_otp(
                 from_email=settings.FROM_EMAIL,
                 to_emails=otp_in.identifier,
                 subject='VSDP Security Code',
-                plain_text_content=f"Your VSDP security code is: {otp_code}. Valid for 5 minutes. Do not share."
+                plain_text_content=f"Your VSDP security code is: {otp_code}. Valid for 5 minutes. Do not share."  # noqa: E501
             )
             sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
             sg.send(message)
         except Exception as e:
-            logger.error(f"EMAIL_GATEWAY_ERROR: Failed to send OTP to {otp_in.identifier}: {e}")
+            logger.error(f"EMAIL_GATEWAY_ERROR: Failed to send OTP to {otp_in.identifier}: {e}")  # noqa: E501
 
     logger.info(f"SECURITY: Generated OTP for {otp_in.identifier} -> {otp_code}")
     
@@ -98,7 +98,7 @@ async def verify_otp(
     Verifies the OTP and issues a signed JWT access token.
     """
     user = db.query(User).filter(
-        (User.email == otp_verify.identifier) | (User.phone_number == otp_verify.identifier)
+        (User.email == otp_verify.identifier) | (User.phone_number == otp_verify.identifier)  # noqa: E501
     ).first()
 
     if user and security.check_account_locked(user.locked_until):
@@ -117,12 +117,12 @@ async def verify_otp(
                 user.locked_until = security.get_lockout_time()
             db.commit()
         logger.warning(f"Auth failure: Invalid OTP attempt for {otp_verify.identifier}")
-        raise HTTPException(status_code=400, detail="Invalid or expired verification code")
+        raise HTTPException(status_code=400, detail="Invalid or expired verification code")  # noqa: E501
 
     if not user:
         user = User(
             email=otp_verify.identifier if "@" in otp_verify.identifier else None,
-            phone_number=otp_verify.identifier if "@" not in otp_verify.identifier else None,
+            phone_number=otp_verify.identifier if "@" not in otp_verify.identifier else None,  # noqa: E501
             is_active=True,
             role=otp_verify.role
         )
@@ -187,7 +187,7 @@ async def login_access_token_password(
             detail="Account temporarily locked. Try again in 15 minutes.",
         )
 
-    if not user or not security.verify_password(form_data.password, user.hashed_password) or user.role.value != form_data.role:
+    if not user or not security.verify_password(form_data.password, user.hashed_password) or user.role.value != form_data.role:  # noqa: E501
         if user:
             user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
             if user.failed_login_attempts >= MAX_LOGIN_ATTEMPTS:
@@ -205,7 +205,7 @@ async def login_access_token_password(
     db.commit()
 
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    token = security.create_access_token(subject=user.id, role=user.role.value, expires_delta=access_token_expires)
+    token = security.create_access_token(subject=user.id, role=user.role.value, expires_delta=access_token_expires)  # noqa: E501
 
     return {"access_token": token, "token_type": "bearer"}
 
@@ -226,9 +226,9 @@ async def register_user(
         raise HTTPException(status_code=400, detail="Email already registered.")
 
     if user_in.phone_number:
-        existing_phone = db.query(User).filter(User.phone_number == user_in.phone_number).first()
+        existing_phone = db.query(User).filter(User.phone_number == user_in.phone_number).first()  # noqa: E501
         if existing_phone:
-            raise HTTPException(status_code=400, detail="Phone number already registered.")
+            raise HTTPException(status_code=400, detail="Phone number already registered.")  # noqa: E501
 
     new_user = User(
         email=user_in.email,

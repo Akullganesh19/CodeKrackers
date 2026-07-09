@@ -157,7 +157,7 @@ def compute_file_checksum(file_path: str) -> Tuple[str, int]:
     return sha384.hexdigest(), file_size
 
 
-def verify_model_integrity(db: Session, name: str, file_path: str) -> Tuple[bool, Optional[ModelVersion]]:
+def verify_model_integrity(db: Session, name: str, file_path: str) -> Tuple[bool, Optional[ModelVersion]]:  # noqa: E501
     """
     Verify a model file against its registered checksum before loading.
     
@@ -197,7 +197,7 @@ def verify_model_integrity(db: Session, name: str, file_path: str) -> Tuple[bool
         return False, active_version
 
 
-def approve_model(db: Session, model_id: int, approved_by: str) -> Optional[ModelVersion]:
+def approve_model(db: Session, model_id: int, approved_by: str) -> Optional[ModelVersion]:  # noqa: E501
     """Approve a model for production deployment."""
     model = db.query(ModelVersion).filter(ModelVersion.id == model_id).first()
     if not model:
@@ -208,7 +208,7 @@ def approve_model(db: Session, model_id: int, approved_by: str) -> Optional[Mode
     model.approved_at = datetime.now(timezone.utc)
     
     # Verify watermark as part of approval
-    fp_hash = hashlib.sha384(model.watermark_embedding).hexdigest() if model.watermark_embedding else ""
+    fp_hash = hashlib.sha384(model.watermark_embedding).hexdigest() if model.watermark_embedding else ""  # noqa: E501
     model.watermark_verified = True
     
     db.commit()
@@ -251,7 +251,7 @@ ADVERSARIAL_PERTURBATIONS = {
     "char_swap": lambda s: s[:5] + s[6] + s[5] + s[7:] if len(s) > 7 else s,
     "double_space": lambda s: s.replace(" ", "  "),
     "remove_punct": lambda s: s.replace(".", "").replace("!", "").replace("?", ""),
-    "leet_basic": lambda s: s.replace("a", "4").replace("e", "3").replace("i", "1").replace("o", "0"),
+    "leet_basic": lambda s: s.replace("a", "4").replace("e", "3").replace("i", "1").replace("o", "0"),  # noqa: E501
     "uppercase": lambda s: s.upper(),
     "lowercase": lambda s: s.lower(),
     "add_typo": lambda s: s[:3] + s[4] + s[3] + s[5:] if len(s) > 5 else s,
@@ -386,8 +386,8 @@ class ExtractionDetector:
     
     def __init__(self):
         self._ip_queries: Dict[str, deque] = defaultdict(lambda: deque(maxlen=200))
-        self._ip_input_hashes: Dict[str, Dict[str, int]] = defaultdict(lambda: defaultdict(int))
-        self._ip_model_queries: Dict[str, Dict[str, int]] = defaultdict(lambda: defaultdict(int))
+        self._ip_input_hashes: Dict[str, Dict[str, int]] = defaultdict(lambda: defaultdict(int))  # noqa: E501
+        self._ip_model_queries: Dict[str, Dict[str, int]] = defaultdict(lambda: defaultdict(int))  # noqa: E501
         
         # Thresholds
         self.RATE_LIMIT_QPM = 50  # Queries per minute threshold
@@ -476,7 +476,7 @@ class ExtractionDetector:
         )
         
         input_hash = hashlib.sha256(input_data.encode()).hexdigest()
-        api_key_hash = hashlib.sha256((api_key or "anonymous").encode()).hexdigest()[:16] if api_key else None
+        api_key_hash = hashlib.sha256((api_key or "anonymous").encode()).hexdigest()[:16] if api_key else None  # noqa: E501
         
         log_entry = ModelInferenceLog(
             client_ip=client_ip,

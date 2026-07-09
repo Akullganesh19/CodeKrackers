@@ -29,7 +29,7 @@ def create_child_profile(
     try:
         mode = ChildLockMode(body.get("lock_mode", "filtered"))
     except ValueError:
-        raise HTTPException(status_code=422, detail=f"Invalid lock_mode. Options: {[m.value for m in ChildLockMode]}")
+        raise HTTPException(status_code=422, detail=f"Invalid lock_mode. Options: {[m.value for m in ChildLockMode]}")  # noqa: E501
 
     profile = ChildProfile(
         parent_id=current_user.id,
@@ -54,8 +54,8 @@ def create_child_profile(
     db.commit()
     db.refresh(profile)
 
-    logger.info("CHILD_PROFILE_CREATED id=%d parent=%d name=%s mode=%s", profile.id, current_user.id, name, mode.value)
-    return {"id": profile.id, "child_name": name, "lock_mode": mode.value, "message": "Child profile created"}
+    logger.info("CHILD_PROFILE_CREATED id=%d parent=%d name=%s mode=%s", profile.id, current_user.id, name, mode.value)  # noqa: E501
+    return {"id": profile.id, "child_name": name, "lock_mode": mode.value, "message": "Child profile created"}  # noqa: E501
 
 
 @router.get("/profiles")
@@ -64,13 +64,13 @@ def list_child_profiles(
     current_user: User = Depends(deps.get_current_active_user),
 ) -> Any:
     """List all child profiles for the current parent."""
-    profiles = db.query(ChildProfile).filter(ChildProfile.parent_id == current_user.id).all()
+    profiles = db.query(ChildProfile).filter(ChildProfile.parent_id == current_user.id).all()  # noqa: E501
     return [
         {
             "id": p.id,
             "child_name": p.child_name,
             "child_age": p.child_age,
-            "lock_mode": p.lock_mode.value if hasattr(p.lock_mode, 'value') else p.lock_mode,
+            "lock_mode": p.lock_mode.value if hasattr(p.lock_mode, 'value') else p.lock_mode,  # noqa: E501
             "is_active": p.is_active,
             "block_unknown_calls": p.block_unknown_calls,
             "block_urls_in_sms": p.block_urls_in_sms,
@@ -91,10 +91,10 @@ def check_child_call(
     profile_id = body.get("profile_id")
     phone = body.get("phone_number", "")
     if not profile_id or not phone:
-        raise HTTPException(status_code=422, detail="profile_id and phone_number required")
+        raise HTTPException(status_code=422, detail="profile_id and phone_number required")  # noqa: E501
 
     # Verify parent owns this profile
-    profile = db.query(ChildProfile).filter(ChildProfile.id == profile_id, ChildProfile.parent_id == current_user.id).first()
+    profile = db.query(ChildProfile).filter(ChildProfile.id == profile_id, ChildProfile.parent_id == current_user.id).first()  # noqa: E501
     if not profile:
         raise HTTPException(status_code=404, detail="Child profile not found")
 
@@ -112,9 +112,9 @@ def check_child_sms(
     phone = body.get("phone_number", "")
     content = body.get("content", "")
     if not profile_id or not phone:
-        raise HTTPException(status_code=422, detail="profile_id and phone_number required")
+        raise HTTPException(status_code=422, detail="profile_id and phone_number required")  # noqa: E501
 
-    profile = db.query(ChildProfile).filter(ChildProfile.id == profile_id, ChildProfile.parent_id == current_user.id).first()
+    profile = db.query(ChildProfile).filter(ChildProfile.id == profile_id, ChildProfile.parent_id == current_user.id).first()  # noqa: E501
     if not profile:
         raise HTTPException(status_code=404, detail="Child profile not found")
 
@@ -129,7 +129,7 @@ def update_child_profile(
     current_user: User = Depends(deps.get_current_active_user),
 ) -> Any:
     """Update child profile settings."""
-    profile = db.query(ChildProfile).filter(ChildProfile.id == profile_id, ChildProfile.parent_id == current_user.id).first()
+    profile = db.query(ChildProfile).filter(ChildProfile.id == profile_id, ChildProfile.parent_id == current_user.id).first()  # noqa: E501
     if not profile:
         raise HTTPException(status_code=404, detail="Child profile not found")
 
@@ -137,7 +137,7 @@ def update_child_profile(
         "lock_mode", "is_active", "block_all_calls", "block_unknown_calls",
         "block_international_calls", "block_all_sms", "block_unknown_sms",
         "filter_inappropriate_content", "block_urls_in_sms", "enforce_time_limits",
-        "allowed_call_start", "allowed_call_end", "allowed_sms_start", "allowed_sms_end",
+        "allowed_call_start", "allowed_call_end", "allowed_sms_start", "allowed_sms_end",  # noqa: E501
         "whitelisted_contacts", "emergency_contacts", "blocked_content_keywords",
     ]
     for field in updatable:
@@ -159,7 +159,7 @@ def get_child_activity(
     current_user: User = Depends(deps.get_current_active_user),
 ) -> Any:
     """Get activity log for a child profile (what was blocked/allowed)."""
-    profile = db.query(ChildProfile).filter(ChildProfile.id == profile_id, ChildProfile.parent_id == current_user.id).first()
+    profile = db.query(ChildProfile).filter(ChildProfile.id == profile_id, ChildProfile.parent_id == current_user.id).first()  # noqa: E501
     if not profile:
         raise HTTPException(status_code=404, detail="Child profile not found")
 

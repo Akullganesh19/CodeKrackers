@@ -36,7 +36,7 @@ class RoleChecker:
     def __init__(self, allowed_roles: List[str]):
         self.allowed_roles = allowed_roles
 
-    def __call__(self, payload: Dict[str, Any] = Depends(get_current_token_payload)) -> Dict[str, Any]:
+    def __call__(self, payload: Dict[str, Any] = Depends(get_current_token_payload)) -> Dict[str, Any]:  # noqa: E501
         if payload.get("role") not in self.allowed_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

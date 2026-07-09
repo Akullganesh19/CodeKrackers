@@ -9,7 +9,7 @@ from .models.orm import Threat, ScoreHistory, User, FIR, HoneypotSession
 async def verify_all_evidence_chains():
     """
     Background task to automatically verify the integrity of all evidence chains.
-    Intended to run once a day to detect any unauthorized tampering with the forensic ledger.
+    Intended to run once a day to detect any unauthorized tampering with the forensic ledger.  # noqa: E501
     """
     async with AsyncSessionLocal() as db:
         ledger = EvidenceChain(db)
@@ -39,7 +39,7 @@ async def verify_all_evidence_chains():
         if report["tampered_chains"]:
             print(f"CRITICAL: Integrity Audit detected tampering: {report}")
         else:
-            print(f"Daily Integrity Audit Complete: All {len(threat_ids)} chains verified.")
+            print(f"Daily Integrity Audit Complete: All {len(threat_ids)} chains verified.")  # noqa: E501
         
         return report
 
@@ -61,15 +61,15 @@ async def record_daily_safety_scores():
 async def restore_user_safety_scores():
     """
     Background task to reward users with no recent activity.
-    Restores points to the safety score if no threats were detected in the last 24 hours.
-    Users who proactively participate in defense (FIRs, Honeypots) receive higher rewards.
+    Restores points to the safety score if no threats were detected in the last 24 hours.  # noqa: E501
+    Users who proactively participate in defense (FIRs, Honeypots) receive higher rewards.  # noqa: E501
     """
     async with AsyncSessionLocal() as db:
         # Threshold for "recent" threats
         yesterday = datetime.utcnow() - timedelta(days=1)
         
         # Subquery to find users who HAD threats recently
-        recent_threats_subquery = select(Threat.user_id).where(Threat.detected_at >= yesterday).scalar_subquery()
+        recent_threats_subquery = select(Threat.user_id).where(Threat.detected_at >= yesterday).scalar_subquery()  # noqa: E501
         
         # Select users who are active, below max score, and NOT in the recent threats list
         stmt = select(User).where(
@@ -90,7 +90,7 @@ async def restore_user_safety_scores():
 
         # Users with completed honeypots
         hp_users_stmt = select(Threat.user_id).join(HoneypotSession, HoneypotSession.threat_id == Threat.id)\
-            .where(Threat.user_id.in_(user_ids), HoneypotSession.status == 'completed').distinct()
+            .where(Threat.user_id.in_(user_ids), HoneypotSession.status == 'completed').distinct()  # noqa: E501
         hp_users = set((await db.execute(hp_users_stmt)).scalars().all())
 
         for user in users_to_restore:

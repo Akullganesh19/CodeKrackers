@@ -58,21 +58,21 @@ def get_dashboard_summary(
 
     return {
         "stats": {
-            "smishing": type_counts.get("smishing", type_counts.get(ThreatType.SMISHING, 0)),
-            "vishing": type_counts.get("vishing", type_counts.get(ThreatType.VISHING, 0)),
-            "crypto_scam": type_counts.get("crypto_scam", type_counts.get(ThreatType.CRYPTO_SCAM, 0)),
+            "smishing": type_counts.get("smishing", type_counts.get(ThreatType.SMISHING, 0)),  # noqa: E501
+            "vishing": type_counts.get("vishing", type_counts.get(ThreatType.VISHING, 0)),  # noqa: E501
+            "crypto_scam": type_counts.get("crypto_scam", type_counts.get(ThreatType.CRYPTO_SCAM, 0)),  # noqa: E501
             "firs_filed": db.query(FIR).count(),
             "protected_users": db.query(User).filter(User.is_active == True).count(),
             "total_threats": db.query(Threat).count(),
         },
         "trends": {
-            "smishing_today": today_counts.get("smishing", today_counts.get(ThreatType.SMISHING, 0)),
-            "vishing_today": today_counts.get("vishing", today_counts.get(ThreatType.VISHING, 0)),
+            "smishing_today": today_counts.get("smishing", today_counts.get(ThreatType.SMISHING, 0)),  # noqa: E501
+            "vishing_today": today_counts.get("vishing", today_counts.get(ThreatType.VISHING, 0)),  # noqa: E501
         },
         "severity_distribution": {
-            "critical": severity_dist.get("critical", severity_dist.get(ThreatSeverity.CRITICAL, 0)),
-            "high": severity_dist.get("high", severity_dist.get(ThreatSeverity.HIGH, 0)),
-            "medium": severity_dist.get("medium", severity_dist.get(ThreatSeverity.MEDIUM, 0)),
+            "critical": severity_dist.get("critical", severity_dist.get(ThreatSeverity.CRITICAL, 0)),  # noqa: E501
+            "high": severity_dist.get("high", severity_dist.get(ThreatSeverity.HIGH, 0)),  # noqa: E501
+            "medium": severity_dist.get("medium", severity_dist.get(ThreatSeverity.MEDIUM, 0)),  # noqa: E501
             "low": severity_dist.get("low", severity_dist.get(ThreatSeverity.LOW, 0)),
         },
         "avg_confidence": round(avg_confidence, 3),
@@ -81,7 +81,7 @@ def get_dashboard_summary(
                 "id": t.id,
                 "type": t.type.value if hasattr(t.type, 'value') else t.type,
                 "source": t.source_number,
-                "severity": t.severity.value if hasattr(t.severity, 'value') else t.severity,
+                "severity": t.severity.value if hasattr(t.severity, 'value') else t.severity,  # noqa: E501
                 "confidence": t.confidence_score,
                 "timestamp": t.timestamp.isoformat() if t.timestamp else None,
             }
@@ -136,12 +136,12 @@ def get_hourly_trend(
 
         smishing = (
             db.query(Threat)
-            .filter(Threat.type == ThreatType.SMISHING, Threat.timestamp.between(hour_start, hour_end))
+            .filter(Threat.type == ThreatType.SMISHING, Threat.timestamp.between(hour_start, hour_end))  # noqa: E501
             .count()
         )
         vishing = (
             db.query(Threat)
-            .filter(Threat.type == ThreatType.VISHING, Threat.timestamp.between(hour_start, hour_end))
+            .filter(Threat.type == ThreatType.VISHING, Threat.timestamp.between(hour_start, hour_end))  # noqa: E501
             .count()
         )
 

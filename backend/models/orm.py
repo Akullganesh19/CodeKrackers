@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 import enum
-from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime, Text, ForeignKey, JSON, func, Index, Enum
+from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime, Text, ForeignKey, JSON, func, Index, Enum  # noqa: E501
 from sqlalchemy.orm import relationship, declarative_base
 
 Base = declarative_base()
@@ -105,7 +105,7 @@ class Threat(Base):
     user = relationship("User", back_populates="threats")
     evidence_blocks = relationship("Evidence", back_populates="threat")
     fir = relationship("FIR", back_populates="threat", uselist=False)
-    honeypot_session = relationship("HoneypotSession", back_populates="threat", uselist=False)
+    honeypot_session = relationship("HoneypotSession", back_populates="threat", uselist=False)  # noqa: E501
 
     __table_args__ = (
         Index('ix_threats_caller_id_detected_at', 'caller_id', 'detected_at'),

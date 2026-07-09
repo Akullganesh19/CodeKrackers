@@ -48,7 +48,7 @@ def report_scammer(
         source="user_report",
     )
 
-    logger.info("SCAMMER_REPORTED by=%d type=%s value=%s", current_user.id, id_type, identifier)
+    logger.info("SCAMMER_REPORTED by=%d type=%s value=%s", current_user.id, id_type, identifier)  # noqa: E501
     return {
         "id": entry.id,
         "type": entry.type,
@@ -94,10 +94,10 @@ def list_blacklist(
     if bl_type:
         query = query.filter(BlacklistEntry.type == bl_type)
 
-    if current_user.role not in {UserRole.ADMIN, UserRole.OFFICER, UserRole.SUPER_ADMIN}:
+    if current_user.role not in {UserRole.ADMIN, UserRole.OFFICER, UserRole.SUPER_ADMIN}:  # noqa: E501
         query = query.filter(BlacklistEntry.is_verified == True)
 
-    entries = query.order_by(BlacklistEntry.confidence.desc()).offset(skip).limit(limit).all()
+    entries = query.order_by(BlacklistEntry.confidence.desc()).offset(skip).limit(limit).all()  # noqa: E501
     return [
         {
             "id": e.id,

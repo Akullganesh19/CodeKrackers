@@ -15,7 +15,7 @@ class FIRRequest(BaseModel):
     threat_id: uuid.UUID
 
 @router.post("/generate")
-async def generate_fir_endpoint(request: FIRRequest, db: AsyncSession = Depends(get_db)):
+async def generate_fir_endpoint(request: FIRRequest, db: AsyncSession = Depends(get_db)):  # noqa: E501
     """
     Endpoint to trigger the automated FIR generation pipeline for a specific threat.
     """

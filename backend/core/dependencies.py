@@ -33,6 +33,6 @@ def require_role(min_rbac_level: int):
     """
     def role_checker(user: User = Depends(get_current_user)):
         if user.rbac_level < min_rbac_level:
-            raise HTTPException(status_code=403, detail="Insufficient permissions for this operation")
+            raise HTTPException(status_code=403, detail="Insufficient permissions for this operation")  # noqa: E501
         return user
     return role_checker

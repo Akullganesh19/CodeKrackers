@@ -31,7 +31,7 @@ def create_fir(
     if threat.owner_id != current_user.id and current_user.role not in {
         UserRole.ADMIN, UserRole.OFFICER, UserRole.SUPER_ADMIN
     }:
-        raise HTTPException(status_code=403, detail="Not authorized to report this threat")
+        raise HTTPException(status_code=403, detail="Not authorized to report this threat")  # noqa: E501
 
     # Idempotency: return existing FIR if already generated
     existing_fir = db.query(FIR).filter(FIR.threat_id == threat_id).first()
@@ -59,7 +59,7 @@ def create_fir(
     }
 
     try:
-        pdf_path, signature = generate_fir_pdf(fir.id, current_user.full_name, threat_details)
+        pdf_path, signature = generate_fir_pdf(fir.id, current_user.full_name, threat_details)  # noqa: E501
         fir.fir_copy_path = pdf_path
     except Exception as e:
         logger.error("PDF_GENERATION_FAILED fir_id=%d: %s", fir.id, e)
@@ -92,7 +92,7 @@ def read_firs(
     """Retrieve FIRs with RBAC filtering."""
     if current_user.role in {UserRole.ADMIN, UserRole.OFFICER, UserRole.SUPER_ADMIN}:
         return db.query(FIR).order_by(FIR.created_at.desc()).all()
-    return db.query(FIR).filter(FIR.reporter_id == current_user.id).order_by(FIR.created_at.desc()).all()
+    return db.query(FIR).filter(FIR.reporter_id == current_user.id).order_by(FIR.created_at.desc()).all()  # noqa: E501
 
 
 @router.patch("/firs/{fir_id}/status")
@@ -117,5 +117,5 @@ def update_fir_status(
         )
 
     db.commit()
-    logger.info("FIR_STATUS_UPDATED id=%d status=%s by=%d", fir_id, new_status, current_user.id)
+    logger.info("FIR_STATUS_UPDATED id=%d status=%s by=%d", fir_id, new_status, current_user.id)  # noqa: E501
     return {"id": fir_id, "status": fir.status}

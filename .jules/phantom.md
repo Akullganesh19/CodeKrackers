@@ -1,0 +1,7 @@
+## 2024-07-09 — Request Coalescing and TTL Caching Layer
+**Gap found:** Multiple components on the frontend were making simultaneous, independent `fetch` requests for identical endpoints (e.g., `dashboard-summary`, `threat_map`), and repeated requests happened on navigation without any client-side caching.
+**Why it existed:** Native `fetch` is stateless and oblivious to other components. The application didn't use a data-fetching library like SWR or React Query globally, relying on naive `useEffect` fetch blocks.
+**Built:** Created `phantomFetch` in `app/lib/fetch.ts`, a global caching and request coalescing wrapper around `fetch`. It intercepts identical concurrent requests, returning the same Promise, and caches responses with a configurable TTL, gracefully handling failures by returning 500 fallback Responses instead of unhandled rejections.
+**Hot path affected:** Dashboard rendering (`dashboard-summary`) and Analytics view (`dashboard-summary` and `threat_map`).
+**Measurable improvement:** Concurrent renders now only make 1 network request to the backend instead of multiple, and subsequent visits within 1 minute resolve instantly from cache, saving repeated identical requests.
+**Next opportunity:** Expand `phantomFetch` usage to other frequently hit endpoints (like safety scores and geospatial maps in the Admin Dashboard), and consider adding stale-while-revalidate capabilities.

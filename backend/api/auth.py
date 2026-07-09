@@ -133,7 +133,9 @@ async def verify_otp(
         )
 
     redis_key = f"otp:{otp_verify.identifier}"
-    stored_code = redis_client.get(redis_key) if redis_client else None
+    stored_code = (
+        redis_client.get(redis_key) if redis_client else None
+    )
 
     if not stored_code or otp_verify.code != stored_code:
         if user:

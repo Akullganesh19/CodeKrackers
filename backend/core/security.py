@@ -22,7 +22,7 @@ ALGORITHM = "HS256"
 # ─── Password Policy ───
 MIN_PASSWORD_LENGTH = 8
 PASSWORD_PATTERN = re.compile(
-    r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_\-+=])[A-Za-z\d@$!%*?&#^()_\-+=]{8,128}$"  # noqa: E501
+    r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_\-+=])[A-Za-z\d@$!%*?&#^()_\-+=]{8,128}$"
 )
 
 
@@ -55,7 +55,7 @@ def create_access_token(
 ) -> str:
     """Create a JWT with claims, expiry, and unique JTI for revocation support."""
     now = datetime.now(timezone.utc)
-    expire = now + (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))  # noqa: E501
+    expire = now + (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
 
     to_encode = {
         "exp": expire,

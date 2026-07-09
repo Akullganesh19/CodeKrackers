@@ -1,5 +1,5 @@
 """
-Intelligence gathering endpoints — consent management, phone lookup, device registration.  # noqa: E501
+Intelligence gathering endpoints — consent management, phone lookup, device registration.
 All endpoints require explicit user permission before collecting any data.
 """
 import logging
@@ -34,7 +34,7 @@ def get_consent_status(
     if not consent:
         return {
             "has_consent": False,
-            "message": "No consent given yet. Grant permissions to enable intelligence gathering.",  # noqa: E501
+            "message": "No consent given yet. Grant permissions to enable intelligence gathering.",
             "permissions": {
                 "phone_lookup": False,
                 "device_info": False,
@@ -47,7 +47,7 @@ def get_consent_status(
     return {
         "has_consent": True,
         "consent_id": consent.id,
-        "given_at": consent.consent_given_at.isoformat() if consent.consent_given_at else None,  # noqa: E501
+        "given_at": consent.consent_given_at.isoformat() if consent.consent_given_at else None,
         "permissions": {
             "phone_lookup": consent.consent_phone_lookup,
             "device_info": consent.consent_device_info,
@@ -136,7 +136,7 @@ def revoke_consent(
     db.commit()
 
     logger.info("CONSENT_REVOKED user=%d count=%d", current_user.id, len(consents))
-    return {"message": "All data collection consent has been revoked", "revoked_count": len(consents)}  # noqa: E501
+    return {"message": "All data collection consent has been revoked", "revoked_count": len(consents)}
 
 
 # ─── PHONE NUMBER INTELLIGENCE ───
@@ -217,7 +217,7 @@ def register_device(
     if not check_user_consent(db, current_user.id, "consent_device_info"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Device data collection requires explicit consent. Please grant permission first.",  # noqa: E501
+            detail="Device data collection requires explicit consent. Please grant permission first.",
         )
 
     device = DeviceInfo(
@@ -235,8 +235,8 @@ def register_device(
         sim_operator=body.get("sim_operator"),
         sim_country=body.get("sim_country"),
         # Location (only if consent)
-        latitude=body.get("latitude") if check_user_consent(db, current_user.id, "consent_location") else None,  # noqa: E501
-        longitude=body.get("longitude") if check_user_consent(db, current_user.id, "consent_location") else None,  # noqa: E501
+        latitude=body.get("latitude") if check_user_consent(db, current_user.id, "consent_location") else None,
+        longitude=body.get("longitude") if check_user_consent(db, current_user.id, "consent_location") else None,
         city=body.get("city"),
         state=body.get("state"),
         # Browser
@@ -281,12 +281,12 @@ def list_user_devices(
     return [
         {
             "id": d.id,
-            "device": f"{d.device_brand or ''} {d.device_model or ''}".strip() or "Unknown",  # noqa: E501
+            "device": f"{d.device_brand or ''} {d.device_model or ''}".strip() or "Unknown",
             "os": f"{d.os_name or ''} {d.os_version or ''}".strip(),
             "ip": d.ip_address,
             "carrier": d.carrier_name,
             "network": d.network_type,
-            "location": f"{d.city or ''}, {d.state or ''}".strip(", ") if d.city or d.state else None,  # noqa: E501
+            "location": f"{d.city or ''}, {d.state or ''}".strip(", ") if d.city or d.state else None,
             "registered_at": d.created_at.isoformat() if d.created_at else None,
         }
         for d in devices

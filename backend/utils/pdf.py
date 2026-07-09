@@ -6,7 +6,7 @@ from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 
-def generate_fir_pdf(fir_id: int, officer_name: str, threat_details: dict) -> tuple[str, str]:  # noqa: E501
+def generate_fir_pdf(fir_id: int, officer_name: str, threat_details: dict) -> tuple[str, str]:
     """
     Generates a formal forensic FIR document and returns (file_path, digital_signature).
     """
@@ -34,12 +34,12 @@ def generate_fir_pdf(fir_id: int, officer_name: str, threat_details: dict) -> tu
     elements = []
     
     # Header
-    elements.append(Paragraph("VSDP - Vishing & Smishing Defense Platform", styles['Normal']))  # noqa: E501
-    elements.append(Paragraph(f"Official Forensic Report | Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", styles['Normal']))  # noqa: E501
+    elements.append(Paragraph("VSDP - Vishing & Smishing Defense Platform", styles['Normal']))
+    elements.append(Paragraph(f"Official Forensic Report | Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", styles['Normal']))
     elements.append(Spacer(1, 20))
     
     # Title
-    elements.append(Paragraph("FIRST INFORMATION REPORT (DIGITALLY SIGNED)", title_style))  # noqa: E501
+    elements.append(Paragraph("FIRST INFORMATION REPORT (DIGITALLY SIGNED)", title_style))
     elements.append(Spacer(1, 10))
     
     # Data Table
@@ -63,8 +63,8 @@ def generate_fir_pdf(fir_id: int, officer_name: str, threat_details: dict) -> tu
     elements.append(Spacer(1, 20))
     
     # Evidence Content
-    elements.append(Paragraph("<b>Evidence Transcript / Content:</b>", styles['Heading3']))  # noqa: E501
-    elements.append(Paragraph(threat_details.get("content", "No content provided."), styles['Normal']))  # noqa: E501
+    elements.append(Paragraph("<b>Evidence Transcript / Content:</b>", styles['Heading3']))
+    elements.append(Paragraph(threat_details.get("content", "No content provided."), styles['Normal']))
     elements.append(Spacer(1, 40))
     
     # Signature block

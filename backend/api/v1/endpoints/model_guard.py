@@ -47,7 +47,7 @@ def api_register_model(
     current_user: User = Depends(deps.get_current_active_superuser),
     name: str = Query(..., description="Model name"),
     version: str = Query(..., description="Semver version"),
-    framework: str = Query(..., description="Framework (transformers, pytorch, sklearn)"),  # noqa: E501
+    framework: str = Query(..., description="Framework (transformers, pytorch, sklearn)"),
     file_path: str = Query(..., description="Path to model weights file"),
     trained_by: Optional[str] = Query(None),
     training_dataset: Optional[str] = Query(None),
@@ -78,7 +78,7 @@ def api_register_model(
             "version": model.version,
             "sha384_hash": f"{model.sha384_hash[:16]}...",
             "file_size": model.file_size_bytes,
-            "watermark": hashlib.sha384(model.watermark_embedding).hexdigest()[:16] if model.watermark_embedding else "N/A",  # noqa: E501
+            "watermark": hashlib.sha384(model.watermark_embedding).hexdigest()[:16] if model.watermark_embedding else "N/A",
             "is_approved": model.is_approved,
             "is_active": model.is_active,
         }
@@ -215,7 +215,7 @@ def api_adversarial_test(
     # In production, replace with actual model inference
     def mock_predict(text: str) -> int:
         # Mock: "scammy" keywords trigger "scam" (1) else "safe" (0)
-        scam_keywords = ["kyc", "aadhaar", "otp", "blocked", "urgent", "expir", "suspended"]  # noqa: E501
+        scam_keywords = ["kyc", "aadhaar", "otp", "blocked", "urgent", "expir", "suspended"]
         text_lower = text.lower()
         score = sum(1 for kw in scam_keywords if kw in text_lower)
         return 1 if score >= 2 else 0
@@ -238,7 +238,7 @@ def api_adversarial_test(
     )
     
     # Generate augmented training data
-    aug_samples, aug_labels = generate_adversarial_training_data(test_samples, test_labels)  # noqa: E501
+    aug_samples, aug_labels = generate_adversarial_training_data(test_samples, test_labels)
     
     return {
         "model_name": model_name,
@@ -248,7 +248,7 @@ def api_adversarial_test(
         "adversarial_perturbations_tested": list(ADVERSARIAL_PERTURBATIONS.keys()),
         "recommendation": (
             "Model is robust" if robustness_score >= 0.8
-            else "Recommended: retrain with adversarial examples" if robustness_score >= 0.5  # noqa: E501
+            else "Recommended: retrain with adversarial examples" if robustness_score >= 0.5
             else "CRITICAL: Model is highly vulnerable to adversarial attacks"
         ),
     }
@@ -256,7 +256,7 @@ def api_adversarial_test(
 
 # ─── Secure Detection (with Extraction Monitoring) ────────────────
 
-@router.post("/protect/detect-sms", summary="Protected SMS detection with extraction monitoring")  # noqa: E501
+@router.post("/protect/detect-sms", summary="Protected SMS detection with extraction monitoring")
 async def api_secure_detect_sms(
     request: Request,
     db: Session = Depends(get_db),

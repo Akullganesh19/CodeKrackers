@@ -120,7 +120,7 @@ def verify_blind_auth(
     """
     Verify a blind authentication proof.
     
-    The user provides auth_proof = SHA-384("vas-blind-auth-v1" || private_secret || nonce)  # noqa: E501
+    The user provides auth_proof = SHA-384("vas-blind-auth-v1" || private_secret || nonce)
     where nonce is a server-provided challenge. The server recomputes and compares
     against the stored public_commitment.
     """
@@ -303,7 +303,7 @@ class SealedSender:
     """
     
     @staticmethod
-    def create_report(report_data: str, metadata: Optional[dict] = None) -> Dict[str, Any]:  # noqa: E501
+    def create_report(report_data: str, metadata: Optional[dict] = None) -> Dict[str, Any]:
         """
         Create a sealed (anonymous) threat report.
         
@@ -341,7 +341,7 @@ class SealedSender:
         }
     
     @staticmethod
-    def verify_report_ownership(receipt: str, original_report: dict, claim_data: str) -> bool:  # noqa: E501
+    def verify_report_ownership(receipt: str, original_report: dict, claim_data: str) -> bool:
         """
         Verify that someone claiming to be the original reporter actually is.
         
@@ -396,7 +396,7 @@ class BlindCredentialManager:
         """
         Verify a user's response to an authentication challenge.
         
-        The user computes: response = SHA-384(commitment || challenge_id || private_secret)  # noqa: E501
+        The user computes: response = SHA-384(commitment || challenge_id || private_secret)
         and sends it to the server. The server recomputes using the stored commitment.
         """
         challenge = self._challenges.pop(challenge_id, None)

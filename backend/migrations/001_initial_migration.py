@@ -29,7 +29,7 @@ def upgrade():
         sa.Column('safety_score', sa.Float(), server_default='100.0'),
         sa.Column('scams_avoided', sa.Integer(), server_default='0'),
         sa.Column('created_at', sa.DateTime(), server_default=sa.func.now()),
-        sa.Column('updated_at', sa.DateTime(), server_default=sa.func.now(), onupdate=sa.func.now())  # noqa: E501
+        sa.Column('updated_at', sa.DateTime(), server_default=sa.func.now(), onupdate=sa.func.now())
     )
 
     # 2. Threats Table
@@ -54,7 +54,7 @@ def upgrade():
     )
 
     # Composite Index for Scammer Audit Performance
-    op.create_index('ix_threats_caller_id_detected_at', 'threats', ['caller_id', 'detected_at'])  # noqa: E501
+    op.create_index('ix_threats_caller_id_detected_at', 'threats', ['caller_id', 'detected_at'])
 
     # 3. Evidence Chain Table (Forensic Ledger)
     op.create_table(

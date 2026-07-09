@@ -253,7 +253,7 @@ class APIAnomalyDetector:
         from sklearn.ensemble import IsolationForest
 
         X = np.array(self._request_buffer)
-        logger.info("Training Isolation Forest on %d samples (dim=%d)", X.shape[0], X.shape[1])  # noqa: E501
+        logger.info("Training Isolation Forest on %d samples (dim=%d)", X.shape[0], X.shape[1])
 
         self.model = IsolationForest(
             n_estimators=100,
@@ -401,7 +401,7 @@ def _seed_baseline(detector: APIAnomalyDetector):
             "query_params": {},
             "body_size": random.randint(0, 1024) if method in ("POST", "PUT") else 0,
             "user_agent": ua,
-            "headers": {"content-type": "application/json", "accept": "application/json"},  # noqa: E501
+            "headers": {"content-type": "application/json", "accept": "application/json"},
             "timestamp": time.time() - random.randint(0, 86400),
         }
         features = detector.extract_features(info)

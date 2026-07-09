@@ -16,7 +16,7 @@ async def verify_threat_evidence(
 ):
     """
     Triggers an integrity check for the entire evidence chain of a specific threat.
-    Re-computes all hashes and verifies digital signatures to ensure no tampering has occurred.  # noqa: E501
+    Re-computes all hashes and verifies digital signatures to ensure no tampering has occurred.
     """
     ledger = EvidenceChain(db)
     result = await ledger.verify_integrity(threat_id)
@@ -39,7 +39,7 @@ async def get_forensic_package(
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to compile evidence: {str(e)}")  # noqa: E501
+        raise HTTPException(status_code=500, detail=f"Failed to compile evidence: {str(e)}")
 
 @router.post("/audit")
 async def trigger_system_audit(

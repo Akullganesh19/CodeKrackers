@@ -1,6 +1,6 @@
 """Model versioning with checksum verification to prevent supply chain poisoning."""
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, Text, Float, Boolean, JSON, Index, LargeBinary  # noqa: E501
+from sqlalchemy import Column, Integer, String, DateTime, Text, Float, Boolean, JSON, Index, LargeBinary
 from sqlalchemy.sql import func
 
 from backend.db.base_class import Base, TimestampMixin
@@ -19,12 +19,12 @@ class ModelVersion(Base, TimestampMixin):
     id = Column(Integer, primary_key=True, index=True)
     
     # Model identity
-    name = Column(String(128), nullable=False, index=True)  # e.g., "smishing-bert", "voice-rawnet2"  # noqa: E501
+    name = Column(String(128), nullable=False, index=True)  # e.g., "smishing-bert", "voice-rawnet2"
     version = Column(String(32), nullable=False, index=True)  # semver: "1.2.3"
     framework = Column(String(32), nullable=False)  # transformers, pytorch, sklearn
     
     # Checksum verification
-    sha384_hash = Column(String(96), nullable=False)  # SHA-384 hex digest of model weights  # noqa: E501
+    sha384_hash = Column(String(96), nullable=False)  # SHA-384 hex digest of model weights
     file_size_bytes = Column(Integer, nullable=False)
     original_filename = Column(String(256), nullable=True)
     
@@ -42,14 +42,14 @@ class ModelVersion(Base, TimestampMixin):
     # Quality metrics
     accuracy = Column(Float, nullable=True)
     f1_score = Column(Float, nullable=True)
-    adversarial_robustness = Column(Float, nullable=True)  # Robustness score against ART attacks  # noqa: E501
+    adversarial_robustness = Column(Float, nullable=True)  # Robustness score against ART attacks
     
     # Metadata
-    tags = Column(JSON, nullable=True)  # {"purpose": "smishing_detection", "language": "en"}  # noqa: E501
+    tags = Column(JSON, nullable=True)  # {"purpose": "smishing_detection", "language": "en"}
     notes = Column(Text, nullable=True)
     
     # Watermark
-    watermark_embedding = Column(LargeBinary, nullable=True)  # Serialized watermark fingerprint  # noqa: E501
+    watermark_embedding = Column(LargeBinary, nullable=True)  # Serialized watermark fingerprint
     watermark_verified = Column(Boolean, default=False, nullable=False)
     
     # Deployment
@@ -63,7 +63,7 @@ class ModelVersion(Base, TimestampMixin):
     )
 
     def __repr__(self):
-        return f"<ModelVersion(name={self.name}, v={self.version}, approved={self.is_approved})>"  # noqa: E501
+        return f"<ModelVersion(name={self.name}, v={self.version}, approved={self.is_approved})>"
 
 
 class ModelInferenceLog(Base, TimestampMixin):
@@ -103,4 +103,4 @@ class ModelInferenceLog(Base, TimestampMixin):
     )
 
     def __repr__(self):
-        return f"<InferenceLog(model={self.model_name}, ip={self.client_ip}, suspicious={self.is_suspicious})>"  # noqa: E501
+        return f"<InferenceLog(model={self.model_name}, ip={self.client_ip}, suspicious={self.is_suspicious})>"

@@ -1,10 +1,13 @@
-import asyncio
+import asyncio  # noqa: F401
 from datetime import datetime, timedelta
+
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+
 from .core.database import AsyncSessionLocal
+from .models.orm import FIR, HoneypotSession, ScoreHistory, Threat, User
 from .services.evidence_chain import EvidenceChain
-from .models.orm import Threat, ScoreHistory, User, FIR, HoneypotSession
+
 
 async def verify_all_evidence_chains():
     """
@@ -13,35 +16,40 @@ async def verify_all_evidence_chains():
     """
     async with AsyncSessionLocal() as db:
         ledger = EvidenceChain(db)
-        
+
         # Fetch all threat IDs that have an evidence hash (indicating an audit trail exists)
         result = await db.execute(
             select(Threat.id).where(Threat.evidence_hash.isnot(None))
         )
         threat_ids = result.scalars().all()
-        
+
         report = {
             "total_chains_checked": len(threat_ids),
             "tampered_chains": [],
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.utcnow().isoformat(),
         }
-        
+
         for threat_id in threat_ids:
             verification = await ledger.verify_integrity(threat_id)
             if not verification["valid"]:
-                report["tampered_chains"].append({
-                    "threat_id": str(threat_id),
-                    "reason": verification.get("reason"),
-                    "block_index": verification.get("block_index")
-                })
-        
+                report["tampered_chains"].append(
+                    {
+                        "threat_id": str(threat_id),
+                        "reason": verification.get("reason"),
+                        "block_index": verification.get("block_index"),
+                    }
+                )
+
         # Log the audit results
         if report["tampered_chains"]:
             print(f"CRITICAL: Integrity Audit detected tampering: {report}")
         else:
-            print(f"Daily Integrity Audit Complete: All {len(threat_ids)} chains verified.")  # noqa: E501
-        
+            print(
+                f"Daily Integrity Audit Complete: All {len(threat_ids)} chains verified."  # noqa: E501
+            )
+
         return report
+
 
 async def record_daily_safety_scores():
     """
@@ -50,13 +58,14 @@ async def record_daily_safety_scores():
     async with AsyncSessionLocal() as db:
         result = await db.execute(select(User).where(User.is_active == True))
         users = result.scalars().all()
-        
+
         for user in users:
             entry = ScoreHistory(user_id=user.id, score=user.safety_score)
             db.add(entry)
-        
+
         await db.commit()
         print(f"Recorded daily safety scores for {len(users)} users.")
+
 
 async def restore_user_safety_scores():
     """
@@ -67,30 +76,38 @@ async def restore_user_safety_scores():
     async with AsyncSessionLocal() as db:
         # Threshold for "recent" threats
         yesterday = datetime.utcnow() - timedelta(days=1)
-        
+
         # Subquery to find users who HAD threats recently
-        recent_threats_subquery = select(Threat.user_id).where(Threat.detected_at >= yesterday).scalar_subquery()  # noqa: E501
-        
+        recent_threats_subquery = (
+            select(Threat.user_id)
+            .where(Threat.detected_at >= yesterday)
+            .scalar_subquery()
+        )
+
         # Select users who are active, below max score, and NOT in the recent threats list
         stmt = select(User).where(
             User.is_active == True,
             User.safety_score < 100.0,
-            ~User.id.in_(recent_threats_subquery)
+            ~User.id.in_(recent_threats_subquery),
         )
-        
+
         result = await db.execute(stmt)
         users_to_restore = result.scalars().all()
 
         # Pre-fetch bonuses in bulk to avoid N+1 query problems
         user_ids = [u.id for u in users_to_restore]
-        
+
         # Users with at least one FIR
         fir_users_stmt = select(FIR.user_id).where(FIR.user_id.in_(user_ids)).distinct()
         fir_users = set((await db.execute(fir_users_stmt)).scalars().all())
 
         # Users with completed honeypots
-        hp_users_stmt = select(Threat.user_id).join(HoneypotSession, HoneypotSession.threat_id == Threat.id)\
-            .where(Threat.user_id.in_(user_ids), HoneypotSession.status == 'completed').distinct()  # noqa: E501
+        hp_users_stmt = (
+            select(Threat.user_id)
+            .join(HoneypotSession, HoneypotSession.threat_id == Threat.id)
+            .where(Threat.user_id.in_(user_ids), HoneypotSession.status == "completed")
+            .distinct()
+        )
         hp_users = set((await db.execute(hp_users_stmt)).scalars().all())
 
         for user in users_to_restore:
@@ -104,11 +121,12 @@ async def restore_user_safety_scores():
             # Honeypot Bonus: Reward users for active intelligence gathering (+2.5 points)
             if user.id in hp_users:
                 restoration_points += 2.5
-            
+
             user.safety_score = min(100.0, user.safety_score + restoration_points)
-            
+
         await db.commit()
         print(f"Daily Score Restoration: Processed {len(users_to_restore)} users.")
+
 
 async def is_score_protected(db: AsyncSession, user_id: str) -> bool:
     """
@@ -117,15 +135,17 @@ async def is_score_protected(db: AsyncSession, user_id: str) -> bool:
     """
     # Threshold: 48 hours ago
     protection_window = datetime.utcnow() - timedelta(hours=48)
-    
+
     # Check for completed honeypot sessions linked to the user's threats
-    stmt = select(func.count(HoneypotSession.id))\
-        .join(Threat, HoneypotSession.threat_id == Threat.id)\
+    stmt = (
+        select(func.count(HoneypotSession.id))
+        .join(Threat, HoneypotSession.threat_id == Threat.id)
         .where(
             Threat.user_id == user_id,
-            HoneypotSession.status == 'completed',
-            HoneypotSession.session_end >= protection_window
+            HoneypotSession.status == "completed",
+            HoneypotSession.session_end >= protection_window,
         )
-    
+    )
+
     result = await db.execute(stmt)
     return (result.scalar() or 0) > 0

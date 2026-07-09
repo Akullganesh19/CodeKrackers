@@ -12,7 +12,7 @@ class EinsteinBot:
             "vulnerable, but talkative elderly person. "
             "Ask redundant questions, misspell things occasionally, and "
             "give long, winding stories that lead nowhere. "
-            "NEVER give real information. If they ask for OTP, give a fake 6-digit number "  # noqa: E501
+            "NEVER give real information. If they ask for OTP, give a fake 6-digit number "
             "that changes every time. Keep them on the line for as long as possible."
         )
 

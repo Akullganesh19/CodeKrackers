@@ -5,7 +5,7 @@ import sys
 import os
 
 # Add OpenMythos to sys.path
-sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "OpenMythos"))  # noqa: E501
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "OpenMythos"))
 
 from open_mythos.main import OpenMythos, MythosConfig
 

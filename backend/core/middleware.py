@@ -1,4 +1,4 @@
-"""Security middleware for request sanitization, audit logging, header hardening, and RASP."""  # noqa: E501
+"""Security middleware for request sanitization, audit logging, header hardening, and RASP."""
 import re
 import time
 import json
@@ -25,8 +25,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"  # noqa: E501
-        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"  # noqa: E501
+        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
         response.headers["Pragma"] = "no-cache"
         response.headers["Cross-Origin-Embedder-Policy"] = "require-corp"
@@ -148,7 +148,7 @@ class RAPSMiddleware(BaseHTTPMiddleware):
 
     # ─── Command Injection / RCE Patterns ───
     RCE_PATTERNS = [
-        re.compile(r"[;&|`](\s*)(whoami|id|uname|cat\s+/etc/passwd|ls\s+-la)", re.IGNORECASE),  # noqa: E501
+        re.compile(r"[;&|`](\s*)(whoami|id|uname|cat\s+/etc/passwd|ls\s+-la)", re.IGNORECASE),
         re.compile(r"exec\s*\(", re.IGNORECASE),
         re.compile(r"eval\s*\(", re.IGNORECASE),
         re.compile(r"system\s*\(", re.IGNORECASE),
@@ -403,7 +403,7 @@ class RAPSMiddleware(BaseHTTPMiddleware):
 
                 if is_anomaly:
                     attack_indicators.append(f"ml_anomaly:score={anomaly_score:.2f}")
-                    risk_score += int(anomaly_score * 40)  # Up to 40 additional risk points  # noqa: E501
+                    risk_score += int(anomaly_score * 40)  # Up to 40 additional risk points
                     logger.warning(
                         "RASP ML ANOMALY from %s path=%s score=%.4f",
                         client_ip, path, anomaly_score,
@@ -417,7 +417,7 @@ class RAPSMiddleware(BaseHTTPMiddleware):
 
         # ─── 7. Block or allow ───
         if risk_score >= 50:  # High-confidence attack
-            self._log_attack(request, client_ip, attack_indicators, risk_score, start_time)  # noqa: E501
+            self._log_attack(request, client_ip, attack_indicators, risk_score, start_time)
             return JSONResponse(
                 status_code=HTTP_403_FORBIDDEN,
                 content={
@@ -428,7 +428,7 @@ class RAPSMiddleware(BaseHTTPMiddleware):
         elif risk_score >= 30:  # Suspicious - log warning
             logger.warning(
                 "RASP SUSPICIOUS request from %s (risk=%d): %s %s indicators=%s",
-                client_ip, risk_score, request.method, path, ",".join(attack_indicators),  # noqa: E501
+                client_ip, risk_score, request.method, path, ",".join(attack_indicators),
             )
 
         # ─── 8. Continue ───
@@ -464,7 +464,7 @@ class RAPSMiddleware(BaseHTTPMiddleware):
     def _check_headers(self, headers) -> Optional[str]:
         if "x-forwarded-for" in headers:
             xff = headers["x-forwarded-for"]
-            if any(internal in xff for internal in ["127.0.0.1", "localhost", "10.", "192.168."]):  # noqa: E501
+            if any(internal in xff for internal in ["127.0.0.1", "localhost", "10.", "192.168."]):
                 return "xff_internal_ip"
         return None
 
@@ -487,7 +487,7 @@ class RAPSMiddleware(BaseHTTPMiddleware):
         if data["count"] > threshold:
             return f"rate_exceeded_{data['count']}rps"
 
-        if method == "GET" and ("/admin" in path or "/export" in path or "/internal" in path):  # noqa: E501
+        if method == "GET" and ("/admin" in path or "/export" in path or "/internal" in path):
             if ip not in self._admin_probes:
                 self._admin_probes[ip] = {"count": 0}
             self._admin_probes[ip]["count"] += 1
@@ -506,7 +506,7 @@ class RAPSMiddleware(BaseHTTPMiddleware):
     ):
         duration = time.time() - start_time
         logger.error(
-            "RASP BLOCKED ATTACK from %s ua=%s path=%s indicators=%s risk=%d duration=%.2fms",  # noqa: E501
+            "RASP BLOCKED ATTACK from %s ua=%s path=%s indicators=%s risk=%d duration=%.2fms",
             client_ip,
             request.headers.get("user-agent", "unknown")[:80],
             request.url.path,

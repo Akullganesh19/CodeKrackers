@@ -66,11 +66,11 @@ def calculate_threat_score(
     scores["urgency"] = min(urgency_hits * 0.15, 1.0)
 
     # ── Engine 3: Impersonation Detection ──
-    impersonation_hits = sum(1 for target in IMPERSONATION_TARGETS if target in content_lower)  # noqa: E501
+    impersonation_hits = sum(1 for target in IMPERSONATION_TARGETS if target in content_lower)
     scores["impersonation"] = min(impersonation_hits * 0.25, 1.0)
 
     # ── Engine 4: URL Analysis ──
-    urls = re.findall(r"https?://[^\s]+|bit\.ly/[^\s]+|tinyurl\.com/[^\s]+", content_lower)  # noqa: E501
+    urls = re.findall(r"https?://[^\s]+|bit\.ly/[^\s]+|tinyurl\.com/[^\s]+", content_lower)
     suspicious_tlds = [".xyz", ".tk", ".ml", ".ga", ".cf", ".top", ".buzz"]
     url_score = 0.0
     for url in urls:
@@ -86,12 +86,12 @@ def calculate_threat_score(
     if db:
         bl_entry = (
             db.query(BlacklistEntry)
-            .filter(BlacklistEntry.value == sender, BlacklistEntry.type == BlacklistType.PHONE)  # noqa: E501
+            .filter(BlacklistEntry.value == sender, BlacklistEntry.type == BlacklistType.PHONE)
             .first()
         )
         if bl_entry:
             blacklist_score = bl_entry.confidence
-            logger.warning("BLACKLIST_HIT sender=%s confidence=%.2f", sender, bl_entry.confidence)  # noqa: E501
+            logger.warning("BLACKLIST_HIT sender=%s confidence=%.2f", sender, bl_entry.confidence)
     scores["blacklist"] = blacklist_score
 
     # ── Composite Score ──
@@ -125,14 +125,14 @@ def auto_blacklist(
     """Auto-add a scammer identifier to the blacklist."""
     existing = (
         db.query(BlacklistEntry)
-        .filter(BlacklistEntry.type == identifier_type, BlacklistEntry.value == identifier)  # noqa: E501
+        .filter(BlacklistEntry.type == identifier_type, BlacklistEntry.value == identifier)
         .first()
     )
     if existing:
         existing.report_count += 1
         existing.confidence = min(existing.confidence + 0.1, 1.0)
         db.commit()
-        logger.info("BLACKLIST_UPDATED %s=%s count=%d conf=%.2f", identifier_type, identifier, existing.report_count, existing.confidence)  # noqa: E501
+        logger.info("BLACKLIST_UPDATED %s=%s count=%d conf=%.2f", identifier_type, identifier, existing.report_count, existing.confidence)
         return existing
 
     entry = BlacklistEntry(
@@ -146,5 +146,5 @@ def auto_blacklist(
     db.add(entry)
     db.commit()
     db.refresh(entry)
-    logger.warning("BLACKLIST_ADDED %s=%s conf=%.2f source=%s", identifier_type, identifier, confidence, source)  # noqa: E501
+    logger.warning("BLACKLIST_ADDED %s=%s conf=%.2f source=%s", identifier_type, identifier, confidence, source)
     return entry

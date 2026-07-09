@@ -58,12 +58,12 @@ def api_register_commitment(
     # In production, store this in the user's DB record
     # For now, return the commitment for the client to save
     return {
-        "message": "Public commitment registered. The server NEVER sees your private secret.",  # noqa: E501
+        "message": "Public commitment registered. The server NEVER sees your private secret.",
         "commitment_stored": public_commitment[:32] + "...",
         "how_it_works": {
             "you_keep": "private_secret (never share this)",
             "server_stores": "public_commitment only",
-            "login": "server challenges you, you prove knowledge without revealing secret",  # noqa: E501
+            "login": "server challenges you, you prove knowledge without revealing secret",
         },
     }
 
@@ -85,7 +85,7 @@ def api_challenge(
     return {
         "challenge_id": challenge_id,
         "expires_in_seconds": 300,
-        "instructions": "Compute: SHA-384('vas-blind-auth-response-v1' || commitment || challenge_id) and send to /zk/authenticate",  # noqa: E501
+        "instructions": "Compute: SHA-384('vas-blind-auth-response-v1' || commitment || challenge_id) and send to /zk/authenticate",
     }
 
 
@@ -111,7 +111,7 @@ def api_authenticate(
     # The user's identity is verified without ever knowing their credentials
     return {
         "authenticated": True,
-        "message": "Identity verified. Your credentials were never revealed to the server.",  # noqa: E501
+        "message": "Identity verified. Your credentials were never revealed to the server.",
     }
 
 
@@ -121,7 +121,7 @@ def api_authenticate(
 def api_verify_threat(
     request: Request,
     message_hash: str = Query(..., description="SHA-384 hash of the message"),
-    threat_hash: str = Query(..., description="Proof hash binding message to threat classification"),  # noqa: E501
+    threat_hash: str = Query(..., description="Proof hash binding message to threat classification"),
     severity_hash: str = Query(..., description="Proof hash of severity level"),
     proof_nonce: str = Query(..., description="One-time proof identifier"),
     timestamp: float = Query(..., description="When the proof was generated"),
@@ -150,8 +150,8 @@ def api_verify_threat(
     return {
         "proof_valid": is_valid,
         "message_hash_preview": message_hash[:16] + "...",
-        "note": "Proof structure verified. The original message content remains private.",  # noqa: E501
-        "zk_property": "The server verified the classification without ever seeing the message.",  # noqa: E501
+        "note": "Proof structure verified. The original message content remains private.",
+        "zk_property": "The server verified the classification without ever seeing the message.",
     }
 
 
@@ -174,7 +174,7 @@ def api_generate_proof(
     
     return {
         "proof": proof.to_dict(),
-        "privacy_note": "The original message was hashed and discarded. Only the proof remains.",  # noqa: E501
+        "privacy_note": "The original message was hashed and discarded. Only the proof remains.",
     }
 
 
@@ -204,8 +204,8 @@ def api_sealed_report(
         "receipt": sealed["receipt"],  # Reporter MUST save this
         "content_hash": sealed["content_hash"],
         "timestamp": sealed["timestamp"],
-        "warning": "SAVE YOUR RECEIPT. It's the only way to prove you submitted this report.",  # noqa: E501
-        "privacy": "Your identity is completely protected. Even we don't know who you are.",  # noqa: E501
+        "warning": "SAVE YOUR RECEIPT. It's the only way to prove you submitted this report.",
+        "privacy": "Your identity is completely protected. Even we don't know who you are.",
     }
 
 
@@ -214,7 +214,7 @@ def api_claim_report(
     request: Request,
     receipt: str = Query(..., description="The receipt from your sealed report"),
     report_hash: str = Query(..., description="The report hash you want to claim"),
-    claim_data: str = Query(..., description="The original report content to verify against"),  # noqa: E501
+    claim_data: str = Query(..., description="The original report content to verify against"),
 ):
     """
     Prove you authored a previously submitted anonymous report.
@@ -235,7 +235,7 @@ def api_claim_report(
     return {
         "ownership_verified": True,
         "report_hash": report_hash,
-        "message": "You are verified as the original reporter. Your identity remains anonymous.",  # noqa: E501
+        "message": "You are verified as the original reporter. Your identity remains anonymous.",
     }
 
 

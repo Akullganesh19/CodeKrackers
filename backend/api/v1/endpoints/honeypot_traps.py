@@ -52,7 +52,7 @@ def log_honeypot_to_db(
 
 # ─── Admin User Export Probe ───
 @router.get("/admin/export-users")
-def honeypot_export_users(request: Request, format: str = Query("csv", pattern="^(csv|json|xlsx)$")):  # noqa: E501
+def honeypot_export_users(request: Request, format: str = Query("csv", pattern="^(csv|json|xlsx)$")):
     """Fake admin endpoint: appears to export all user data."""
     client_ip = request.client.host if request.client else "unknown"
     user_agent = request.headers.get("user-agent", "")
@@ -72,10 +72,10 @@ def honeypot_export_users(request: Request, format: str = Query("csv", pattern="
         threat_indicators=["admin_probe"],
     )
 
-    logger.warning("HONEYPOT TRIGGERED ip=%s endpoint=/api/v1/admin/export-users risk=%d", client_ip, risk_score)  # noqa: E501
+    logger.warning("HONEYPOT TRIGGERED ip=%s endpoint=/api/v1/admin/export-users risk=%d", client_ip, risk_score)
 
     return JSONResponse(
-        content={"detail": "Access denied: Insufficient privileges", "required_role": "SUPER_ADMIN", "honeypot_triggered": True},  # noqa: E501
+        content={"detail": "Access denied: Insufficient privileges", "required_role": "SUPER_ADMIN", "honeypot_triggered": True},
         status_code=403,
     )
 
@@ -98,7 +98,7 @@ def honeypot_internal_models(request: Request):
     )
 
     return JSONResponse(
-        content={"error": "Internal API endpoint not accessible", "honeypot_triggered": True},  # noqa: E501
+        content={"error": "Internal API endpoint not accessible", "honeypot_triggered": True},
         status_code=403,
     )
 
@@ -120,7 +120,7 @@ def honeypot_db_config(request: Request):
         threat_indicators=["config_leak"],
     )
 
-    return JSONResponse(content={"error": "Access denied", "honeypot_triggered": True}, status_code=403)  # noqa: E501
+    return JSONResponse(content={"error": "Access denied", "honeypot_triggered": True}, status_code=403)
 
 
 # ─── Debug Status Probe ───
@@ -140,7 +140,7 @@ def honeypot_debug_status(request: Request):
         threat_indicators=["reconnaissance"],
     )
 
-    return JSONResponse(content={"error": "Debug mode disabled", "honeypot_triggered": True}, status_code=403)  # noqa: E501
+    return JSONResponse(content={"error": "Debug mode disabled", "honeypot_triggered": True}, status_code=403)
 
 
 # ─── Backup Files Access ───
@@ -161,7 +161,7 @@ def honeypot_backup_download(request: Request):
     )
 
     return JSONResponse(
-        content={"error": "Backup files not accessible via HTTP", "honeypot_triggered": True},  # noqa: E501
+        content={"error": "Backup files not accessible via HTTP", "honeypot_triggered": True},
         status_code=403,
     )
 
@@ -185,7 +185,7 @@ def honeypot_secrets(request: Request):
 
     canary = secrets.token_urlsafe(32)
     return JSONResponse(
-        content={"error": "Unauthorized", "honeypot_triggered": True, "alert": "Logged and analyzed"},  # noqa: E501
+        content={"error": "Unauthorized", "honeypot_triggered": True, "alert": "Logged and analyzed"},
         status_code=403,
     )
 
@@ -207,7 +207,7 @@ def honeypot_graphql_endpoint(request: Request):
         threat_indicators=["graphql_probe"],
     )
 
-    return JSONResponse(content={"error": "GraphQL not enabled", "honeypot_triggered": True}, status_code=404)  # noqa: E501
+    return JSONResponse(content={"error": "GraphQL not enabled", "honeypot_triggered": True}, status_code=404)
 
 
 # ─── Admin Login Probe ───
@@ -228,7 +228,7 @@ def honeypot_admin_login(request: Request):
     )
 
     return JSONResponse(
-        content={"error": "Invalid endpoint", "hint": "Use /api/v1/login/access-token", "honeypot_triggered": True},  # noqa: E501
+        content={"error": "Invalid endpoint", "hint": "Use /api/v1/login/access-token", "honeypot_triggered": True},
         status_code=404,
     )
 
@@ -243,7 +243,7 @@ def honeypot_sqli_probe(request: Request, id: str = "1"):
     client_ip = request.client.host if request.client else "unknown"
     user_agent = request.headers.get("user-agent", "")
 
-    sqli_patterns = ["union", "select", "sleep(", "information_schema", "drop table", "' or '1'='1"]  # noqa: E501
+    sqli_patterns = ["union", "select", "sleep(", "information_schema", "drop table", "' or '1'='1"]
     id_lower = id.lower()
     detected = [p for p in sqli_patterns if p in id_lower]
 
@@ -259,10 +259,10 @@ def honeypot_sqli_probe(request: Request, id: str = "1"):
             threat_indicators=["sqli_probe"] + detected,
         )
 
-        logger.error("SQLi PROBE DETECTED ip=%s id=%s patterns=%s", client_ip, id, ",".join(detected))  # noqa: E501
+        logger.error("SQLi PROBE DETECTED ip=%s id=%s patterns=%s", client_ip, id, ",".join(detected))
 
         return JSONResponse(
-            content={"error": "Malicious request detected", "honeypot_triggered": True, "detected_patterns": detected},  # noqa: E501
+            content={"error": "Malicious request detected", "honeypot_triggered": True, "detected_patterns": detected},
             status_code=403,
         )
 
@@ -279,7 +279,7 @@ def honeypot_path_traversal(request: Request, path: str = "report.pdf"):
     client_ip = request.client.host if request.client else "unknown"
     user_agent = request.headers.get("user-agent", "")
 
-    dangerous_patterns = ["../", "..\\", "%2e%2e", "/etc/passwd", "/etc/shadow", "boot.ini"]  # noqa: E501
+    dangerous_patterns = ["../", "..\\", "%2e%2e", "/etc/passwd", "/etc/shadow", "boot.ini"]
     path_lower = path.lower()
     detected = [p for p in dangerous_patterns if p in path_lower]
 
@@ -295,7 +295,7 @@ def honeypot_path_traversal(request: Request, path: str = "report.pdf"):
             threat_indicators=["path_traversal"] + detected,
         )
 
-        return JSONResponse(content={"error": "Path traversal attack detected", "honeypot_triggered": True}, status_code=403)  # noqa: E501
+        return JSONResponse(content={"error": "Path traversal attack detected", "honeypot_triggered": True}, status_code=403)
 
     return JSONResponse({"detail": "File not found"}, status_code=404)
 
@@ -311,7 +311,7 @@ def honeypot_ssrf(request: Request, url: str = None):
         client_ip = request.client.host if request.client else "unknown"
         user_agent = request.headers.get("user-agent", "")
 
-        ssrf_targets = ["127.0.0.1", "localhost", "169.254.169.254", "metadata.google.internal", "10.", "192.168."]  # noqa: E501
+        ssrf_targets = ["127.0.0.1", "localhost", "169.254.169.254", "metadata.google.internal", "10.", "192.168."]
         url_lower = url.lower()
         detected = [t for t in ssrf_targets if t in url_lower]
 
@@ -328,7 +328,7 @@ def honeypot_ssrf(request: Request, url: str = None):
             )
 
             return JSONResponse(
-                content={"error": "SSRF attack detected", "blocked_url": detected[0], "honeypot_triggered": True},  # noqa: E501
+                content={"error": "SSRF attack detected", "blocked_url": detected[0], "honeypot_triggered": True},
                 status_code=403,
             )
 

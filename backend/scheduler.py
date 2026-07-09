@@ -1,6 +1,6 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
-from .tasks import verify_all_evidence_chains, record_daily_safety_scores, restore_user_safety_scores  # noqa: E501
+from .tasks import verify_all_evidence_chains, record_daily_safety_scores, restore_user_safety_scores
 import logging
 
 logger = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ def setup_scheduler():
         CronTrigger(hour=0, minute=0),
         id="daily_integrity_audit",
         replace_existing=True,
-        misfire_grace_time=3600  # Allow the job to run up to an hour late if the server was down  # noqa: E501
+        misfire_grace_time=3600  # Allow the job to run up to an hour late if the server was down
     )
     
     scheduler.add_job(

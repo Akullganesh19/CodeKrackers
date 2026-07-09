@@ -5,7 +5,7 @@ def send_alert_sms(to_number: str, message_body: str):
     """
     Send an alert SMS using Twilio.
     """
-    if not all([settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN, settings.TWILIO_PHONE_NUMBER]):  # noqa: E501
+    if not all([settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN, settings.TWILIO_PHONE_NUMBER]):
         print("Twilio credentials not fully configured. Skipping SMS.")
         return None
     

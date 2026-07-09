@@ -43,9 +43,9 @@ class AudioTranscriber:
         Scans the transcript for high-risk vishing phrases categorized by threat type.
         """
         risk_dictionary = {
-            "Authority": ["i am calling from", "trai", "cbi", "police", "court notice", "legal action", "arrest warrant"],  # noqa: E501
-            "Financial": ["send money", "transfer", "otp", "upi pin", "card number", "cvv", "account blocked"],  # noqa: E501
-            "Urgency": ["immediately", "within 2 hours", "or else", "last warning", "final notice"]  # noqa: E501
+            "Authority": ["i am calling from", "trai", "cbi", "police", "court notice", "legal action", "arrest warrant"],
+            "Financial": ["send money", "transfer", "otp", "upi pin", "card number", "cvv", "account blocked"],
+            "Urgency": ["immediately", "within 2 hours", "or else", "last warning", "final notice"]
         }
         
         flagged_hits = []

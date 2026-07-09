@@ -230,12 +230,12 @@ async def enclave_status_endpoint() -> Dict[str, Any]:
     health = check_enclave_health()
     
     return {
-        "enclave_type": "AWS Nitro Enclaves" if not MOCK_MODE else "Mock Enclave (Demo)",  # noqa: E501
+        "enclave_type": "AWS Nitro Enclaves" if not MOCK_MODE else "Mock Enclave (Demo)",
         "encryption": "AES-256-GCM",
         "key_size": 256,
-        "communication": "vsock (CID=16, port=5000)" if not MOCK_MODE else "in-process (mock)",  # noqa: E501
-        "attestation": "AWS Nitro Attestation" if not MOCK_MODE else "Simulated (PCR mock)",  # noqa: E501
-        "model_inference": "Hardware-isolated memory" if not MOCK_MODE else "Fallback keyword classifier",  # noqa: E501
+        "communication": "vsock (CID=16, port=5000)" if not MOCK_MODE else "in-process (mock)",
+        "attestation": "AWS Nitro Attestation" if not MOCK_MODE else "Simulated (PCR mock)",
+        "model_inference": "Hardware-isolated memory" if not MOCK_MODE else "Fallback keyword classifier",
         "reachable": health.get("enclave_reachable", False),
         "mode": MOCK_MODE and "mock" or "production",
     }

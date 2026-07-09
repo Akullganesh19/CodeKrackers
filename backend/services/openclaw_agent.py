@@ -10,7 +10,7 @@ OPENCLAW_TOKEN = "22b3d0f8bbe1f335aab557204ab619d5260b91ab8533d3c4"
 
 def openclaw_analysis(content: str):
     """
-    Sends suspicious content to the OpenClaw autonomous agent for deep forensic investigation.  # noqa: E501
+    Sends suspicious content to the OpenClaw autonomous agent for deep forensic investigation.
     """
     try:
         # OpenClaw agent communication

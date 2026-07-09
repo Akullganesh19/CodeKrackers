@@ -13,7 +13,7 @@ from .models.orm import User
 # Initialize FastAPI App
 app = FastAPI(
     title="VSDP - Vishing & Smishing Defense Platform",
-    description="Cybersecurity backend for AI-driven scam detection and forensic reporting.",  # noqa: E501
+    description="Cybersecurity backend for AI-driven scam detection and forensic reporting.",
     version="2.0.0"
 )
 
@@ -40,7 +40,7 @@ app.include_router(evidence.router, prefix="/api/evidence", tags=["evidence"])
 app.include_router(honeypot.router, prefix="/api/honeypot", tags=["honeypot"])
 
 # New Original Routers
-from .api import blacklist, canary, childlock, enclave, export, intel, legal, model_guard, openclaw, spam, threats, users, zk_privacy  # noqa: E501
+from .api import blacklist, canary, childlock, enclave, export, intel, legal, model_guard, openclaw, spam, threats, users, zk_privacy
 app.include_router(blacklist.router, prefix="/api/blacklist", tags=["blacklist"])
 app.include_router(canary.router, prefix="/api/canary", tags=["canary"])
 app.include_router(childlock.router, prefix="/api/childlock", tags=["childlock"])

@@ -63,7 +63,7 @@ def create_canary_token(
     tracking_url = generate_tracking_url(token_val)
 
     # Embed tracking URL into one of the fake fields if not otherwise specified
-    if not any([fake_email, fake_phone, fake_ssn, fake_credit_card, fake_wallet_address, fake_ip]):  # noqa: E501
+    if not any([fake_email, fake_phone, fake_ssn, fake_credit_card, fake_wallet_address, fake_ip]):
         fake_email = f"user_{token_val[:8]}@vas-system.local"
 
     canary = CanaryToken(

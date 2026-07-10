@@ -6,31 +6,36 @@ import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Any, Optional, Union
 
-import bcrypt
-import jwt
+from jose import jwt
+from passlib.context import CryptContext
 
 from backend.core.config import settings
+
+pwd_context = CryptContext(
+    schemes=["bcrypt"],
+    deprecated="auto",
+    bcrypt__rounds=12,  # Production-grade cost factor
+)
 
 ALGORITHM = "HS256"
 
 # ─── Password Policy ───
 MIN_PASSWORD_LENGTH = 8
-MAX_PASSWORD_LENGTH = 72  # bcrypt limit
 PASSWORD_PATTERN = re.compile(
-    r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_\-+=])[A-Za-z\d@$!%*?&#^()_\-+=]{8,72}$"
+    r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_\-+=])[A-Za-z\d@$!%*?&#^()_\-+=]{8,128}$"
 )
 
 
 def validate_password_strength(password: str) -> tuple[bool, str]:
     """
     Enforce password policy:
-    - Min 8 chars, max 72
+    - Min 8 chars, max 128
     - At least 1 uppercase, 1 lowercase, 1 digit, 1 special char
     """
     if len(password) < MIN_PASSWORD_LENGTH:
         return False, f"Password must be at least {MIN_PASSWORD_LENGTH} characters"
-    if len(password) > MAX_PASSWORD_LENGTH:
-        return False, f"Password must not exceed {MAX_PASSWORD_LENGTH} characters"
+    if len(password) > 128:
+        return False, "Password must not exceed 128 characters"
     if not re.search(r"[a-z]", password):
         return False, "Password must contain at least one lowercase letter"
     if not re.search(r"[A-Z]", password):
@@ -80,18 +85,11 @@ def decode_token(token: str) -> dict:
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    try:
-        return bcrypt.checkpw(
-            plain_password.encode("utf-8"),
-            hashed_password.encode("utf-8")
-        )
-    except Exception:
-        return False
+    return pwd_context.verify(plain_password, hashed_password)
 
 
 def get_password_hash(password: str) -> str:
-    salt = bcrypt.gensalt(rounds=12)
-    return bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
+    return pwd_context.hash(password)
 
 
 # ─── Brute-force Protection ───

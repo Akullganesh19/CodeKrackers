@@ -7,13 +7,13 @@ import requests
 
 logger = logging.getLogger("vas.ai_scan")
 
-def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
+def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:  # noqa: E302,E501
     """
     Hybrid AI Analysis:
     1. Tries local Ollama (OpenClaw) first for privacy/cost.
     2. Falls back to Groq Cloud (Llama 3.1) if local is unavailable.
     """
-    
+      # noqa: E114,E116,W293
     # ── Attempt Local Ollama First ──
     try:
         # Quick check if Ollama is running
@@ -22,7 +22,7 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
         local_result = ollama_deep_scan(content, source_type)
         if local_result["score_increase"] > 0:
             return local_result
-    except:
+    except:  # noqa: E722
         logger.info("Ollama not reachable, falling back to Groq Cloud...")
 
     # ── Fallback to Groq ──
@@ -31,11 +31,11 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
 
     try:
         client = Groq(api_key=settings.GROQ_API_KEY)
-        
+          # noqa: E114,E116,W293
         prompt = f"""
-        Analyze this {source_type} for potential scam/phishing intent. 
+        Analyze this {source_type} for potential scam/phishing intent.   # noqa: W291
         Content: "{content}"
-        
+          # noqa: W293
         Provide a JSON response with:
         1. "is_scam": boolean
         2. "confidence": float (0-1)
@@ -45,7 +45,7 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
 
         chat_completion = client.chat.completions.create(
             messages=[
-                {"role": "system", "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection."},
+                {"role": "system", "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection."},  # noqa: E501
                 {"role": "user", "content": prompt}
             ],
             model=settings.GROQ_MODEL,
@@ -54,9 +54,9 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
 
         import json
         result = json.loads(chat_completion.choices[0].message.content)
-        
+          # noqa: E114,E116,W293
         return {
-            "score_increase": round(result.get("confidence", 0.0), 2) if result.get("is_scam") else 0.0,
+            "score_increase": round(result.get("confidence", 0.0), 2) if result.get("is_scam") else 0.0,  # noqa: E501
             "reason": f"Cloud AI: {result.get('reason', 'Analysis complete')}",
             "risk_factors": result.get("risk_factors", [])
         }

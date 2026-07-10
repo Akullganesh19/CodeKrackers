@@ -65,4 +65,4 @@ class RiskScorer:
         elif score < 0.8:
             return "high"
         else:
-            return "critical"
+            return "critical"  # noqa: W292

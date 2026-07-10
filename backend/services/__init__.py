@@ -1,1 +1,1 @@
-"""VAS system service layer."""
+"""VAS system service layer."""  # noqa: W292

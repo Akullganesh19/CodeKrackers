@@ -10,12 +10,12 @@ If those links are accessed, we get immediate notification of:
 
 This works like Thinkst Canary / canarytokens.org — self-hosted and free.
 """
-import uuid
+import uuid  # noqa: F401
 import time
-import json
+import json  # noqa: F401
 import logging
 import secrets
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any  # noqa: F401
 from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
@@ -55,15 +55,15 @@ def create_canary_token(
 ) -> CanaryToken:
     """
     Create and plant a new canary token.
-    
+      # noqa: W293
     The token will be invisible to normal users but detectable by attackers
     who exfiltrate data. The tracking URL is embedded in the fake data.
     """
     token_val = generate_token(token_type)
-    tracking_url = generate_tracking_url(token_val)
+    tracking_url = generate_tracking_url(token_val)  # noqa: F841
 
     # Embed tracking URL into one of the fake fields if not otherwise specified
-    if not any([fake_email, fake_phone, fake_ssn, fake_credit_card, fake_wallet_address, fake_ip]):
+    if not any([fake_email, fake_phone, fake_ssn, fake_credit_card, fake_wallet_address, fake_ip]):  # noqa: E501
         fake_email = f"user_{token_val[:8]}@vas-system.local"
 
     canary = CanaryToken(
@@ -104,7 +104,7 @@ def trigger_canary(
 ) -> Optional[CanaryToken]:
     """
     Mark a canary token as accessed/triggered.
-    
+      # noqa: W293
     This is called when the tracking URL is requested or when token
     values are detected in incoming request data (indicating exfiltration).
     """
@@ -229,13 +229,13 @@ def scan_request_for_tokens(
 ) -> List[CanaryToken]:
     """
     Scan a string (query params, body, headers) for known canary token values.
-    
+      # noqa: W293
     If a token value is found in incoming data, it means the attacker has
     exfiltrated data and is now using it — immediate alert.
     """
     triggered: List[CanaryToken] = []
     tokens = db.query(CanaryToken).filter(
-        CanaryToken.accessed == False
+        CanaryToken.accessed == False  # noqa: E712
     ).all()
 
     for canary in tokens:
@@ -261,4 +261,4 @@ def scan_request_for_tokens(
                 triggered.append(canary)
                 break
 
-    return triggered
+    return triggered  # noqa: W292

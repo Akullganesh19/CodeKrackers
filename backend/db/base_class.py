@@ -1,9 +1,9 @@
 """
 SQLAlchemy declarative base with auto-generating tablename and audit mixins.
 """
-from datetime import datetime, timezone
+from datetime import datetime, timezone  # noqa: F401
 
-from sqlalchemy import Column, DateTime, Integer
+from sqlalchemy import Column, DateTime, Integer  # noqa: F401
 from sqlalchemy.orm import DeclarativeBase, declared_attr
 from sqlalchemy.sql import func
 

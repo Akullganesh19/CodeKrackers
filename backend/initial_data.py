@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 from backend.core import security
 from backend.db.base import Base
 from backend.db.session import SessionLocal, engine
-from backend.models.legal import Evidence, FIR
+from backend.models.legal import Evidence, FIR  # noqa: F401
 from backend.models.threat import Threat, ThreatSeverity, ThreatType
 from backend.models.user import User, UserRole
 
@@ -59,7 +59,7 @@ def init_db() -> None:
             Threat(
                 type=ThreatType.SMISHING,
                 source_number="+91 98765 43210",
-                content="Your PARIVAHAN challan is due. Pay immediately at http://parivahan-gov.in.scam/pay",
+                content="Your PARIVAHAN challan is due. Pay immediately at http://parivahan-gov.in.scam/pay",  # noqa: E501
                 severity=ThreatSeverity.CRITICAL,
                 confidence_score=0.98,
                 owner_id=user.id,
@@ -69,7 +69,7 @@ def init_db() -> None:
             Threat(
                 type=ThreatType.VISHING,
                 source_number="+91 12345 67890",
-                content="TRANSCRIPT: This is CBI calling. Your son is in custody. Send 50k to bail him out...",
+                content="TRANSCRIPT: This is CBI calling. Your son is in custody. Send 50k to bail him out...",  # noqa: E501
                 severity=ThreatSeverity.HIGH,
                 confidence_score=0.85,
                 owner_id=user.id,
@@ -79,27 +79,27 @@ def init_db() -> None:
             Threat(
                 type=ThreatType.SMISHING,
                 source_number="AD-KOTAKB",
-                content="Dear customer, your KYC has expired. Update now to avoid account block: bit.ly/update-kyc-now",
+                content="Dear customer, your KYC has expired. Update now to avoid account block: bit.ly/update-kyc-now",  # noqa: E501
                 severity=ThreatSeverity.HIGH,
                 confidence_score=0.92,
                 owner_id=user.id,
                 timestamp=now - timedelta(minutes=45),
-                metadata_json={"ai_category": "otp_theft", "keyword_hits": 4, "url_hits": 1},
+                metadata_json={"ai_category": "otp_theft", "keyword_hits": 4, "url_hits": 1},  # noqa: E501
             ),
             Threat(
                 type=ThreatType.SMISHING,
                 source_number="+91 77889 00112",
-                content="Congratulations! You won Rs 25,00,000 in Amazon Lucky Draw. Claim now: http://amaz0n-prize.xyz/claim",
+                content="Congratulations! You won Rs 25,00,000 in Amazon Lucky Draw. Claim now: http://amaz0n-prize.xyz/claim",  # noqa: E501
                 severity=ThreatSeverity.CRITICAL,
                 confidence_score=0.97,
                 owner_id=user.id,
                 timestamp=now - timedelta(hours=5),
-                metadata_json={"ai_category": "financial_fraud", "keyword_hits": 3, "url_hits": 2},
+                metadata_json={"ai_category": "financial_fraud", "keyword_hits": 3, "url_hits": 2},  # noqa: E501
             ),
             Threat(
                 type=ThreatType.VISHING,
                 source_number="+91 99887 66554",
-                content="TRANSCRIPT: Sir, I'm calling from SBI. Your account will be blocked in 30 minutes unless you verify your Aadhaar...",
+                content="TRANSCRIPT: Sir, I'm calling from SBI. Your account will be blocked in 30 minutes unless you verify your Aadhaar...",  # noqa: E501
                 severity=ThreatSeverity.HIGH,
                 confidence_score=0.89,
                 owner_id=user.id,

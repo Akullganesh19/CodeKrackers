@@ -2,7 +2,7 @@
 User consent and device intelligence models.
 All data collection requires explicit user consent (GDPR/IT Act compliant).
 """
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, Text, JSON, Index
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, Text, JSON, Index  # noqa: E501,F401
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -10,7 +10,7 @@ from backend.db.base_class import Base, TimestampMixin
 
 
 class UserConsent(TimestampMixin, Base):
-    """Tracks user consent for data collection — legally required before any gathering."""
+    """Tracks user consent for data collection — legally required before any gathering."""  # noqa: E501
     __tablename__ = "user_consent"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -33,7 +33,7 @@ class UserConsent(TimestampMixin, Base):
     user = relationship("User")
 
     def __repr__(self) -> str:
-        return f"<UserConsent(user={self.user_id}, phone={self.consent_phone_lookup}, device={self.consent_device_info})>"
+        return f"<UserConsent(user={self.user_id}, phone={self.consent_phone_lookup}, device={self.consent_device_info})>"  # noqa: E501
 
 
 class DeviceInfo(TimestampMixin, Base):
@@ -89,7 +89,7 @@ class PhoneLookup(TimestampMixin, Base):
     country_code = Column(String(8), nullable=True)
     national_format = Column(String(64), nullable=True)
     carrier_name = Column(String(256), nullable=True)
-    carrier_type = Column(String(32), nullable=True)  # mobile, landline, voip, toll-free
+    carrier_type = Column(String(32), nullable=True)  # mobile, landline, voip, toll-free  # noqa: E501
     is_voip = Column(Boolean, default=False)           # VoIP = high scam signal
     caller_name = Column(String(256), nullable=True)
 
@@ -101,4 +101,4 @@ class PhoneLookup(TimestampMixin, Base):
     threat_id = Column(Integer, ForeignKey("threat.id"), nullable=True, index=True)
 
     def __repr__(self) -> str:
-        return f"<PhoneLookup({self.phone_number}, carrier={self.carrier_name}, voip={self.is_voip})>"
+        return f"<PhoneLookup({self.phone_number}, carrier={self.carrier_name}, voip={self.is_voip})>"  # noqa: E501

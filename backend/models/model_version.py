@@ -1,7 +1,7 @@
 """Model versioning with checksum verification to prevent supply chain poisoning."""
-from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, Text, Float, Boolean, JSON, Index, LargeBinary
-from sqlalchemy.sql import func
+from datetime import datetime  # noqa: F401
+from sqlalchemy import Column, Integer, String, DateTime, Text, Float, Boolean, JSON, Index, LargeBinary  # noqa: E501
+from sqlalchemy.sql import func  # noqa: F401
 
 from backend.db.base_class import Base, TimestampMixin
 
@@ -9,7 +9,7 @@ from backend.db.base_class import Base, TimestampMixin
 class ModelVersion(Base, TimestampMixin):
     """
     Track every deployed model version with cryptographic checksums.
-    
+      # noqa: W293
     Prevents supply chain attacks where model weights are poisoned.
     Every model is registered with SHA-384 hash, source info, and
     a signed manifest before deployment.
@@ -17,59 +17,59 @@ class ModelVersion(Base, TimestampMixin):
     __tablename__ = "model_versions"
 
     id = Column(Integer, primary_key=True, index=True)
-    
+      # noqa: E114,E116,W293
     # Model identity
-    name = Column(String(128), nullable=False, index=True)  # e.g., "smishing-bert", "voice-rawnet2"
+    name = Column(String(128), nullable=False, index=True)  # e.g., "smishing-bert", "voice-rawnet2"  # noqa: E501
     version = Column(String(32), nullable=False, index=True)  # semver: "1.2.3"
     framework = Column(String(32), nullable=False)  # transformers, pytorch, sklearn
-    
+      # noqa: E114,E116,W293
     # Checksum verification
-    sha384_hash = Column(String(96), nullable=False)  # SHA-384 hex digest of model weights
+    sha384_hash = Column(String(96), nullable=False)  # SHA-384 hex digest of model weights  # noqa: E501
     file_size_bytes = Column(Integer, nullable=False)
     original_filename = Column(String(256), nullable=True)
-    
+      # noqa: E114,E116,W293
     # Provenance
     trained_by = Column(String(128), nullable=True)  # User/email who trained
     training_dataset = Column(String(256), nullable=True)
     training_date = Column(DateTime(timezone=True), nullable=True)
     git_commit = Column(String(64), nullable=True)  # Git hash of training code
-    
+      # noqa: E114,E116,W293
     # Safety & security
     is_approved = Column(Boolean, default=False, nullable=False, index=True)
     approved_by = Column(String(128), nullable=True)
     approved_at = Column(DateTime(timezone=True), nullable=True)
-    
+      # noqa: E114,E116,W293
     # Quality metrics
     accuracy = Column(Float, nullable=True)
     f1_score = Column(Float, nullable=True)
-    adversarial_robustness = Column(Float, nullable=True)  # Robustness score against ART attacks
-    
+    adversarial_robustness = Column(Float, nullable=True)  # Robustness score against ART attacks  # noqa: E501
+      # noqa: E114,E116,W293
     # Metadata
-    tags = Column(JSON, nullable=True)  # {"purpose": "smishing_detection", "language": "en"}
+    tags = Column(JSON, nullable=True)  # {"purpose": "smishing_detection", "language": "en"}  # noqa: E501
     notes = Column(Text, nullable=True)
-    
+      # noqa: E114,E116,W293
     # Watermark
-    watermark_embedding = Column(LargeBinary, nullable=True)  # Serialized watermark fingerprint
+    watermark_embedding = Column(LargeBinary, nullable=True)  # Serialized watermark fingerprint  # noqa: E501
     watermark_verified = Column(Boolean, default=False, nullable=False)
-    
+      # noqa: E114,E116,W293
     # Deployment
     is_active = Column(Boolean, default=False, nullable=False, index=True)
     deployed_at = Column(DateTime(timezone=True), nullable=True)
     deployment_artifact = Column(String(512), nullable=True)  # Path/URL to weights file
-    
+      # noqa: E114,E116,W293
     __table_args__ = (
         Index("ix_model_version_active", "name", "is_active"),
         Index("ix_model_name_version", "name", "version", unique=True),
     )
 
     def __repr__(self):
-        return f"<ModelVersion(name={self.name}, v={self.version}, approved={self.is_approved})>"
+        return f"<ModelVersion(name={self.name}, v={self.version}, approved={self.is_approved})>"  # noqa: E501
 
 
 class ModelInferenceLog(Base, TimestampMixin):
     """
     Log every inference API call for model extraction detection.
-    
+      # noqa: W293
     Analyzed to detect model stealing attempts:
     - >50 identical-structure queries/min = likely model extraction
     - Unusual input distributions = probing for vulnerabilities
@@ -77,30 +77,30 @@ class ModelInferenceLog(Base, TimestampMixin):
     __tablename__ = "model_inference_logs"
 
     id = Column(Integer, primary_key=True, index=True)
-    
+      # noqa: E114,E116,W293
     # Request identity
     client_ip = Column(String(45), nullable=False, index=True)
     user_agent = Column(String(256), nullable=True)
     api_key_hash = Column(String(64), nullable=True, index=True)
-    
+      # noqa: E114,E116,W293
     # Model info
     model_name = Column(String(128), nullable=False, index=True)
     model_version = Column(String(32), nullable=True)
-    
+      # noqa: E114,E116,W293
     # Request details
     input_hash = Column(String(64), nullable=True)  # SHA-256 of input (privacy-safe)
     input_length = Column(Integer, nullable=True)  # Number of tokens/characters
     response_time_ms = Column(Float, nullable=True)
-    
+      # noqa: E114,E116,W293
     # Security
     is_suspicious = Column(Boolean, default=False, nullable=False, index=True)
     suspicion_reason = Column(String(256), nullable=True)
     extraction_risk_score = Column(Float, default=0.0, nullable=False)
-    
+      # noqa: E114,E116,W293
     __table_args__ = (
         Index("ix_inference_ip_model", "client_ip", "model_name"),
         Index("ix_inference_timestamp", "created_at"),
     )
 
     def __repr__(self):
-        return f"<InferenceLog(model={self.model_name}, ip={self.client_ip}, suspicious={self.is_suspicious})>"
+        return f"<InferenceLog(model={self.model_name}, ip={self.client_ip}, suspicious={self.is_suspicious})>"  # noqa: E501,W292

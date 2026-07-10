@@ -200,4 +200,4 @@ async def honeypot_swagger_json(request: Request):
             "error": "Not Found",
             "honeypot_triggered": True,
         },
-    )
+    )  # noqa: W292

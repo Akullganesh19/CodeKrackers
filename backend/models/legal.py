@@ -40,7 +40,7 @@ class Evidence(TimestampMixin, Base):
     threat = relationship("Threat", back_populates="evidence")
 
     def __repr__(self) -> str:
-        return f"<Evidence(id={self.id}, threat_id={self.threat_id}, type={self.evidence_type})>"
+        return f"<Evidence(id={self.id}, threat_id={self.threat_id}, type={self.evidence_type})>"  # noqa: E501
 
 
 class FIR(TimestampMixin, Base):

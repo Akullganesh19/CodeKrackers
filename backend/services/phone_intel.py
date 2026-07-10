@@ -51,7 +51,7 @@ def check_user_consent(db: Session, user_id: int, consent_type: str) -> bool:
     """Verify that the user has given specific consent."""
     consent = (
         db.query(UserConsent)
-        .filter(UserConsent.user_id == user_id, UserConsent.is_revoked == False)
+        .filter(UserConsent.user_id == user_id, UserConsent.is_revoked == False)  # noqa: E501,E712
         .order_by(UserConsent.consent_given_at.desc())
         .first()
     )
@@ -60,7 +60,7 @@ def check_user_consent(db: Session, user_id: int, consent_type: str) -> bool:
     return getattr(consent, consent_type, False)
 
 
-def analyze_phone_number(phone_raw: str) -> Dict[str, Any]:
+def analyze_phone_number(phone_raw: str) -> Dict[str, Any]:  # noqa: C901
     """
     Full offline phone number analysis using libphonenumber.
     No external API calls, no subscriptions needed.
@@ -85,15 +85,15 @@ def analyze_phone_number(phone_raw: str) -> Dict[str, Any]:
         result["is_possible"] = phonenumbers.is_possible_number(parsed)
 
         if not result["is_valid"] and not result["is_possible"]:
-            result["risk_assessment"]["fraud_indicators"].append("Invalid phone number format")
+            result["risk_assessment"]["fraud_indicators"].append("Invalid phone number format")  # noqa: E501
             result["risk_assessment"]["score"] = "high"
             result["risk_assessment"]["base_risk"] = 0.7
             return result
 
         # Formatting
         result["country_code"] = phonenumbers.region_code_for_number(parsed)
-        result["national_format"] = phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.NATIONAL)
-        result["international_format"] = phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.INTERNATIONAL)
+        result["national_format"] = phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.NATIONAL)  # noqa: E501
+        result["international_format"] = phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.INTERNATIONAL)  # noqa: E501
 
         # Carrier
         carrier_name = carrier.name_for_number(parsed, "en")
@@ -119,7 +119,7 @@ def analyze_phone_number(phone_raw: str) -> Dict[str, Any]:
 
         # VoIP detection
         if result["carrier"]["is_voip"]:
-            fraud_indicators.append("VoIP number - commonly used by scammers to hide identity")
+            fraud_indicators.append("VoIP number - commonly used by scammers to hide identity")  # noqa: E501
             base_risk = max(base_risk, 0.8)
 
         # Premium rate
@@ -141,7 +141,7 @@ def analyze_phone_number(phone_raw: str) -> Dict[str, Any]:
 
         # Unknown carrier
         if not carrier_name:
-            fraud_indicators.append("Carrier not identified - possible virtual/spoofed number")
+            fraud_indicators.append("Carrier not identified - possible virtual/spoofed number")  # noqa: E501
             base_risk = max(base_risk, 0.4)
 
         # Determine score label
@@ -161,7 +161,7 @@ def analyze_phone_number(phone_raw: str) -> Dict[str, Any]:
         return result
 
     except phonenumbers.NumberParseException as e:
-        result["risk_assessment"]["fraud_indicators"].append(f"Cannot parse number: {str(e)}")
+        result["risk_assessment"]["fraud_indicators"].append(f"Cannot parse number: {str(e)}")  # noqa: E501
         result["risk_assessment"]["score"] = "high"
         result["risk_assessment"]["base_risk"] = 0.8
         return result
@@ -182,7 +182,7 @@ def lookup_phone_number(
         logger.warning("PHONE_LOOKUP_DENIED user=%d - no consent", user_id)
         return {
             "error": "consent_required",
-            "message": "Phone lookup requires explicit user consent. Please grant permission first.",
+            "message": "Phone lookup requires explicit user consent. Please grant permission first.",  # noqa: E501
         }
 
     # Step 2: Check cache

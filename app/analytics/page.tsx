@@ -1,7 +1,6 @@
 'use client'
 import { phantomFetch } from '@/app/lib/fetch';
 
-
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
 import { motion } from 'framer-motion'

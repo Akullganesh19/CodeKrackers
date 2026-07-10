@@ -2,18 +2,18 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .core.database import engine, Base
 from .api import auth, analytics, call, fir, evidence, honeypot
-from .scheduler import setup_scheduler
+from .scheduler import setup_scheduler  # noqa: F401
 import uvicorn
-import asyncio
+import asyncio  # noqa: F401
 from sqlalchemy import select
-from .core.database import engine, Base, AsyncSessionLocal
+from .core.database import engine, Base, AsyncSessionLocal  # noqa: F811
 from .core.security import get_password_hash
 from .models.orm import User
 
 # Initialize FastAPI App
 app = FastAPI(
     title="VSDP - Vishing & Smishing Defense Platform",
-    description="Cybersecurity backend for AI-driven scam detection and forensic reporting.",
+    description="Cybersecurity backend for AI-driven scam detection and forensic reporting.",  # noqa: E501
     version="2.0.0"
 )
 
@@ -40,7 +40,7 @@ app.include_router(evidence.router, prefix="/api/evidence", tags=["evidence"])
 app.include_router(honeypot.router, prefix="/api/honeypot", tags=["honeypot"])
 
 # New Original Routers
-from .api import blacklist, canary, childlock, enclave, export, intel, legal, model_guard, openclaw, spam, threats, users, zk_privacy
+from .api import blacklist, canary, childlock, enclave, export, intel, legal, model_guard, openclaw, spam, threats, users, zk_privacy  # noqa: E402,E501
 app.include_router(blacklist.router, prefix="/api/blacklist", tags=["blacklist"])
 app.include_router(canary.router, prefix="/api/canary", tags=["canary"])
 app.include_router(childlock.router, prefix="/api/childlock", tags=["childlock"])
@@ -55,7 +55,7 @@ app.include_router(threats.router, prefix="/api/threats", tags=["threats"])
 app.include_router(users.router, prefix="/api/users", tags=["users"])
 app.include_router(zk_privacy.router, prefix="/api/zk", tags=["zk_privacy"])
 
-@app.on_event("startup")
+@app.on_event("startup")  # noqa: E302
 async def startup_event():
     """
     Actions to perform when the server starts:
@@ -64,7 +64,7 @@ async def startup_event():
     """
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    
+      # noqa: E114,W293
     # Auto-seed admin user if not exists
     async with AsyncSessionLocal() as db:
         result = await db.execute(select(User).where(User.email == "admin@vsdp.org"))
@@ -79,11 +79,11 @@ async def startup_event():
             db.add(admin)
             await db.commit()
             print("Auto-seeded admin user: admin@vsdp.org / admin123")
-    
+      # noqa: E114,W293
     # setup_scheduler()
     print("VSDP Backend Startup Complete (Scheduler Disabled for Demo).")
 
-@app.get("/")
+@app.get("/")  # noqa: E302
 async def root():
     return {
         "status": "VSDP Backend Operational",

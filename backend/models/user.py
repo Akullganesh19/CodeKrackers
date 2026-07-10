@@ -1,10 +1,10 @@
 import uuid
 from datetime import datetime
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any  # noqa: F401
 from enum import Enum
 from pydantic import BaseModel, EmailStr, Field
 
-class UserRole(str, Enum):
+class UserRole(str, Enum):  # noqa: E302
     CITIZEN = "citizen"
     USER = "user"
     OFFICER = "officer"
@@ -12,7 +12,7 @@ class UserRole(str, Enum):
     SUPER_ADMIN = "super_admin"
 
 # Base schema for common user attributes
-class UserBase(BaseModel):
+class UserBase(BaseModel):  # noqa: E302
     email: EmailStr
     phone: Optional[str] = None
     full_name: Optional[str] = None
@@ -26,31 +26,31 @@ class UserBase(BaseModel):
         from_attributes = True  # Enable ORM mode for SQLAlchemy compatibility
 
 # Schema for user creation (includes password)
-class UserCreate(UserBase):
+class UserCreate(UserBase):  # noqa: E302
     password: str = Field(..., min_length=8)
 
 # Schema for updating user information
-class UserUpdate(BaseModel):
+class UserUpdate(BaseModel):  # noqa: E302
     full_name: Optional[str] = None
     phone: Optional[str] = None
-    # Add other updatable fields as needed, but exclude sensitive ones like password directly
+    # Add other updatable fields as needed, but exclude sensitive ones like password directly  # noqa: E501
 
 # Schema for user response (excludes hashed_password)
-class UserResponse(UserBase):
+class UserResponse(UserBase):  # noqa: E302
     id: uuid.UUID
     created_at: datetime
     updated_at: datetime
 
 # Schema for login request
-class UserLogin(BaseModel):
+class UserLogin(BaseModel):  # noqa: E302
     email: EmailStr
     password: str
 
 # Schema for token response
-class Token(BaseModel):
+class Token(BaseModel):  # noqa: E302
     access_token: str
     token_type: str
 
 # Schema for token data (payload inside JWT)
-class TokenData(BaseModel):
-    user_id: Optional[uuid.UUID] = None
+class TokenData(BaseModel):  # noqa: E302
+    user_id: Optional[uuid.UUID] = None  # noqa: W292

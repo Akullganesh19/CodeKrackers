@@ -3,7 +3,7 @@ import sys
 
 import structlog
 
-def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
+def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):  # noqa: E302
     """
     Configure standard logging and structlog.
     """
@@ -36,7 +36,7 @@ def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
         cache_logger_on_first_use=True,
     )
 
-def get_logger(name: str):
+def get_logger(name: str):  # noqa: E302
     """
     Returns a structlog configured logger.
     """

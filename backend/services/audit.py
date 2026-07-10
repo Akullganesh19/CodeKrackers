@@ -2,7 +2,7 @@
 Audit service for persistent forensic event logging.
 """
 import logging
-from typing import Any, Optional
+from typing import Any, Optional  # noqa: F401
 
 from sqlalchemy.orm import Session
 

@@ -16,12 +16,12 @@ def openclaw_analysis(content: str):
         # OpenClaw agent communication
         # This is an example of how one might interact with the agent gateway
         # based on standard OpenClaw patterns.
-        
+
         logger.info("Engaging OpenClaw Autonomous Agent...")
-        
+
         # Real-time check if gateway is up
         requests.get(OPENCLAW_URL, timeout=1)
-        
+
         # In a real integration, we'd use the token to send a task
         # For now, we acknowledge the gateway is active and ready.
         return {

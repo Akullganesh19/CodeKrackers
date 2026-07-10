@@ -1,10 +1,8 @@
 from fastapi import APIRouter, Request, Response
 from twilio.twiml.voice_response import VoiceResponse
-
 from backend.utils.honeypot import einstein_bot
 
 router = APIRouter()
-
 
 @router.post("/voice")
 async def honeypot_voice(request: Request):
@@ -27,7 +25,6 @@ async def honeypot_voice(request: Request):
 
     return Response(content=str(vr), media_type="application/xml")
 
-
 @router.post("/route")
 async def route_to_honeypot(body: dict):
     """
@@ -38,5 +35,5 @@ async def route_to_honeypot(body: dict):
     return {
         "success": True,
         "message": f"Call routed to Einstein honeypot cluster for threat {threat_id}",
-        "status": "Diverted",
+        "status": "Diverted"
     }

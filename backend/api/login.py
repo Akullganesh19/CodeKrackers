@@ -1,7 +1,6 @@
 """
 Authentication endpoint with brute-force protection and audit logging.
 """
-
 import logging
 from datetime import datetime, timedelta, timezone
 from typing import Any
@@ -49,9 +48,7 @@ def login_access_token(
         )
 
     # Validate credentials
-    if not user or not security.verify_password(
-        form_data.password, user.hashed_password
-    ):
+    if not user or not security.verify_password(form_data.password, user.hashed_password):
         # Increment failed attempts
         if user:
             user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
@@ -76,9 +73,7 @@ def login_access_token(
         )
 
     if not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Account deactivated"
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account deactivated")
 
     # Success: reset failed attempts, update last login
     user.failed_login_attempts = 0

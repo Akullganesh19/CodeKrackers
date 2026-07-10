@@ -13,13 +13,13 @@ All data is AES-256-GCM encrypted before transit.
 Production: Build with `nitro-cli build-enclave --docker-uri ...`
 Demo: Run as a standalone Python process (mock_enclave mode)
 """
-
-import hashlib
-import json
-import logging
 import os
+import json
+import time
+import hashlib
+import logging
 import secrets
-from typing import Any, Dict, Optional
+from typing import Optional, Dict, Any
 
 logger = logging.getLogger("vas.enclave")
 
@@ -82,7 +82,6 @@ def _mock_decrypt(data: bytes) -> bytes:
 
 # ─── ML Inference (runs inside enclave) ───────────────────────────
 
-
 def classify_sms_enclave(text: str) -> Dict[str, Any]:
     """
     Classify SMS text inside the enclave.
@@ -96,50 +95,17 @@ def classify_sms_enclave(text: str) -> Dict[str, Any]:
     """
     # ─── Keyword-based classifier (works without GPU) ─────
     scam_keywords = [
-        "kyc",
-        "aadhaar",
-        "otp",
-        "blocked",
-        "suspended",
-        "verify",
-        "challan",
-        "parivahan",
-        "pan card",
-        "income tax",
-        "epfo",
-        "sbi",
-        "rbi",
-        "customs",
-        "courier",
-        "fedex",
-        "arrest",
-        "warrant",
-        "cbi",
-        "narcotics",
-        "money laundering",
-        "click here",
-        "update now",
-        "expir",
-        "urgent",
-        "immediately",
-        "bit.ly",
-        "tinyurl",
-        "prize",
-        "lottery",
-        "won",
-        "reward",
+        "kyc", "aadhaar", "otp", "blocked", "suspended", "verify",
+        "challan", "parivahan", "pan card", "income tax", "epfo",
+        "sbi", "rbi", "customs", "courier", "fedex", "arrest",
+        "warrant", "cbi", "narcotics", "money laundering",
+        "click here", "update now", "expir", "urgent", "immediately",
+        "bit.ly", "tinyurl", "prize", "lottery", "won", "reward",
     ]
 
     url_patterns = [
-        "bit.ly",
-        "tinyurl",
-        "t.co",
-        "goo.gl",
-        ".xyz",
-        ".tk",
-        "login-secure",
-        "verify-account",
-        "update-kyc",
+        "bit.ly", "tinyurl", "t.co", "goo.gl", ".xyz", ".tk",
+        "login-secure", "verify-account", "update-kyc",
     ]
 
     text_lower = text.lower()
@@ -153,7 +119,6 @@ def classify_sms_enclave(text: str) -> Dict[str, Any]:
     transformer_result = None
     try:
         from transformers import pipeline
-
         classifier = pipeline(
             "text-classification",
             model="./models/distilbert-scam-finetuned",
@@ -183,37 +148,16 @@ def classify_sms_enclave(text: str) -> Dict[str, Any]:
 def classify_voice_enclave(transcript: str) -> Dict[str, Any]:
     """Classify a voice call transcript inside the enclave."""
     vishing_keywords = [
-        "bank",
-        "account",
-        "otp",
-        "transfer",
-        "police",
-        "arrest",
-        "warrant",
-        "customs",
-        "fedex",
-        "courier",
-        "blocked",
-        "suspended",
-        "tax",
-        "refund",
-        "penalty",
-        "fine",
-        "verification",
-        "aadhar",
-        "aadhaar",
-        "pan card",
+        "bank", "account", "otp", "transfer", "police", "arrest",
+        "warrant", "customs", "fedex", "courier", "blocked",
+        "suspended", "tax", "refund", "penalty", "fine",
+        "verification", "aadhar", "aadhaar", "pan card",
     ]
 
     coercion_patterns = [
-        "do it now",
-        "immediately",
-        "right now",
-        "hurry",
-        "don't tell anyone",
-        "keep this confidential",
-        "i am calling from",
-        "this is officer",
+        "do it now", "immediately", "right now", "hurry",
+        "don't tell anyone", "keep this confidential",
+        "i am calling from", "this is officer",
     ]
 
     text_lower = transcript.lower()
@@ -240,13 +184,11 @@ def get_attestation_document(user_data: bytes = b"") -> Dict[str, Any]:
     In mock mode: returns a simulated attestation
     """
     try:
-        import base64
         import subprocess
-
+        import base64
         result = subprocess.run(
             ["nitro-cli", "get-attestation-document", "--user-data", user_data.hex()],
-            capture_output=True,
-            timeout=5,
+            capture_output=True, timeout=5,
         )
         if result.returncode == 0:
             return {
@@ -272,7 +214,6 @@ def get_attestation_document(user_data: bytes = b"") -> Dict[str, Any]:
 
 
 # ─── vsock Server (production) ────────────────────────────────────
-
 
 def vsock_server(port: int = 5000):
     """
@@ -302,7 +243,9 @@ def vsock_server(port: int = 5000):
             elif action == "classify_voice":
                 result = classify_voice_enclave(payload.get("transcript", ""))
             elif action == "get_attestation":
-                result = get_attestation_document(payload.get("user_data", "").encode())
+                result = get_attestation_document(
+                    payload.get("user_data", "").encode()
+                )
             else:
                 result = {"error": "Unknown action", "action": action}
 

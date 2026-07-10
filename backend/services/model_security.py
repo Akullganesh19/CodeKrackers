@@ -8,29 +8,28 @@ Model Security Service — protects AI models from:
 Uses IBM Adversarial Robustness Toolbox (ART) for adversarial training
 and Radioactive Data techniques for model watermarking.
 """
-
+import os
+import json
+import time
 import hashlib
 import logging
-import os
-import time
-
 try:
     import numpy as np
 except ImportError:
     np = None
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple, Any
 from collections import defaultdict, deque
 from datetime import datetime, timezone
-from typing import Dict, List, Optional, Tuple
 
 from sqlalchemy.orm import Session
 
-from backend.models import ModelInferenceLog, ModelVersion
+from backend.models import ModelVersion, ModelInferenceLog
 
 logger = logging.getLogger("vas.model_security")
 
 
 # ─── Watermarking ─────────────────────────────────────────────────
-
 
 def generate_model_watermark(
     model_name: str,
@@ -76,7 +75,6 @@ def verify_model_watermark(
 
 
 # ─── Model Registry / Versioning ──────────────────────────────────
-
 
 def register_model(
     db: Session,
@@ -140,10 +138,7 @@ def register_model(
 
     logger.info(
         "MODEL REGISTERED name=%s version=%s sha384=%s size=%d",
-        name,
-        version,
-        sha384_hash[:16],
-        file_size,
+        name, version, sha384_hash[:16], file_size,
     )
     return model_version
 
@@ -162,9 +157,7 @@ def compute_file_checksum(file_path: str) -> Tuple[str, int]:
     return sha384.hexdigest(), file_size
 
 
-def verify_model_integrity(
-    db: Session, name: str, file_path: str
-) -> Tuple[bool, Optional[ModelVersion]]:
+def verify_model_integrity(db: Session, name: str, file_path: str) -> Tuple[bool, Optional[ModelVersion]]:
     """
     Verify a model file against its registered checksum before loading.
 
@@ -173,14 +166,10 @@ def verify_model_integrity(
 
     Returns (is_valid: bool, model_version: ModelVersion or None)
     """
-    active_version = (
-        db.query(ModelVersion)
-        .filter(
-            ModelVersion.name == name,
-            ModelVersion.is_active == True,
-        )
-        .first()
-    )
+    active_version = db.query(ModelVersion).filter(
+        ModelVersion.name == name,
+        ModelVersion.is_active == True,
+    ).first()
 
     if not active_version:
         logger.error("MODEL VERIFY FAILED: no active version found for %s", name)
@@ -202,18 +191,13 @@ def verify_model_integrity(
         logger.critical(
             "MODEL TAMPER DETECTED! name=%s expected_sha384=%s actual_sha384=%s "
             "expected_size=%d actual_size=%d",
-            name,
-            active_version.sha384_hash[:16],
-            actual_hash[:16],
-            active_version.file_size_bytes,
-            actual_size,
+            name, active_version.sha384_hash[:16], actual_hash[:16],
+            active_version.file_size_bytes, actual_size,
         )
         return False, active_version
 
 
-def approve_model(
-    db: Session, model_id: int, approved_by: str
-) -> Optional[ModelVersion]:
+def approve_model(db: Session, model_id: int, approved_by: str) -> Optional[ModelVersion]:
     """Approve a model for production deployment."""
     model = db.query(ModelVersion).filter(ModelVersion.id == model_id).first()
     if not model:
@@ -224,11 +208,7 @@ def approve_model(
     model.approved_at = datetime.now(timezone.utc)
 
     # Verify watermark as part of approval
-    fp_hash = (
-        hashlib.sha384(model.watermark_embedding).hexdigest()
-        if model.watermark_embedding
-        else ""
-    )
+    fp_hash = hashlib.sha384(model.watermark_embedding).hexdigest() if model.watermark_embedding else ""
     model.watermark_verified = True
 
     db.commit()
@@ -243,34 +223,27 @@ def approve_model(
 # Common adversarial attack types
 ADVERSARIAL_ATTACK_TYPES = {
     "text": [
-        "char_swap",
-        "word_substitution",
-        "synonym_replacement",
-        "typo_attack",
-        "insertion",
-        "deletion",
+        "char_swap", "word_substitution", "synonym_replacement",
+        "typo_attack", "insertion", "deletion",
     ],
     "audio": [
-        "fgsm",
-        "pgd",
-        "cw",
-        "imperceptible_noise",
+        "fgsm", "pgd", "cw", "imperceptible_noise",
     ],
 }
 
 # SMS/Text adversarial patterns: subtle modifications that fool classifiers
 TEXT_ADVERSARIAL_EXAMPLES = [
     # Original: "Your Aadhaar KYC is expiring"
-    "Ur Aadhaar KYC iz expiring",  # char substitution
-    "Your AAdhaar KYC is expiring",  # case swap
-    "Your Aadhaar KYC iz expiringg",  # char duplication
-    "Youur Aadhaar KYC is expiring",  # char insertion
-    "Your Aadhaar KYC is expiring.",  # punctuation addition
-    "Your Aadhaar KYC is expiring !!",  # multiple punctuation
-    "Ur  Aadhaar  KYC  is  expiring",  # extra whitespace
-    "Your Aadhaar KYC is expiring rn",  # slang substitution
-    "Y0ur Aadhaar KYC is expiring",  # leet speak
-    "your aadhaar kyc is expiring",  # all lowercase
+    "Ur Aadhaar KYC iz expiring",           # char substitution
+    "Your AAdhaar KYC is expiring",          # case swap
+    "Your Aadhaar KYC iz expiringg",         # char duplication
+    "Youur Aadhaar KYC is expiring",         # char insertion
+    "Your Aadhaar KYC is expiring.",         # punctuation addition
+    "Your Aadhaar KYC is expiring !!",       # multiple punctuation
+    "Ur  Aadhaar  KYC  is  expiring",       # extra whitespace
+    "Your Aadhaar KYC is expiring rn",       # slang substitution
+    "Y0ur Aadhaar KYC is expiring",          # leet speak
+    "your aadhaar kyc is expiring",          # all lowercase
 ]
 
 # Common adversarial perturbations to test robustness
@@ -278,10 +251,7 @@ ADVERSARIAL_PERTURBATIONS = {
     "char_swap": lambda s: s[:5] + s[6] + s[5] + s[7:] if len(s) > 7 else s,
     "double_space": lambda s: s.replace(" ", "  "),
     "remove_punct": lambda s: s.replace(".", "").replace("!", "").replace("?", ""),
-    "leet_basic": lambda s: s.replace("a", "4")
-    .replace("e", "3")
-    .replace("i", "1")
-    .replace("o", "0"),
+    "leet_basic": lambda s: s.replace("a", "4").replace("e", "3").replace("i", "1").replace("o", "0"),
     "uppercase": lambda s: s.upper(),
     "lowercase": lambda s: s.lower(),
     "add_typo": lambda s: s[:3] + s[4] + s[3] + s[5:] if len(s) > 5 else s,
@@ -361,9 +331,7 @@ def compute_adversarial_robustness_score(
 
     logger.info(
         "Adversarial robustness: clean_acc=%.3f adv_acc=%.3f score=%.3f",
-        accuracy_clean,
-        accuracy_adversarial,
-        robustness,
+        accuracy_clean, accuracy_adversarial, robustness,
     )
     return min(robustness, 1.0)
 
@@ -396,15 +364,13 @@ def generate_adversarial_training_data(
 
     logger.info(
         "Adversarial training data: %d original -> %d augmented (%.1fx)",
-        len(samples),
-        len(augmented_samples),
+        len(samples), len(augmented_samples),
         len(augmented_samples) / max(len(samples), 1),
     )
     return augmented_samples, augmented_labels
 
 
 # ─── Model Extraction Detection ────────────────────────────────────
-
 
 class ExtractionDetector:
     """
@@ -420,29 +386,16 @@ class ExtractionDetector:
 
     def __init__(self):
         self._ip_queries: Dict[str, deque] = defaultdict(lambda: deque(maxlen=200))
-        self._ip_input_hashes: Dict[str, Dict[str, int]] = defaultdict(
-            lambda: defaultdict(int)
-        )
-        self._ip_model_queries: Dict[str, Dict[str, int]] = defaultdict(
-            lambda: defaultdict(int)
-        )
+        self._ip_input_hashes: Dict[str, Dict[str, int]] = defaultdict(lambda: defaultdict(int))
+        self._ip_model_queries: Dict[str, Dict[str, int]] = defaultdict(lambda: defaultdict(int))
 
         # Thresholds
         self.RATE_LIMIT_QPM = 50  # Queries per minute threshold
         self.DUPLICATE_RATIO_THRESHOLD = 0.8  # 80% identical queries = extraction
         self.SUSPICIOUS_UA_TOOLS = [
-            "python-requests",
-            "aiohttp",
-            "httpx",
-            "curl",
-            "wget",
-            "scrapy",
-            "selenium",
-            "puppeteer",
-            "playwright",
-            "go-http-client",
-            "okhttp",
-            "java/",
+            "python-requests", "aiohttp", "httpx", "curl", "wget",
+            "scrapy", "selenium", "puppeteer", "playwright",
+            "go-http-client", "okhttp", "java/",
         ]
 
     def analyze_request(
@@ -523,11 +476,7 @@ class ExtractionDetector:
         )
 
         input_hash = hashlib.sha256(input_data.encode()).hexdigest()
-        api_key_hash = (
-            hashlib.sha256((api_key or "anonymous").encode()).hexdigest()[:16]
-            if api_key
-            else None
-        )
+        api_key_hash = hashlib.sha256((api_key or "anonymous").encode()).hexdigest()[:16] if api_key else None
 
         log_entry = ModelInferenceLog(
             client_ip=client_ip,
@@ -550,10 +499,7 @@ class ExtractionDetector:
         if is_suspicious:
             logger.warning(
                 "MODEL EXTRACTION SUSPECTED ip=%s model=%s risk=%.3f reason=%s",
-                client_ip,
-                model_name,
-                risk_score,
-                reason,
+                client_ip, model_name, risk_score, reason,
             )
 
         return log_entry

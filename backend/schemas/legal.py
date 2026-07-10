@@ -1,5 +1,4 @@
 """Legal schemas with validation."""
-
 from datetime import datetime
 from typing import Optional
 

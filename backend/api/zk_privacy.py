@@ -11,23 +11,28 @@ Endpoints:
   GET  /zk/privacy-report       — Get privacy configuration validation report
   POST /zk/hash                 — Hash PII for the client (never stored)
 """
-
+import time
 import logging
+from typing import Optional
+from fastapi import APIRouter, Request, Depends, HTTPException, Query
 
-from fastapi import APIRouter, HTTPException, Query, Request
-
+from backend.api import deps
+from backend.models import User, UserRole
 from backend.core.zk_privacy import (
-    DOMAIN_SENDER_NUMBER,
-    DOMAIN_SMS_CONTENT,
-    DOMAIN_USER_EMAIL,
-    DOMAIN_USER_PHONE,
-    SealedSender,
+    PIIProtector,
     ZKThreatProof,
     generate_threat_proof,
+    verify_threat_proof,
+    SealedSender,
+    BlindCredentialManager,
+    generate_blind_auth_token,
     get_blind_credential_manager,
     validate_privacy_config,
-    verify_threat_proof,
     zk_hash,
+    DOMAIN_USER_EMAIL,
+    DOMAIN_USER_PHONE,
+    DOMAIN_SMS_CONTENT,
+    DOMAIN_SENDER_NUMBER,
 )
 
 logger = logging.getLogger("vas.zk_privacy_api")
@@ -35,7 +40,6 @@ router = APIRouter()
 
 
 # ─── Blind Credential Authentication ──────────────────────────────
-
 
 @router.post("/register-commitment", summary="Register blind auth commitment")
 def api_register_commitment(
@@ -113,14 +117,11 @@ def api_authenticate(
 
 # ─── ZK Threat Verification ──────────────────────────────────────
 
-
 @router.post("/verify-threat", summary="Verify ZK threat proof without seeing content")
 def api_verify_threat(
     request: Request,
     message_hash: str = Query(..., description="SHA-384 hash of the message"),
-    threat_hash: str = Query(
-        ..., description="Proof hash binding message to threat classification"
-    ),
+    threat_hash: str = Query(..., description="Proof hash binding message to threat classification"),
     severity_hash: str = Query(..., description="Proof hash of severity level"),
     proof_nonce: str = Query(..., description="One-time proof identifier"),
     timestamp: float = Query(..., description="When the proof was generated"),
@@ -179,7 +180,6 @@ def api_generate_proof(
 
 # ─── Sealed Sender (Anonymous Reporting) ──────────────────────────
 
-
 @router.post("/sealed-report", summary="Submit anonymous threat report (sealed sender)")
 def api_sealed_report(
     request: Request,
@@ -196,8 +196,7 @@ def api_sealed_report(
 
     logger.info(
         "Sealed report received: hash=%s... timestamp=%.0f",
-        sealed["report_hash"][:16],
-        sealed["timestamp"],
+        sealed["report_hash"][:16], sealed["timestamp"],
     )
 
     return {
@@ -215,9 +214,7 @@ def api_claim_report(
     request: Request,
     receipt: str = Query(..., description="The receipt from your sealed report"),
     report_hash: str = Query(..., description="The report hash you want to claim"),
-    claim_data: str = Query(
-        ..., description="The original report content to verify against"
-    ),
+    claim_data: str = Query(..., description="The original report content to verify against"),
 ):
     """
     Prove you authored a previously submitted anonymous report.
@@ -243,7 +240,6 @@ def api_claim_report(
 
 
 # ─── Privacy Utilities ────────────────────────────────────────────
-
 
 @router.get("/privacy-report", summary="Get privacy configuration report")
 def api_privacy_report():

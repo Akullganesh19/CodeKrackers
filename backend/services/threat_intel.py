@@ -1,70 +1,40 @@
 """
 Threat Intelligence Service — aggregates signals from multiple engines.
 """
-
 import logging
 import re
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from sqlalchemy.orm import Session
-
-from backend.models.orm import Blacklist as BlacklistEntry
-from backend.models.orm import BlacklistType
+from backend.models.orm import Blacklist as BlacklistEntry, BlacklistType
 
 logger = logging.getLogger("vas.intel")
 
 # ─── Known scam sender patterns (Indian context) ───
 KNOWN_SCAM_SENDERS = {
-    r"\+91\s?[6-9]\d{4}\s?\d{5}": 0.1,  # Indian mobile — low base
-    r"AD-[A-Z]{4,6}": 0.05,  # Alpha sender (bank) — very low base
-    r"\+1\d{10}": 0.4,  # US number calling India — suspicious
-    r"\+44\d{10}": 0.4,  # UK number
-    r"\+234": 0.8,  # Nigeria — high scam signal
-    r"\+86": 0.6,  # China
+    r"\+91\s?[6-9]\d{4}\s?\d{5}": 0.1,   # Indian mobile — low base
+    r"AD-[A-Z]{4,6}": 0.05,                # Alpha sender (bank) — very low base
+    r"\+1\d{10}": 0.4,                      # US number calling India — suspicious
+    r"\+44\d{10}": 0.4,                     # UK number
+    r"\+234": 0.8,                           # Nigeria — high scam signal
+    r"\+86": 0.6,                            # China
 }
 
 # ─── Urgency amplifiers ───
 URGENCY_PHRASES = [
-    "immediately",
-    "urgent",
-    "within 24 hours",
-    "right now",
-    "last chance",
-    "final notice",
-    "account will be blocked",
-    "action required",
-    "respond immediately",
-    "act fast",
-    "turant",
-    "jaldi",
-    "abhi",  # Hindi urgency words
+    "immediately", "urgent", "within 24 hours", "right now",
+    "last chance", "final notice", "account will be blocked",
+    "action required", "respond immediately", "act fast",
+    "turant", "jaldi", "abhi",  # Hindi urgency words
 ]
 
 # ─── Impersonation targets ───
 IMPERSONATION_TARGETS = [
-    "rbi",
-    "sbi",
-    "aadhaar",
-    "parivahan",
-    "income tax",
-    "customs",
-    "cbi",
-    "police",
-    "court",
-    "supreme court",
-    "narcotics",
-    "epfo",
-    "uidai",
-    "nsdl",
-    "irctc",
-    "amazon",
-    "flipkart",
-    "google",
-    "microsoft",
-    "apple",
-    "fedex",
-    "dhl",
-    "bluedart",
+    "rbi", "sbi", "aadhaar", "parivahan", "income tax",
+    "customs", "cbi", "police", "court", "supreme court",
+    "narcotics", "epfo", "uidai", "nsdl", "irctc",
+    "amazon", "flipkart", "google", "microsoft", "apple",
+    "fedex", "dhl", "bluedart",
 ]
 
 
@@ -96,15 +66,11 @@ def calculate_threat_score(
     scores["urgency"] = min(urgency_hits * 0.15, 1.0)
 
     # ── Engine 3: Impersonation Detection ──
-    impersonation_hits = sum(
-        1 for target in IMPERSONATION_TARGETS if target in content_lower
-    )
+    impersonation_hits = sum(1 for target in IMPERSONATION_TARGETS if target in content_lower)
     scores["impersonation"] = min(impersonation_hits * 0.25, 1.0)
 
     # ── Engine 4: URL Analysis ──
-    urls = re.findall(
-        r"https?://[^\s]+|bit\.ly/[^\s]+|tinyurl\.com/[^\s]+", content_lower
-    )
+    urls = re.findall(r"https?://[^\s]+|bit\.ly/[^\s]+|tinyurl\.com/[^\s]+", content_lower)
     suspicious_tlds = [".xyz", ".tk", ".ml", ".ga", ".cf", ".top", ".buzz"]
     url_score = 0.0
     for url in urls:
@@ -120,17 +86,12 @@ def calculate_threat_score(
     if db:
         bl_entry = (
             db.query(BlacklistEntry)
-            .filter(
-                BlacklistEntry.value == sender,
-                BlacklistEntry.type == BlacklistType.PHONE,
-            )
+            .filter(BlacklistEntry.value == sender, BlacklistEntry.type == BlacklistType.PHONE)
             .first()
         )
         if bl_entry:
             blacklist_score = bl_entry.confidence
-            logger.warning(
-                "BLACKLIST_HIT sender=%s confidence=%.2f", sender, bl_entry.confidence
-            )
+            logger.warning("BLACKLIST_HIT sender=%s confidence=%.2f", sender, bl_entry.confidence)
     scores["blacklist"] = blacklist_score
 
     # ── Composite Score ──
@@ -164,22 +125,14 @@ def auto_blacklist(
     """Auto-add a scammer identifier to the blacklist."""
     existing = (
         db.query(BlacklistEntry)
-        .filter(
-            BlacklistEntry.type == identifier_type, BlacklistEntry.value == identifier
-        )
+        .filter(BlacklistEntry.type == identifier_type, BlacklistEntry.value == identifier)
         .first()
     )
     if existing:
         existing.report_count += 1
         existing.confidence = min(existing.confidence + 0.1, 1.0)
         db.commit()
-        logger.info(
-            "BLACKLIST_UPDATED %s=%s count=%d conf=%.2f",
-            identifier_type,
-            identifier,
-            existing.report_count,
-            existing.confidence,
-        )
+        logger.info("BLACKLIST_UPDATED %s=%s count=%d conf=%.2f", identifier_type, identifier, existing.report_count, existing.confidence)
         return existing
 
     entry = BlacklistEntry(
@@ -193,11 +146,5 @@ def auto_blacklist(
     db.add(entry)
     db.commit()
     db.refresh(entry)
-    logger.warning(
-        "BLACKLIST_ADDED %s=%s conf=%.2f source=%s",
-        identifier_type,
-        identifier,
-        confidence,
-        source,
-    )
+    logger.warning("BLACKLIST_ADDED %s=%s conf=%.2f source=%s", identifier_type, identifier, confidence, source)
     return entry

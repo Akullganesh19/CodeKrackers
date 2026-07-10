@@ -15,18 +15,18 @@ In DEMO/MOCK mode (no actual AWS Nitro hardware), this falls back to calling the
 enclave functions directly — simulating what the enclave would do.
 """
 
-import json
-import logging
 import os
+import json
 import socket
-from typing import Any, Dict, Optional, Union
+import logging
+from typing import Dict, Any, Optional, Union
 
 logger = logging.getLogger("vas.enclave_client")
 
 # ─── Configuration ─────────────────────────────────────────────────
 # Default vsock parameters for Nitro Enclave
-ENCLAVE_CID: int = 16  # Fixed CID for the primary enclave
-ENCLAVE_PORT: int = 5000  # Must match enclave_server.py port
+ENCLAVE_CID: int = 16       # Fixed CID for the primary enclave
+ENCLAVE_PORT: int = 5000    # Must match enclave_server.py port
 VSOCK_TIMEOUT: float = 5.0  # Seconds before timing out
 MOCK_MODE: bool = os.environ.get("VAS_ENCLAVE_MOCK", "true").lower() == "true"
 
@@ -112,7 +112,6 @@ def _mock_decrypt(data: bytes) -> Dict[str, Any]:
 
 # ─── vsock Communication ──────────────────────────────────────────
 
-
 def call_enclave_vsock(payload: Dict[str, Any]) -> Dict[str, Any]:
     """
     Send encrypted payload to the Nitro Enclave over vsock and receive response.
@@ -148,8 +147,7 @@ def call_enclave_vsock(payload: Dict[str, Any]) -> Dict[str, Any]:
     try:
         logger.debug(
             "Connecting to enclave vsock (CID=%d, port=%d)...",
-            ENCLAVE_CID,
-            ENCLAVE_PORT,
+            ENCLAVE_CID, ENCLAVE_PORT,
         )
         sock.connect((ENCLAVE_CID, ENCLAVE_PORT))
         sock.sendall(encrypted_request)
@@ -178,7 +176,6 @@ def call_enclave_vsock(payload: Dict[str, Any]) -> Dict[str, Any]:
 
 # ─── Mock Enclave (for development/testing) ────────────────────────
 
-
 def _mock_call_enclave(payload: Dict[str, Any]) -> Dict[str, Any]:
     """
     Mock enclave call for development/demo.
@@ -199,13 +196,14 @@ def _mock_call_enclave(payload: Dict[str, Any]) -> Dict[str, Any]:
     elif action == "classify_voice":
         return classify_voice_enclave(payload.get("transcript", ""))
     elif action == "get_attestation":
-        return get_attestation_document(payload.get("user_data", "").encode())
+        return get_attestation_document(
+            payload.get("user_data", "").encode()
+        )
     else:
         return {"error": f"Unknown action: {action}"}
 
 
 # ─── Public API ────────────────────────────────────────────────────
-
 
 def detect_sms_in_enclave(sms_text: str) -> Dict[str, Any]:
     """

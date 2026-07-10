@@ -9,17 +9,14 @@ These endpoints handle:
 The tracking URLs are embedded inside fake database records. When an attacker
 exfiltrates data and then accesses the tracking URL, we get an immediate alert.
 """
-
 import logging
 from typing import Optional
-
-from fastapi import APIRouter, Depends, Query, Request
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Request, Depends, HTTPException, Query
+from fastapi.responses import JSONResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
 from backend.api import deps
-from backend.models.orm import CanaryTrap as CanaryToken
-from backend.models.orm import User
+from backend.models.orm import CanaryTrap as CanaryToken, User, UserRole
 from backend.services import canary_service
 
 logger = logging.getLogger("vas.canary")
@@ -54,10 +51,7 @@ async def track_canary(
     if canary:
         logger.critical(
             "CANARY TRACKING URL ACCESSED! token=%s ip=%s ua=%s planted_in=%s",
-            token[:16],
-            client_ip,
-            user_agent[:80],
-            canary.planted_in,
+            token[:16], client_ip, user_agent[:80], canary.planted_in,
         )
 
     # Return a 1x1 transparent GIF to avoid detection

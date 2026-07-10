@@ -1,12 +1,10 @@
+import asyncio
 from datetime import datetime, timedelta
-
-from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from sqlalchemy import select, func
 from .core.database import AsyncSessionLocal
-from .models.orm import FIR, HoneypotSession, ScoreHistory, Threat, User
 from .services.evidence_chain import EvidenceChain
-
+from .models.orm import Threat, ScoreHistory, User, FIR, HoneypotSession
 
 async def verify_all_evidence_chains():
     """
@@ -25,30 +23,25 @@ async def verify_all_evidence_chains():
         report = {
             "total_chains_checked": len(threat_ids),
             "tampered_chains": [],
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.utcnow().isoformat()
         }
 
         for threat_id in threat_ids:
             verification = await ledger.verify_integrity(threat_id)
             if not verification["valid"]:
-                report["tampered_chains"].append(
-                    {
-                        "threat_id": str(threat_id),
-                        "reason": verification.get("reason"),
-                        "block_index": verification.get("block_index"),
-                    }
-                )
+                report["tampered_chains"].append({
+                    "threat_id": str(threat_id),
+                    "reason": verification.get("reason"),
+                    "block_index": verification.get("block_index")
+                })
 
         # Log the audit results
         if report["tampered_chains"]:
             print(f"CRITICAL: Integrity Audit detected tampering: {report}")
         else:
-            print(
-                f"Daily Integrity Audit Complete: All {len(threat_ids)} chains verified."
-            )
+            print(f"Daily Integrity Audit Complete: All {len(threat_ids)} chains verified.")
 
         return report
-
 
 async def record_daily_safety_scores():
     """
@@ -65,7 +58,6 @@ async def record_daily_safety_scores():
         await db.commit()
         print(f"Recorded daily safety scores for {len(users)} users.")
 
-
 async def restore_user_safety_scores():
     """
     Background task to reward users with no recent activity.
@@ -77,17 +69,13 @@ async def restore_user_safety_scores():
         yesterday = datetime.utcnow() - timedelta(days=1)
 
         # Subquery to find users who HAD threats recently
-        recent_threats_subquery = (
-            select(Threat.user_id)
-            .where(Threat.detected_at >= yesterday)
-            .scalar_subquery()
-        )
+        recent_threats_subquery = select(Threat.user_id).where(Threat.detected_at >= yesterday).scalar_subquery()
 
         # Select users who are active, below max score, and NOT in the recent threats list
         stmt = select(User).where(
             User.is_active == True,
             User.safety_score < 100.0,
-            ~User.id.in_(recent_threats_subquery),
+            ~User.id.in_(recent_threats_subquery)
         )
 
         result = await db.execute(stmt)
@@ -101,12 +89,8 @@ async def restore_user_safety_scores():
         fir_users = set((await db.execute(fir_users_stmt)).scalars().all())
 
         # Users with completed honeypots
-        hp_users_stmt = (
-            select(Threat.user_id)
-            .join(HoneypotSession, HoneypotSession.threat_id == Threat.id)
-            .where(Threat.user_id.in_(user_ids), HoneypotSession.status == "completed")
-            .distinct()
-        )
+        hp_users_stmt = select(Threat.user_id).join(HoneypotSession, HoneypotSession.threat_id == Threat.id)\
+            .where(Threat.user_id.in_(user_ids), HoneypotSession.status == 'completed').distinct()
         hp_users = set((await db.execute(hp_users_stmt)).scalars().all())
 
         for user in users_to_restore:
@@ -126,7 +110,6 @@ async def restore_user_safety_scores():
         await db.commit()
         print(f"Daily Score Restoration: Processed {len(users_to_restore)} users.")
 
-
 async def is_score_protected(db: AsyncSession, user_id: str) -> bool:
     """
     Checks if a user has successfully completed a Honeypot session in the last 48 hours.
@@ -136,15 +119,13 @@ async def is_score_protected(db: AsyncSession, user_id: str) -> bool:
     protection_window = datetime.utcnow() - timedelta(hours=48)
 
     # Check for completed honeypot sessions linked to the user's threats
-    stmt = (
-        select(func.count(HoneypotSession.id))
-        .join(Threat, HoneypotSession.threat_id == Threat.id)
+    stmt = select(func.count(HoneypotSession.id))\
+        .join(Threat, HoneypotSession.threat_id == Threat.id)\
         .where(
             Threat.user_id == user_id,
-            HoneypotSession.status == "completed",
-            HoneypotSession.session_end >= protection_window,
+            HoneypotSession.status == 'completed',
+            HoneypotSession.session_end >= protection_window
         )
-    )
 
     result = await db.execute(stmt)
     return (result.scalar() or 0) > 0

@@ -1,12 +1,12 @@
 """
 Database seed script with realistic Indian cybercrime threat data.
 """
-
 from datetime import datetime, timedelta, timezone
 
 from backend.core import security
 from backend.db.base import Base
 from backend.db.session import SessionLocal, engine
+from backend.models.legal import Evidence, FIR
 from backend.models.threat import Threat, ThreatSeverity, ThreatType
 from backend.models.user import User, UserRole
 
@@ -84,11 +84,7 @@ def init_db() -> None:
                 confidence_score=0.92,
                 owner_id=user.id,
                 timestamp=now - timedelta(minutes=45),
-                metadata_json={
-                    "ai_category": "otp_theft",
-                    "keyword_hits": 4,
-                    "url_hits": 1,
-                },
+                metadata_json={"ai_category": "otp_theft", "keyword_hits": 4, "url_hits": 1},
             ),
             Threat(
                 type=ThreatType.SMISHING,
@@ -98,11 +94,7 @@ def init_db() -> None:
                 confidence_score=0.97,
                 owner_id=user.id,
                 timestamp=now - timedelta(hours=5),
-                metadata_json={
-                    "ai_category": "financial_fraud",
-                    "keyword_hits": 3,
-                    "url_hits": 2,
-                },
+                metadata_json={"ai_category": "financial_fraud", "keyword_hits": 3, "url_hits": 2},
             ),
             Threat(
                 type=ThreatType.VISHING,

@@ -9,6 +9,7 @@ from sqlalchemy import select
 from .core.database import engine, Base, AsyncSessionLocal
 from .core.security import get_password_hash
 from .models.orm import User
+from .core.events import listeners  # noqa: F401
 
 # Initialize FastAPI App
 app = FastAPI(

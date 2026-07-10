@@ -1,5 +1,6 @@
 """Honeypot endpoint access tracking for attacker profiling."""
-from sqlalchemy import Column, Integer, String, DateTime, Text, JSON, Index, Boolean
+
+from sqlalchemy import JSON, Boolean, Column, DateTime, Index, Integer, String
 from sqlalchemy.sql import func
 
 from backend.db.base_class import Base
@@ -7,10 +8,13 @@ from backend.db.base_class import Base
 
 class HoneypotAccess(Base):
     """Immutable log of all honeypot endpoint access attempts."""
+
     __tablename__ = "honeypot_access"
 
     id = Column(Integer, primary_key=True, index=True)
-    timestamp = Column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
+    timestamp = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False, index=True
+    )
 
     # Attacker identity
     ip_address = Column(String(45), nullable=False, index=True)
@@ -18,7 +22,9 @@ class HoneypotAccess(Base):
     x_forwarded_for = Column(String(255), nullable=True)
 
     # Honeypot endpoint details
-    endpoint = Column(String(256), nullable=False, index=True)  # /api/v1/admin/export-users
+    endpoint = Column(
+        String(256), nullable=False, index=True
+    )  # /api/v1/admin/export-users
     method = Column(String(16), nullable=False)
 
     # Request analysis

@@ -2,7 +2,17 @@
 User consent and device intelligence models.
 All data collection requires explicit user consent (GDPR/IT Act compliant).
 """
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, Text, JSON, Index
+
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+)
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -11,6 +21,7 @@ from backend.db.base_class import Base, TimestampMixin
 
 class UserConsent(TimestampMixin, Base):
     """Tracks user consent for data collection — legally required before any gathering."""
+
     __tablename__ = "user_consent"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -38,6 +49,7 @@ class UserConsent(TimestampMixin, Base):
 
 class DeviceInfo(TimestampMixin, Base):
     """Device fingerprint collected from user (with consent)."""
+
     __tablename__ = "device_info"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -46,13 +58,13 @@ class DeviceInfo(TimestampMixin, Base):
     # Device
     device_model = Column(String(256), nullable=True)
     device_brand = Column(String(128), nullable=True)
-    os_name = Column(String(64), nullable=True)       # Android, iOS, Windows
+    os_name = Column(String(64), nullable=True)  # Android, iOS, Windows
     os_version = Column(String(64), nullable=True)
     app_version = Column(String(32), nullable=True)
 
     # Network
     ip_address = Column(String(45), nullable=True)
-    network_type = Column(String(32), nullable=True)   # wifi, mobile_4g, mobile_5g
+    network_type = Column(String(32), nullable=True)  # wifi, mobile_4g, mobile_5g
     carrier_name = Column(String(128), nullable=True)
     sim_operator = Column(String(128), nullable=True)
     sim_country = Column(String(8), nullable=True)
@@ -72,13 +84,12 @@ class DeviceInfo(TimestampMixin, Base):
 
     user = relationship("User")
 
-    __table_args__ = (
-        Index("ix_device_user_os", "user_id", "os_name"),
-    )
+    __table_args__ = (Index("ix_device_user_os", "user_id", "os_name"),)
 
 
 class PhoneLookup(TimestampMixin, Base):
     """Phone number intelligence gathered via Twilio Lookup API."""
+
     __tablename__ = "phone_lookup"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -89,12 +100,14 @@ class PhoneLookup(TimestampMixin, Base):
     country_code = Column(String(8), nullable=True)
     national_format = Column(String(64), nullable=True)
     carrier_name = Column(String(256), nullable=True)
-    carrier_type = Column(String(32), nullable=True)  # mobile, landline, voip, toll-free
-    is_voip = Column(Boolean, default=False)           # VoIP = high scam signal
+    carrier_type = Column(
+        String(32), nullable=True
+    )  # mobile, landline, voip, toll-free
+    is_voip = Column(Boolean, default=False)  # VoIP = high scam signal
     caller_name = Column(String(256), nullable=True)
 
     # Risk assessment
-    risk_score = Column(String(16), nullable=True)     # low, medium, high
+    risk_score = Column(String(16), nullable=True)  # low, medium, high
     fraud_indicators = Column(JSON, nullable=True)
 
     # Linked threat (if lookup was triggered by a threat)

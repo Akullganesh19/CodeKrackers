@@ -24,7 +24,9 @@ class EvidenceChain:
             "SECRET_KEY", "your-super-secret-key-for-vsdp-platform"
         ).encode()
 
-    def _generate_hash(self, previous_hash: str, payload: dict, timestamp: str) -> str:  # noqa: E501
+    def _generate_hash(
+        self, previous_hash: str, payload: dict, timestamp: str
+    ) -> str:  # noqa: E501
         """
         Computes SHA-256 hash of the block data (linkage + content + time).
         """
@@ -46,7 +48,10 @@ class EvidenceChain:
         """
         timestamp = datetime.utcnow().isoformat()
         previous_hash = "0" * 64
-        payload = {"event": "GENESIS_THREAT_DETECTION", "threat_id": str(threat_id)}  # noqa: E501
+        payload = {
+            "event": "GENESIS_THREAT_DETECTION",
+            "threat_id": str(threat_id),
+        }  # noqa: E501
 
         current_hash = self._generate_hash(previous_hash, payload, timestamp)
         signature = self._generate_signature(current_hash)
@@ -124,11 +129,19 @@ class EvidenceChain:
                 block.previous_hash, block.payload, block.timestamp.isoformat()
             )
             if block.current_hash != expected_hash:
-                return {"valid": False, "reason": "Hash mismatch", "block_index": i}  # noqa: E501
+                return {
+                    "valid": False,
+                    "reason": "Hash mismatch",
+                    "block_index": i,
+                }  # noqa: E501
 
             expected_sig = self._generate_signature(block.current_hash)
             if block.digital_signature != expected_sig:
-                return {"valid": False, "reason": "Signature invalid", "block_index": i}  # noqa: E501
+                return {
+                    "valid": False,
+                    "reason": "Signature invalid",
+                    "block_index": i,
+                }  # noqa: E501
 
             if i > 0 and block.previous_hash != blocks[i - 1].current_hash:
                 return {
@@ -159,7 +172,9 @@ class EvidenceChain:
         )
         data = threat_result.first()
         if not data:
-            raise ValueError(f"Forensic report failed: Threat {threat_id} not found.")  # noqa: E501
+            raise ValueError(
+                f"Forensic report failed: Threat {threat_id} not found."
+            )  # noqa: E501
 
         threat, user = data
 
@@ -186,7 +201,8 @@ class EvidenceChain:
                 "phone": user.phone,
             },
             "incident": {
-                c.name: getattr(threat, c.name) for c in threat.__table__.columns  # noqa: E501
+                c.name: getattr(threat, c.name)
+                for c in threat.__table__.columns  # noqa: E501
             },
             "fir_filing": (
                 {c.name: getattr(fir, c.name) for c in fir.__table__.columns}

@@ -61,7 +61,10 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
 
     # ── Fallback to Groq ──
     if not settings.GROQ_API_KEY:
-        return {"score_increase": 0.0, "reason": "AI Scan disabled (No API Key)"}  # noqa: E501
+        return {
+            "score_increase": 0.0,
+            "reason": "AI Scan disabled (No API Key)",
+        }  # noqa: E501
 
     try:
         client = Groq(api_key=settings.GROQ_API_KEY)

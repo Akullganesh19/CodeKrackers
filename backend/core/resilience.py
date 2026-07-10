@@ -11,7 +11,9 @@ def with_retries(
     max_attempts: int = 3,
     base_delay: float = 0.5,
     max_delay: float = 5.0,
-    exceptions: Union[Type[Exception], Tuple[Type[Exception], ...]] = Exception,  # noqa: E501
+    exceptions: Union[
+        Type[Exception], Tuple[Type[Exception], ...]
+    ] = Exception,  # noqa: E501
 ):
     """
     Decorator for retrying async or sync functions with exponential backoff.
@@ -32,7 +34,9 @@ def with_retries(
                                 f"Function {func.__name__} failed after {max_attempts} attempts. Last error: {e}"  # noqa: E501
                             )
                             raise e
-                        delay = min(base_delay * (2 ** (attempt - 1)), max_delay)  # noqa: E501
+                        delay = min(
+                            base_delay * (2 ** (attempt - 1)), max_delay
+                        )  # noqa: E501
                         logger.warning(
                             f"Function {func.__name__} failed (attempt {attempt}/{max_attempts}): {e}. Retrying in {delay}s..."  # noqa: E501
                         )
@@ -54,7 +58,9 @@ def with_retries(
                                 f"Function {func.__name__} failed after {max_attempts} attempts. Last error: {e}"  # noqa: E501
                             )
                             raise e
-                        delay = min(base_delay * (2 ** (attempt - 1)), max_delay)  # noqa: E501
+                        delay = min(
+                            base_delay * (2 ** (attempt - 1)), max_delay
+                        )  # noqa: E501
                         logger.warning(
                             f"Function {func.__name__} failed (attempt {attempt}/{max_attempts}): {e}. Retrying in {delay}s..."  # noqa: E501
                         )
@@ -71,14 +77,14 @@ class CircuitBreaker:
     Stateful circuit breaker to prevent cascading failures.
     """
 
-    def __init__(self, failure_threshold: int = 5, recovery_timeout: float = 30.0):  # noqa: E501
+    def __init__(
+        self, failure_threshold: int = 5, recovery_timeout: float = 30.0
+    ):  # noqa: E501
         self.failure_threshold = failure_threshold
         self.recovery_timeout = recovery_timeout
         self.failure_count = 0
         self.last_failure_time = 0.0
-        self.state = (
-            "CLOSED"  # CLOSED, OPEN, HALF_OPEN  # noqa: E501
-        )
+        self.state = "CLOSED"  # CLOSED, OPEN, HALF_OPEN  # noqa: E501
 
     def record_failure(self):
         self.failure_count += 1
@@ -113,7 +119,9 @@ def circuit_breaker(
     failure_threshold: int = 5,
     recovery_timeout: float = 30.0,
     fallback_func: Optional[Callable] = None,
-    exceptions: Union[Type[Exception], Tuple[Type[Exception], ...]] = Exception,  # noqa: E501
+    exceptions: Union[
+        Type[Exception], Tuple[Type[Exception], ...]
+    ] = Exception,  # noqa: E501
 ):
     """
     Decorator for circuit breaking.
@@ -133,7 +141,9 @@ def circuit_breaker(
                         if asyncio.iscoroutinefunction(fallback_func):
                             return await fallback_func(*args, **kwargs)
                         return fallback_func(*args, **kwargs)
-                    raise Exception(f"Circuit breaker OPEN for {func.__name__}")  # noqa: E501
+                    raise Exception(
+                        f"Circuit breaker OPEN for {func.__name__}"
+                    )  # noqa: E501
                 try:
                     result = await func(*args, **kwargs)
                     breaker.record_success()
@@ -157,7 +167,9 @@ def circuit_breaker(
                             f"Circuit OPEN for {func.__name__}, calling fallback."  # noqa: E501
                         )
                         return fallback_func(*args, **kwargs)
-                    raise Exception(f"Circuit breaker OPEN for {func.__name__}")  # noqa: E501
+                    raise Exception(
+                        f"Circuit breaker OPEN for {func.__name__}"
+                    )  # noqa: E501
                 try:
                     result = func(*args, **kwargs)
                     breaker.record_success()

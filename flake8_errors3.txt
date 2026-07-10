@@ -1,0 +1,149 @@
+backend/api/analytics.py:70:76: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+backend/api/analytics.py:213:89: E501 line too long (223 > 88 characters)
+backend/api/analytics.py:278:89: E501 line too long (103 > 88 characters)
+backend/api/blacklist.py:109:57: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+backend/api/call.py:71:89: E501 line too long (122 > 88 characters)
+backend/api/call.py:233:89: E501 line too long (101 > 88 characters)
+backend/api/call.py:235:89: E501 line too long (111 > 88 characters)
+backend/api/call.py:237:89: E501 line too long (91 > 88 characters)
+backend/api/canary.py:65:5: F841 local variable 'gif_data' is assigned to but never used
+backend/api/childlock.py:240:13: E741 ambiguous variable name 'l'
+backend/api/detection.py:103:89: E501 line too long (129 > 88 characters)
+backend/api/detection.py:205:89: E501 line too long (90 > 88 characters)
+backend/api/evidence.py:22:89: E501 line too long (95 > 88 characters)
+backend/api/intel.py:2:89: E501 line too long (89 > 88 characters)
+backend/api/intel.py:32:80: E712 comparison to False should be 'if cond is False:' or 'if not cond:'
+backend/api/intel.py:39:89: E501 line too long (99 > 88 characters)
+backend/api/intel.py:80:80: E712 comparison to False should be 'if cond is False:' or 'if not cond:'
+backend/api/intel.py:134:80: E712 comparison to False should be 'if cond is False:' or 'if not cond:'
+backend/api/intel.py:207:13: E741 ambiguous variable name 'l'
+backend/api/intel.py:229:89: E501 line too long (102 > 88 characters)
+backend/api/login.py:48:89: E501 line too long (106 > 88 characters)
+backend/api/model_guard.py:181:62: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+backend/api/model_guard.py:187:39: E741 ambiguous variable name 'l'
+backend/api/model_guard.py:200:17: E741 ambiguous variable name 'l'
+backend/api/openclaw.py:43:89: E501 line too long (138 > 88 characters)
+backend/api/spam.py:185:13: E741 ambiguous variable name 'l'
+backend/api/v1/endpoints/analytics.py:30:5: F841 local variable 'week_ago' is assigned to but never used
+backend/api/v1/endpoints/analytics.py:68:69: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+backend/api/v1/endpoints/auth.py:76:89: E501 line too long (91 > 88 characters)
+backend/api/v1/endpoints/auth.py:91:89: E501 line too long (113 > 88 characters)
+backend/api/v1/endpoints/blacklist.py:105:57: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+backend/api/v1/endpoints/canary.py:66:5: F841 local variable 'gif_data' is assigned to but never used
+backend/api/v1/endpoints/childlock.py:241:13: E741 ambiguous variable name 'l'
+backend/api/v1/endpoints/detection.py:103:89: E501 line too long (129 > 88 characters)
+backend/api/v1/endpoints/detection.py:205:89: E501 line too long (90 > 88 characters)
+backend/api/v1/endpoints/intel.py:2:89: E501 line too long (89 > 88 characters)
+backend/api/v1/endpoints/intel.py:33:80: E712 comparison to False should be 'if cond is False:' or 'if not cond:'
+backend/api/v1/endpoints/intel.py:40:89: E501 line too long (99 > 88 characters)
+backend/api/v1/endpoints/intel.py:81:80: E712 comparison to False should be 'if cond is False:' or 'if not cond:'
+backend/api/v1/endpoints/intel.py:135:80: E712 comparison to False should be 'if cond is False:' or 'if not cond:'
+backend/api/v1/endpoints/intel.py:208:13: E741 ambiguous variable name 'l'
+backend/api/v1/endpoints/intel.py:230:89: E501 line too long (102 > 88 characters)
+backend/api/v1/endpoints/login.py:48:89: E501 line too long (106 > 88 characters)
+backend/api/v1/endpoints/model_guard.py:183:62: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+backend/api/v1/endpoints/model_guard.py:189:39: E741 ambiguous variable name 'l'
+backend/api/v1/endpoints/model_guard.py:202:17: E741 ambiguous variable name 'l'
+backend/api/v1/endpoints/spam.py:186:13: E741 ambiguous variable name 'l'
+backend/api/v1/endpoints/zk_privacy.py:57:89: E501 line too long (94 > 88 characters)
+backend/api/v1/endpoints/zk_privacy.py:62:89: E501 line too long (91 > 88 characters)
+backend/api/v1/endpoints/zk_privacy.py:84:89: E501 line too long (132 > 88 characters)
+backend/api/v1/endpoints/zk_privacy.py:110:89: E501 line too long (92 > 88 characters)
+backend/api/v1/endpoints/zk_privacy.py:152:89: E501 line too long (90 > 88 characters)
+backend/api/v1/endpoints/zk_privacy.py:153:89: E501 line too long (97 > 88 characters)
+backend/api/v1/endpoints/zk_privacy.py:176:89: E501 line too long (97 > 88 characters)
+backend/api/v1/endpoints/zk_privacy.py:208:89: E501 line too long (94 > 88 characters)
+backend/api/v1/endpoints/zk_privacy.py:209:89: E501 line too long (92 > 88 characters)
+backend/api/v1/endpoints/zk_privacy.py:241:89: E501 line too long (97 > 88 characters)
+backend/api/zk_privacy.py:57:89: E501 line too long (94 > 88 characters)
+backend/api/zk_privacy.py:62:89: E501 line too long (91 > 88 characters)
+backend/api/zk_privacy.py:84:89: E501 line too long (132 > 88 characters)
+backend/api/zk_privacy.py:110:89: E501 line too long (92 > 88 characters)
+backend/api/zk_privacy.py:152:89: E501 line too long (90 > 88 characters)
+backend/api/zk_privacy.py:153:89: E501 line too long (97 > 88 characters)
+backend/api/zk_privacy.py:176:89: E501 line too long (97 > 88 characters)
+backend/api/zk_privacy.py:208:89: E501 line too long (94 > 88 characters)
+backend/api/zk_privacy.py:209:89: E501 line too long (92 > 88 characters)
+backend/api/zk_privacy.py:241:89: E501 line too long (97 > 88 characters)
+backend/core/anomaly_detector.py:147:89: E501 line too long (97 > 88 characters)
+backend/core/database.py:32:1: E303 too many blank lines (3)
+backend/core/middleware.py:1:89: E501 line too long (94 > 88 characters)
+backend/core/middleware.py:332:5: C901 'RAPSMiddleware.dispatch' is too complex (18)
+backend/core/middleware.py:565:89: E501 line too long (94 > 88 characters)
+backend/core/resilience.py:10:1: C901 'with_retries' is too complex (13)
+backend/core/resilience.py:118:1: C901 'circuit_breaker' is too complex (17)
+backend/core/security.py:26:89: E501 line too long (96 > 88 characters)
+backend/core/zk_privacy.py:123:89: E501 line too long (90 > 88 characters)
+backend/core/zk_privacy.py:283:89: E501 line too long (100 > 88 characters)
+backend/core/zk_privacy.py:415:89: E501 line too long (91 > 88 characters)
+backend/initial_data.py:62:89: E501 line too long (109 > 88 characters)
+backend/initial_data.py:72:89: E501 line too long (111 > 88 characters)
+backend/initial_data.py:82:89: E501 line too long (120 > 88 characters)
+backend/initial_data.py:96:89: E501 line too long (127 > 88 characters)
+backend/initial_data.py:110:89: E501 line too long (142 > 88 characters)
+backend/main.py:15:89: E501 line too long (93 > 88 characters)
+backend/main.py:42:1: E402 module level import not at top of file
+backend/migrate_to_supabase.py:7:1: E402 module level import not at top of file
+backend/migrate_to_supabase.py:28:89: E501 line too long (102 > 88 characters)
+backend/models/canary.py:9:89: E501 line too long (93 > 88 characters)
+backend/models/canary.py:47:89: E501 line too long (98 > 88 characters)
+backend/models/honeypot.py:50:89: E501 line too long (96 > 88 characters)
+backend/models/intel.py:23:89: E501 line too long (90 > 88 characters)
+backend/models/intel.py:47:89: E501 line too long (122 > 88 characters)
+backend/models/intel.py:117:89: E501 line too long (102 > 88 characters)
+backend/models/legal.py:45:89: E501 line too long (97 > 88 characters)
+backend/models/model_version.py:88:89: E501 line too long (97 > 88 characters)
+backend/models/model_version.py:129:89: E501 line too long (111 > 88 characters)
+backend/models/user.py:47:89: E501 line too long (93 > 88 characters)
+backend/scheduler.py:28:89: E501 line too long (98 > 88 characters)
+backend/services/canary_service.py:250:64: E712 comparison to False should be 'if cond is False:' or 'if not cond:'
+backend/services/childlock.py:57:1: C901 'check_call_allowed' is too complex (18)
+backend/services/childlock.py:68:77: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+backend/services/childlock.py:115:89: E501 line too long (99 > 88 characters)
+backend/services/childlock.py:119:89: E501 line too long (128 > 88 characters)
+backend/services/childlock.py:166:1: C901 'check_sms_allowed' is too complex (21)
+backend/services/childlock.py:178:77: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+backend/services/childlock.py:236:49: F541 f-string is missing placeholders
+backend/services/generator.py:38:89: E501 line too long (106 > 88 characters)
+backend/services/ipc_tagger.py:12:89: E501 line too long (95 > 88 characters)
+backend/services/ipc_tagger.py:51:89: E501 line too long (89 > 88 characters)
+backend/services/model_security.py:109:32: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+backend/services/model_security.py:180:36: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+backend/services/model_security.py:227:5: F841 local variable 'fp_hash' is assigned to but never used
+backend/services/model_security.py:291:1: C901 'compute_adversarial_robustness_score' is too complex (16)
+backend/services/model_security.py:488:9: F841 local variable 'model_key' is assigned to but never used
+backend/services/mythos_engine.py:16:1: E402 module level import not at top of file
+backend/services/mythos_engine.py:53:21: F541 f-string is missing placeholders
+backend/services/mythos_engine.py:61:13: F841 local variable 'logits' is assigned to but never used
+backend/services/ollama_scan.py:21:1: W293 blank line contains whitespace
+backend/services/openclaw_agent.py:15:89: E501 line too long (94 > 88 characters)
+backend/services/phone_intel.py:65:72: E712 comparison to False should be 'if cond is False:' or 'if not cond:'
+backend/services/phone_intel.py:74:1: C901 'analyze_phone_number' is too complex (11)
+backend/services/phone_intel.py:208:89: E501 line too long (101 > 88 characters)
+backend/services/spam_shield.py:53:89: E501 line too long (105 > 88 characters)
+backend/services/spam_shield.py:57:1: C901 'check_spam' is too complex (29)
+backend/services/spam_shield.py:79:69: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+backend/services/spam_shield.py:151:89: E501 line too long (90 > 88 characters)
+backend/services/voice_detector.py:32:9: F841 local variable 'input_values' is assigned to but never used
+backend/services/voice_detector.py:37:89: E501 line too long (101 > 88 characters)
+backend/services/voice_detector.py:84:89: E501 line too long (101 > 88 characters)
+backend/tasks.py:14:89: E501 line too long (93 > 88 characters)
+backend/tasks.py:19:89: E501 line too long (92 > 88 characters)
+backend/tasks.py:47:89: E501 line too long (89 > 88 characters)
+backend/tasks.py:58:69: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+backend/tasks.py:72:89: E501 line too long (89 > 88 characters)
+backend/tasks.py:73:89: E501 line too long (90 > 88 characters)
+backend/tasks.py:86:89: E501 line too long (90 > 88 characters)
+backend/tasks.py:88:28: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+backend/tasks.py:120:89: E501 line too long (90 > 88 characters)
+backend/tests/test_resilience.py:11:34: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+backend/tests/test_resilience.py:15:34: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+backend/tests/test_resilience.py:18:34: E712 comparison to False should be 'if cond is False:' or 'if not cond:'
+backend/tests/test_resilience.py:22:34: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+backend/tests/test_resilience.py:26:34: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+backend/trigger_incident.py:5:89: E501 line too long (150 > 88 characters)
+backend/trigger_incident.py:11:89: E501 line too long (92 > 88 characters)
+backend/utils/honeypot.py:17:89: E501 line too long (91 > 88 characters)
+backend/utils/pdf.py:46:89: E501 line too long (100 > 88 characters)
+backend/utils/pdf_exporter.py:10:89: E501 line too long (95 > 88 characters)
+backend/utils/pdf_exporter.py:27:89: E501 line too long (107 > 88 characters)

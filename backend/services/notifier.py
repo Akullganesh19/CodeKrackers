@@ -31,7 +31,9 @@ def send_threat_alert(
         return False
 
     try:
-        client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)  # noqa: E501
+        client = Client(
+            settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN
+        )  # noqa: E501
 
         alert_msg = (
             f"🚨 VAS SECURITY ALERT 🚨\n\n"
@@ -42,7 +44,10 @@ def send_threat_alert(
         )
 
         message = _send_twilio_message(
-            client, body=alert_msg, from_=settings.TWILIO_PHONE_NUMBER, to=phone_number  # noqa: E501
+            client,
+            body=alert_msg,
+            from_=settings.TWILIO_PHONE_NUMBER,
+            to=phone_number,  # noqa: E501
         )
 
         logger.info(f"Notification sent to {phone_number}. SID: {message.sid}")
@@ -73,7 +78,9 @@ def send_otp(phone_number: str) -> str:
         return otp_code
 
     try:
-        client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)  # noqa: E501
+        client = Client(
+            settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN
+        )  # noqa: E501
 
         msg_body = (
             f"VAS Command Center: Your verification code is {otp_code}. "
@@ -81,7 +88,10 @@ def send_otp(phone_number: str) -> str:
         )
 
         _send_twilio_message(
-            client, body=msg_body, from_=settings.TWILIO_PHONE_NUMBER, to=phone_number  # noqa: E501
+            client,
+            body=msg_body,
+            from_=settings.TWILIO_PHONE_NUMBER,
+            to=phone_number,  # noqa: E501
         )
 
         logger.info(f"OTP sent to {phone_number}")

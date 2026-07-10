@@ -1,6 +1,9 @@
-import pytest
 import time
-from backend.core.resilience import with_retries, circuit_breaker, CircuitBreaker
+
+import pytest
+
+from backend.core.resilience import CircuitBreaker, circuit_breaker, with_retries
+
 
 def test_circuit_breaker_logic():
     breaker = CircuitBreaker(failure_threshold=3, recovery_timeout=0.1)
@@ -23,6 +26,7 @@ def test_circuit_breaker_logic():
     assert breaker.can_execute() == True
     assert breaker.state == "CLOSED"
 
+
 def test_with_retries_sync():
     attempts = 0
 
@@ -36,6 +40,7 @@ def test_with_retries_sync():
         failing_func()
 
     assert attempts == 3
+
 
 @pytest.mark.asyncio
 async def test_with_retries_async():
@@ -51,6 +56,7 @@ async def test_with_retries_async():
         await failing_func()
 
     assert attempts == 3
+
 
 def test_circuit_breaker_decorator():
     attempts = 0
@@ -73,7 +79,9 @@ def test_circuit_breaker_decorator():
     assert attempts == 2
 
     # Test fallback
-    @circuit_breaker(failure_threshold=1, recovery_timeout=0.1, fallback_func=lambda: "fallback")
+    @circuit_breaker(
+        failure_threshold=1, recovery_timeout=0.1, fallback_func=lambda: "fallback"
+    )
     def failing_func2():
         raise ValueError("Failed")
 

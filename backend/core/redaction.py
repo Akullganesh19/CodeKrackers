@@ -3,6 +3,7 @@ import re
 EMAIL_REGEX = re.compile(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+')
 PHONE_REGEX = re.compile(r'\+?\b\d[\d\-\s]{8,14}\d\b')
 
+
 def redact_string(text: str) -> str:
     if not isinstance(text, str):
         return text
@@ -26,7 +27,12 @@ def redact_string(text: str) -> str:
         digits = re.sub(r'\D', '', phone)
         # Check if it looks like a real phone number
         if len(digits) >= 10:
-            return phone[:-4].replace('0', '*').replace('1', '*').replace('2', '*').replace('3', '*').replace('4', '*').replace('5', '*').replace('6', '*').replace('7', '*').replace('8', '*').replace('9', '*') + phone[-4:]
+            return (
+                phone[:-4].replace('0', '*').replace('1', '*').replace('2', '*')
+                .replace('3', '*').replace('4', '*').replace('5', '*')
+                .replace('6', '*').replace('7', '*').replace('8', '*')
+                .replace('9', '*') + phone[-4:]
+            )
         return phone
 
     text = PHONE_REGEX.sub(phone_repl, text)

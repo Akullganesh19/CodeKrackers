@@ -2,7 +2,9 @@ import logging
 import sys
 
 import structlog
+
 from backend.core.redaction import redact_string
+
 
 class PIIRedactingFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
@@ -11,12 +13,12 @@ class PIIRedactingFormatter(logging.Formatter):
         original_msg = super().format(record)
         return redact_string(original_msg)
 
+
 def redact_processor(logger, log_method, event_dict):
     for k, v in event_dict.items():
         if isinstance(v, str):
             event_dict[k] = redact_string(v)
     return event_dict
-
 
 def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
     """

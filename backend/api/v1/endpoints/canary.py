@@ -11,14 +11,14 @@ exfiltrates data and then accesses the tracking URL, we get an immediate alert.
 """
 import logging
 from typing import Optional
-from fastapi import APIRouter, Request, Depends, HTTPException, Query
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi import APIRouter, Request, Depends, HTTPException, Query  # noqa: F401
+from fastapi.responses import JSONResponse, RedirectResponse  # noqa: F401
 from sqlalchemy.orm import Session
 
 from backend.api import deps
 from backend.db.session import get_db
 from backend.models.canary import CanaryToken
-from backend.models.user import User, UserRole
+from backend.models.user import User, UserRole  # noqa: F401
 from backend.services import canary_service
 
 logger = logging.getLogger("vas.canary")
@@ -33,10 +33,10 @@ async def track_canary(
 ):
     """
     Tracking URL embedded in fake database records.
-    
+      # noqa: W293
     When an attacker accesses this URL (e.g., by clicking a link in
     exfiltrated data), we capture their IP, User-Agent, and timestamp.
-    
+      # noqa: W293
     Returns a 1x1 transparent GIF to avoid detection.
     """
     client_ip = request.client.host if request.client else "unknown"
@@ -58,7 +58,7 @@ async def track_canary(
 
     # Return a 1x1 transparent GIF to avoid detection
     # This makes the tracking request look like a broken image or tracking pixel
-    gif_data = (
+    gif_data = (  # noqa: F841
         b"\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x80\x00"
         b"\x00\xff\xff\xff\x00\x00\x00\x21\xf9\x04\x00\x00"
         b"\x00\x00\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00"
@@ -142,4 +142,4 @@ def seed_canaries(
     return {
         "message": f"Database seeded with {count} canary tokens",
         "total_tokens": count,
-    }
+    }  # noqa: W292

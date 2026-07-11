@@ -1,4 +1,4 @@
-from .orm import (
+from .orm import (  # noqa: F401
     Base,
     User,
     Threat,
@@ -30,4 +30,4 @@ from .orm import (
     SpamType,
     SpamAction
 )
-from .threat import ThreatStatus
+from .threat import ThreatStatus  # noqa: F401

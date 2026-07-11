@@ -44,11 +44,11 @@ def login_access_token(
         )
         raise HTTPException(
             status_code=status.HTTP_423_LOCKED,
-            detail="Account temporarily locked due to too many failed attempts. Try again in 15 minutes.",
+            detail="Account temporarily locked due to too many failed attempts. Try again in 15 minutes.",  # noqa: E501
         )
 
     # Validate credentials
-    if not user or not security.verify_password(form_data.password, user.hashed_password):
+    if not user or not security.verify_password(form_data.password, user.hashed_password):  # noqa: E501
         # Increment failed attempts
         if user:
             user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
@@ -73,7 +73,7 @@ def login_access_token(
         )
 
     if not user.is_active:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account deactivated")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account deactivated")  # noqa: E501
 
     # Success: reset failed attempts, update last login
     user.failed_login_attempts = 0

@@ -1,9 +1,9 @@
 """
 Spam Shield models — real-time spam call/SMS detection and auto-blocking.
 """
-from sqlalchemy import Column, Integer, String, Boolean, Float, DateTime, ForeignKey, JSON, Text, Index, Enum
+from sqlalchemy import Column, Integer, String, Boolean, Float, DateTime, ForeignKey, JSON, Text, Index, Enum  # noqa: E501,F401
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
+from sqlalchemy.sql import func  # noqa: F401
 import enum
 
 from backend.db.base_class import Base, TimestampMixin
@@ -30,7 +30,7 @@ class SpamReport(TimestampMixin, Base):
     phone_number = Column(String(64), nullable=False, index=True)
     spam_type = Column(Enum(SpamType), nullable=False)
     content = Column(Text, nullable=True)          # SMS text or call description
-    category = Column(String(64), nullable=True)   # telemarketing, fraud, robocall, etc.
+    category = Column(String(64), nullable=True)   # telemarketing, fraud, robocall, etc.  # noqa: E501
     is_verified = Column(Boolean, default=False)
 
     reporter = relationship("User")

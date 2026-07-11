@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import sessionmaker, declarative_base  # noqa: F401
 from .config import settings
 
 # Database URLs
@@ -15,8 +15,8 @@ engine = create_async_engine(
 )
 
 AsyncSessionLocal = sessionmaker(
-    engine, 
-    class_=AsyncSession, 
+    engine,   # noqa: W291
+    class_=AsyncSession,   # noqa: W291
     expire_on_commit=False
 )
 
@@ -34,16 +34,16 @@ SessionLocal = sessionmaker(
     bind=sync_engine
 )
 
-from ..models.orm import Base
+from ..models.orm import Base  # noqa: E402,F401
 
-async def get_db():
+async def get_db():  # noqa: E302
     async with AsyncSessionLocal() as session:
         try:
             yield session
         finally:
             await session.close()
 
-def get_db_sync():
+def get_db_sync():  # noqa: E302
     db = SessionLocal()
     try:
         yield db

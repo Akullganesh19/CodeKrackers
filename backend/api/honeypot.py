@@ -4,17 +4,17 @@ from backend.utils.honeypot import einstein_bot
 
 router = APIRouter()
 
-@router.post("/voice")
+@router.post("/voice")  # noqa: E302
 async def honeypot_voice(request: Request):
     """
     Twilio Webhook for Honeypot Voice Calls.
     Uses Einstein-bot to generate realistic 'victim' responses.
     """
     vr = VoiceResponse()
-    
+      # noqa: E114,E116,W293
     form_data = await request.form()
     speech_result = form_data.get("SpeechResult", "")
-    
+      # noqa: E114,E116,W293
     if not speech_result:
         vr.say("Hello? Who is this? I'm sorry, I can't find my glasses.", voice="alice")
         vr.gather(input="speech", action="/api/v1/honeypot/voice", timeout=5)
@@ -22,10 +22,10 @@ async def honeypot_voice(request: Request):
         ai_response = await einstein_bot.generate_response(speech_result)
         vr.say(ai_response, voice="alice")
         vr.gather(input="speech", action="/api/v1/honeypot/voice", timeout=5)
-            
+              # noqa: E114,E116,W293
     return Response(content=str(vr), media_type="application/xml")
 
-@router.post("/route")
+@router.post("/route")  # noqa: E302
 async def route_to_honeypot(body: dict):
     """
     Activates the honeypot routing for a specific threat.

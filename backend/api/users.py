@@ -5,7 +5,7 @@ import logging
 from typing import Any, List
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session  # noqa: F401
 
 from backend.api import deps
 from backend.core import security

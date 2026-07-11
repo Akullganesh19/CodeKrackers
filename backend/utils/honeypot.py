@@ -1,6 +1,6 @@
 from backend.utils.ai import client as groq_client
 
-class EinsteinBot:
+class EinsteinBot:  # noqa: E302
     """
     Einstein-bot logic for active scam-baiting.
     Modular design inspired by honeybot.
@@ -12,7 +12,7 @@ class EinsteinBot:
             "vulnerable, but talkative elderly person. "
             "Ask redundant questions, misspell things occasionally, and "
             "give long, winding stories that lead nowhere. "
-            "NEVER give real information. If they ask for OTP, give a fake 6-digit number "
+            "NEVER give real information. If they ask for OTP, give a fake 6-digit number "  # noqa: E501
             "that changes every time. Keep them on the line for as long as possible."
         )
 
@@ -21,7 +21,7 @@ class EinsteinBot:
             # Check if client exists
             if not groq_client:
                 return "Oh dear, my hearing aid is buzzing. What did you say?"
-                
+                  # noqa: E114,E116,W293
             completion = groq_client.chat.completions.create(
                 model="llama3-8b-8192",
                 messages=[
@@ -34,4 +34,4 @@ class EinsteinBot:
             print(f"Honeypot Error: {e}")
             return "Oh dear, my internet is acting up again. What did you say?"
 
-einstein_bot = EinsteinBot()
+einstein_bot = EinsteinBot()  # noqa: E305

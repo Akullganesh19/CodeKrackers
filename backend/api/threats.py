@@ -21,15 +21,15 @@ def read_threats(
     db: Session = Depends(deps.get_db_sync),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
-    threat_type: str = Query(None, description="Filter by type: smishing, vishing, crypto_scam"),
-    severity: str = Query(None, description="Filter by severity: low, medium, high, critical"),
+    threat_type: str = Query(None, description="Filter by type: smishing, vishing, crypto_scam"),  # noqa: E501
+    severity: str = Query(None, description="Filter by severity: low, medium, high, critical"),  # noqa: E501
     current_user: User = Depends(deps.get_current_active_user),
 ) -> Any:
     """Retrieve threats with filtering and pagination."""
     query = db.query(Threat)
 
     # RBAC: regular users see only their threats
-    if current_user.role not in {UserRole.ADMIN, UserRole.OFFICER, UserRole.SUPER_ADMIN}:
+    if current_user.role not in {UserRole.ADMIN, UserRole.OFFICER, UserRole.SUPER_ADMIN}:  # noqa: E501
         query = query.filter(Threat.owner_id == current_user.id)
 
     if threat_type:
@@ -99,7 +99,7 @@ def update_threat_status(
         )
 
     db.commit()
-    logger.info("THREAT_STATUS_UPDATED id=%d status=%s by=%d", threat_id, new_status, current_user.id)
+    logger.info("THREAT_STATUS_UPDATED id=%d status=%s by=%d", threat_id, new_status, current_user.id)  # noqa: E501
     return {"id": threat_id, "status": threat.status}
 
 

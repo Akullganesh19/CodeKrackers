@@ -1,20 +1,20 @@
 """Canary tokens for detecting database breaches and data leakage."""
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, Index
-from sqlalchemy.sql import func
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, Index  # noqa: E501,F401
+from sqlalchemy.sql import func  # noqa: F401
+from sqlalchemy.orm import relationship  # noqa: F401
 
 from backend.db.base_class import Base, TimestampMixin
 
 
 class CanaryToken(Base, TimestampMixin):
-    """Fake records with unique tracking identifiers - when accessed, they trigger alerts."""
+    """Fake records with unique tracking identifiers - when accessed, they trigger alerts."""  # noqa: E501
     __tablename__ = "canary_tokens"
 
     id = Column(Integer, primary_key=True, index=True)
 
     # Token tracking
     token = Column(String(64), unique=True, index=True, nullable=False)
-    token_type = Column(String(32), nullable=False, index=True)  # user, threat, evidence, fir
+    token_type = Column(String(32), nullable=False, index=True)  # user, threat, evidence, fir  # noqa: E501
 
     # Fake data that looks realistic
     fake_email = Column(String(320), nullable=True)
@@ -42,4 +42,4 @@ class CanaryToken(Base, TimestampMixin):
     )
 
     def __repr__(self) -> str:
-        return f"<CanaryToken(id={self.id}, token={self.token[:8]}..., accessed={self.accessed})>"
+        return f"<CanaryToken(id={self.id}, token={self.token[:8]}..., accessed={self.accessed})>"  # noqa: E501

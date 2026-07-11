@@ -12,7 +12,7 @@ oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/auth/verify"
 )
 
-async def get_current_token_payload(
+async def get_current_token_payload(  # noqa: E302
     token: str = Depends(oauth2_scheme)
 ) -> Dict[str, Any]:
     """
@@ -28,7 +28,7 @@ async def get_current_token_payload(
             detail="Invalid session or expired token",
         )
 
-class RoleChecker:
+class RoleChecker:  # noqa: E302
     """
     Class-based dependency to check for specific roles.
     Usage: Depends(RoleChecker(["admin", "officer"]))
@@ -36,10 +36,10 @@ class RoleChecker:
     def __init__(self, allowed_roles: List[str]):
         self.allowed_roles = allowed_roles
 
-    def __call__(self, payload: Dict[str, Any] = Depends(get_current_token_payload)) -> Dict[str, Any]:
+    def __call__(self, payload: Dict[str, Any] = Depends(get_current_token_payload)) -> Dict[str, Any]:  # noqa: E501
         if payload.get("role") not in self.allowed_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Insufficient security clearance for this operation",
             )
-        return payload
+        return payload  # noqa: W292

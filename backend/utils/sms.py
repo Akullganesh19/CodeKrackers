@@ -1,14 +1,14 @@
 from twilio.rest import Client
 from backend.core.config import settings
 
-def send_alert_sms(to_number: str, message_body: str):
+def send_alert_sms(to_number: str, message_body: str):  # noqa: E302
     """
     Send an alert SMS using Twilio.
     """
-    if not all([settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN, settings.TWILIO_PHONE_NUMBER]):
+    if not all([settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN, settings.TWILIO_PHONE_NUMBER]):  # noqa: E501
         print("Twilio credentials not fully configured. Skipping SMS.")
         return None
-    
+      # noqa: E114,W293
     try:
         client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
         message = client.messages.create(

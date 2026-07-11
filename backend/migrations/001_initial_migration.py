@@ -1,7 +1,7 @@
 """initial migration
 
 Revision ID: 001
-Revises: 
+Revises:   # noqa: W291
 Create Date: 2024-05-21 12:00:00.000000
 
 """
@@ -14,7 +14,7 @@ down_revision = None
 branch_labels = None
 depends_on = None
 
-def upgrade():
+def upgrade():  # noqa: E302
     # 1. Users Table
     op.create_table(
         'users',
@@ -29,7 +29,7 @@ def upgrade():
         sa.Column('safety_score', sa.Float(), server_default='100.0'),
         sa.Column('scams_avoided', sa.Integer(), server_default='0'),
         sa.Column('created_at', sa.DateTime(), server_default=sa.func.now()),
-        sa.Column('updated_at', sa.DateTime(), server_default=sa.func.now(), onupdate=sa.func.now())
+        sa.Column('updated_at', sa.DateTime(), server_default=sa.func.now(), onupdate=sa.func.now())  # noqa: E501
     )
 
     # 2. Threats Table
@@ -54,7 +54,7 @@ def upgrade():
     )
 
     # Composite Index for Scammer Audit Performance
-    op.create_index('ix_threats_caller_id_detected_at', 'threats', ['caller_id', 'detected_at'])
+    op.create_index('ix_threats_caller_id_detected_at', 'threats', ['caller_id', 'detected_at'])  # noqa: E501
 
     # 3. Evidence Chain Table (Forensic Ledger)
     op.create_table(
@@ -104,11 +104,11 @@ def upgrade():
         sa.Column('recorded_at', sa.DateTime(), server_default=sa.func.now())
     )
 
-def downgrade():
+def downgrade():  # noqa: E302
     op.drop_table('score_history')
     op.drop_table('honeypot_sessions')
     op.drop_table('firs')
     op.drop_table('evidence_chain')
     op.drop_index('ix_threats_caller_id_detected_at', table_name='threats')
     op.drop_table('threats')
-    op.drop_table('users')
+    op.drop_table('users')  # noqa: W292

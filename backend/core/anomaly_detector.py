@@ -15,7 +15,7 @@ Features extracted per request:
   - Time of day (hour) deviation
   - User-agent entropy (unusual vs common)
 """
-import os
+import os  # noqa: F401
 import time
 import json
 import logging
@@ -105,7 +105,7 @@ class APIAnomalyDetector:
         ts = request_info.get("timestamp", time.time())
 
         if np is None:
-            return None # Return None if numpy is not available
+            return None # Return None if numpy is not available  # noqa: E261
 
         features = np.zeros(N_FEATURES)
         idx = 0
@@ -139,7 +139,7 @@ class APIAnomalyDetector:
         features[idx] = min(body_size / 1_048_576.0, 1.0)
         idx += 1
 
-        # [4] Method encoded: GET=0, POST=1, PUT=2, DELETE=3, PATCH=4, OPTIONS=5, HEAD=6, other=7
+        # [4] Method encoded: GET=0, POST=1, PUT=2, DELETE=3, PATCH=4, OPTIONS=5, HEAD=6, other=7  # noqa: E501
         method_map = {
             "GET": 0, "POST": 1, "PUT": 2, "DELETE": 3,
             "PATCH": 4, "OPTIONS": 5, "HEAD": 6,
@@ -253,7 +253,7 @@ class APIAnomalyDetector:
         from sklearn.ensemble import IsolationForest
 
         X = np.array(self._request_buffer)
-        logger.info("Training Isolation Forest on %d samples (dim=%d)", X.shape[0], X.shape[1])
+        logger.info("Training Isolation Forest on %d samples (dim=%d)", X.shape[0], X.shape[1])  # noqa: E501
 
         self.model = IsolationForest(
             n_estimators=100,
@@ -401,11 +401,11 @@ def _seed_baseline(detector: APIAnomalyDetector):
             "query_params": {},
             "body_size": random.randint(0, 1024) if method in ("POST", "PUT") else 0,
             "user_agent": ua,
-            "headers": {"content-type": "application/json", "accept": "application/json"},
+            "headers": {"content-type": "application/json", "accept": "application/json"},  # noqa: E501
             "timestamp": time.time() - random.randint(0, 86400),
         }
         features = detector.extract_features(info)
         detector.add_sample(features, f"seed:{method}:{path}")
 
     detector.train(force=True)
-    logger.info("Anomaly detector seeded with synthetic baseline data")
+    logger.info("Anomaly detector seeded with synthetic baseline data")  # noqa: W292

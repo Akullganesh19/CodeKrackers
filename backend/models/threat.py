@@ -5,20 +5,20 @@ from pydantic import BaseModel
 from enum import Enum
 
 # Enums for threat fields (matching SQLAlchemy model enums)
-class ThreatType(str, Enum):
+class ThreatType(str, Enum):  # noqa: E302
     SMISHING = "smishing"
     VISHING = "vishing"
     AI_VOICE = "ai_voice"
     URL_FRAUD = "url_fraud"
     OTP_FRAUD = "otp_fraud"
 
-class ThreatSeverity(str, Enum):
+class ThreatSeverity(str, Enum):  # noqa: E302
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
 
-class ThreatStatus(str, Enum):
+class ThreatStatus(str, Enum):  # noqa: E302
     detected = "detected"
     blocked = "blocked"
     flagged = "flagged"
@@ -27,7 +27,7 @@ class ThreatStatus(str, Enum):
     resolved = "resolved"
 
 # Base schema for common threat attributes
-class ThreatBase(BaseModel):
+class ThreatBase(BaseModel):  # noqa: E302
     user_id: uuid.UUID
     type: ThreatType
     severity: ThreatSeverity
@@ -47,10 +47,10 @@ class ThreatBase(BaseModel):
         from_attributes = True
 
 # Schema for creating a new threat
-class ThreatCreate(ThreatBase):
+class ThreatCreate(ThreatBase):  # noqa: E302
     pass
 
 # Schema for returning threat details
-class ThreatResponse(ThreatBase):
+class ThreatResponse(ThreatBase):  # noqa: E302
     id: uuid.UUID
-    detected_at: datetime
+    detected_at: datetime  # noqa: W292

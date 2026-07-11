@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState } from 'react'
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
 import {
@@ -16,11 +16,9 @@ import {
   Loader2
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Oracle } from '@/app/lib/oracle'
 
 export default function SMSScannerPage() {
   const [mounted, setMounted] = useState(false)
-  const prefetchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null)
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<null | {
@@ -43,17 +41,14 @@ export default function SMSScannerPage() {
 
     try {
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      let response = await Oracle.resolvePrediction(text);
-      if (!response) {
-        response = await fetch('http://localhost:8000/api/analytics/scan', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ text })
-        });
-      }
+      const response = await fetch('http://localhost:8000/api/analytics/scan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ text })
+      });
       
       console.log("Response Status:", response.status);
       if (!response.ok) {
@@ -177,16 +172,7 @@ export default function SMSScannerPage() {
               <div className="relative group">
                 <textarea
                   value={text}
-                  onChange={(e) => {
-                    const newText = e.target.value
-                    setText(newText)
-
-                    if (prefetchTimeoutRef.current) clearTimeout(prefetchTimeoutRef.current)
-                    prefetchTimeoutRef.current = setTimeout(() => {
-                      const token = localStorage.getItem('vsdp_token') || 'dummy_token'
-                      Oracle.preComputeScan(newText, token)
-                    }, 500) // Debounce 500ms
-                  }}
+                  onChange={(e) => setText(e.target.value)}
                   placeholder="Paste suspicious SMS here..."
                   className="w-full bg-surface/50 border border-white/10 rounded-lg p-5 font-mono text-sm min-height-[140px] focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder:text-white/10 resize-none h-40"
                 />

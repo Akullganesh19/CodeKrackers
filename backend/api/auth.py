@@ -1,6 +1,6 @@
 import logging
 import random
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 from typing import Any, Optional
 
 import redis
@@ -14,7 +14,7 @@ from twilio.rest import Client
 from backend.api import deps
 from backend.core import security
 from backend.core.config import settings
-from backend.core.events.bus import bus
+from backend.core.events.bus import bus  # noqa: F401
 from backend.core.limiter import limiter
 from backend.core.security import MAX_LOGIN_ATTEMPTS, get_lockout_time
 from backend.models.orm import User, UserRole

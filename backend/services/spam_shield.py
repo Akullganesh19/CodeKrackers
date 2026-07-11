@@ -246,12 +246,15 @@ def _result(
         # Trigger real-time notification to the user's phone
         user = db.query(User).filter(User.id == user_id).first()
         if user and user.phone_number:
-            send_threat_alert(
-                phone_number=user.phone_number,
-                threat_type="Smishing/Malicious SMS",
-                score=score,
-                original_sender=phone
-            )
+            try:
+                send_threat_alert(
+                    phone_number=user.phone_number,
+                    threat_type="Smishing/Malicious SMS",
+                    score=score,
+                    original_sender=phone
+                )
+            except Exception as e:
+                logger.error("Failed to send threat alert after retries/circuit breaker: %s", e)
     else:
         logger.info("SPAM_CHECK phone=%s action=%s score=%.2f", phone, action.value, score)
 

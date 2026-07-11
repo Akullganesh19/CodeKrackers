@@ -49,6 +49,40 @@ class UserRegister(BaseModel):
     phone_number: Optional[str] = None
     role: str = "citizen"
 
+from backend.core.resilience import circuit_breaker, with_retries
+
+import asyncio
+
+@circuit_breaker(failure_threshold=3, recovery_timeout=30)
+@with_retries(max_attempts=3, initial_delay=0.5, backoff_factor=2.0)
+def _send_twilio_otp_sync(identifier: str, otp_code: str):
+    client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+    client.messages.create(
+        body=f"VSDP Security Code: {otp_code}. Valid for 5 minutes. Do not share.",
+        from_=settings.TWILIO_PHONE_NUMBER,
+        to=identifier
+    )
+
+async def _send_twilio_otp(identifier: str, otp_code: str):
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(None, _send_twilio_otp_sync, identifier, otp_code)
+
+@circuit_breaker(failure_threshold=3, recovery_timeout=30)
+@with_retries(max_attempts=3, initial_delay=0.5, backoff_factor=2.0)
+def _send_sendgrid_otp_sync(identifier: str, otp_code: str):
+    message = Mail(
+        from_email=settings.FROM_EMAIL,
+        to_emails=identifier,
+        subject='VSDP Security Code',
+        plain_text_content=f"Your VSDP security code is: {otp_code}. Valid for 5 minutes. Do not share."
+    )
+    sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
+    sg.send(message)
+
+async def _send_sendgrid_otp(identifier: str, otp_code: str):
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(None, _send_sendgrid_otp_sync, identifier, otp_code)
+
 @router.post("/send")
 @limiter.limit(settings.RATE_LIMIT_AUTH)
 async def send_otp(
@@ -68,25 +102,13 @@ async def send_otp(
 
     if "@" not in otp_in.identifier and settings.TWILIO_ACCOUNT_SID and settings.TWILIO_AUTH_TOKEN:
         try:
-            client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-            client.messages.create(
-                body=f"VSDP Security Code: {otp_code}. Valid for 5 minutes. Do not share.",
-                from_=settings.TWILIO_PHONE_NUMBER,
-                to=otp_in.identifier
-            )
+            await _send_twilio_otp(otp_in.identifier, otp_code)
         except Exception as e:
             logger.error(f"SMS_GATEWAY_ERROR: Failed to send OTP to {otp_in.identifier}: {e}")
 
     if "@" in otp_in.identifier and settings.SENDGRID_API_KEY:
         try:
-            message = Mail(
-                from_email=settings.FROM_EMAIL,
-                to_emails=otp_in.identifier,
-                subject='VSDP Security Code',
-                plain_text_content=f"Your VSDP security code is: {otp_code}. Valid for 5 minutes. Do not share."
-            )
-            sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
-            sg.send(message)
+            await _send_sendgrid_otp(otp_in.identifier, otp_code)
         except Exception as e:
             logger.error(f"EMAIL_GATEWAY_ERROR: Failed to send OTP to {otp_in.identifier}: {e}")
 
@@ -114,7 +136,7 @@ async def verify_otp(
         )
 
     redis_key = f"otp:{otp_verify.identifier}"
-    stored_code = redis_client.get(redis_key) if redis_client else otp_code # Mock pass if redis down for demo
+    stored_code = redis_client.get(redis_key) if redis_client else otp_verify.code # Mock pass if redis down for demo
 
     if not stored_code or otp_verify.code != stored_code:
         if user:

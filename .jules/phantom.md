@@ -1,0 +1,7 @@
+## 2026-07-11 — Fetch Coalescing and Edge Caching
+**Gap found:** The frontend components (e.g., `AdminDashboard`, `Sidebar`, `ScammerMap`, `Analytics`) were making naive `fetch` calls directly to the API for analytical and read-heavy data. This led to duplicate network requests being fired simultaneously (lack of request coalescing) and unnecessary network overhead on re-renders for data that rarely changes within short timeframes (lack of caching).
+**Why it existed:** It was a direct implementation of data fetching without a centralized state management or request optimization layer, likely to quickly build out component-level data requirements.
+**Built:** A global `phantomFetch` utility (`app/lib/fetch.ts`) that intercepts `GET` requests to coalesce simultaneous identical requests (returning the same in-flight Promise) and provides TTL-based in-memory caching.
+**Hot path affected:** All major dashboard and analytics views (`/dashboard`, `/analytics`, `/scanner`), specifically polling intervals (like safety score) and large payload endpoints (like the geospatial map and dashboard summary).
+**Measurable improvement:** Reduces network requests significantly on rapid navigation or component remounts, prevents duplicate queries under load, and decreases perceived latency to 0ms for cached data.
+**Next opportunity:** Implement a robust offline queue or optimistic UI updates for user actions like `report_scam` or `block_number`.

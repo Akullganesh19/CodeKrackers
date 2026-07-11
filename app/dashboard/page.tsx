@@ -21,6 +21,7 @@ import {
   RefreshCcw,
   AlertCircle
 } from 'lucide-react'
+import { phantomFetch } from '../lib/fetch'
 
 // --- HELPER COMPONENTS ---
 
@@ -176,8 +177,9 @@ export default function Dashboard() {
     async function fetchSummary() {
       try {
         const token = typeof window !== 'undefined' ? localStorage.getItem('vsdp_token') : null
-        const res = await fetch('http://localhost:8000/api/analytics/dashboard-summary', {
-          headers: { 'Authorization': `Bearer ${token || 'dummy_token'}` }
+        const res = await phantomFetch('http://localhost:8000/api/analytics/dashboard-summary', {
+          headers: { 'Authorization': `Bearer ${token || 'dummy_token'}` },
+          ttl: 30000
         })
         if (res.ok) {
           const data = await res.json()

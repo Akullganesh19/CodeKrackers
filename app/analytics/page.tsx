@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 
 import { useState, useEffect } from 'react'
+import { phantomFetch } from '../lib/fetch'
 
 export default function Analytics() {
   const [mounted, setMounted] = useState(false)
@@ -29,11 +30,13 @@ export default function Analytics() {
       try {
         const token = localStorage.getItem('vsdp_token') || 'dummy_token'
         const [summaryRes, mapRes] = await Promise.all([
-          fetch('http://localhost:8000/api/analytics/dashboard-summary', {
-            headers: { 'Authorization': `Bearer ${token}` }
+          phantomFetch('http://localhost:8000/api/analytics/dashboard-summary', {
+            headers: { 'Authorization': `Bearer ${token}` },
+            ttl: 60000
           }),
-          fetch('http://localhost:8000/api/analytics/threat_map', {
-            headers: { 'Authorization': `Bearer ${token}` }
+          phantomFetch('http://localhost:8000/api/analytics/threat_map', {
+            headers: { 'Authorization': `Bearer ${token}` },
+            ttl: 60000
           })
         ])
         

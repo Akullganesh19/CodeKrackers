@@ -1,6 +1,6 @@
 import logging
 import asyncio
-from typing import Callable, Any, Dict, List
+from typing import Callable, Dict, List
 
 logger = logging.getLogger("vas.events")
 

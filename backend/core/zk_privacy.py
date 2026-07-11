@@ -392,7 +392,7 @@ class BlindCredentialManager:
         }
         return challenge_id
       # noqa: E114,W293
-    def verify_response(self, challenge_id: str, response_hash: str) -> bool:  # noqa: E301
+    def verify_response(self, challenge_id: str, response_hash: str) -> bool:  # noqa: E301,E501
         """
         Verify a user's response to an authentication challenge.
           # noqa: W293

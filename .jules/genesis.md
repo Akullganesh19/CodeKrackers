@@ -1,0 +1,6 @@
+## 2025-07-12 — Outbound integrations resilience mechanisms added
+**Failure point found:** External integrations (Twilio SMS, Sendgrid Emails, Ollama scans, Groq cloud AI scans) were lacking automatic retries and exception handling, causing synchronous calls to fail fast and block the FastAPI async event loop.
+**Why it existed:** The initial implementations prioritized rapid integrations and functionality over fault tolerance and thread isolation.
+**Recovery built:** Implemented `@circuit_breaker` and `@with_retries` decorators for all external outbound calls. Offloaded synchronous Twilio and Sendgrid calls in the Auth endpoints to an asyncio thread pool using `loop.run_in_executor`. Added graceful fallback logic to Ollama requests falling back to Groq Cloud API when unresponsive.
+**Blast radius before:** A transient failure in Twilio, Sendgrid, or an AI provider would cause endpoints like authentication and AI scanning to immediately 500 error for users. Heavy latency on those external calls could also hang the event loop, causing denial of service for other endpoints.
+**Watch for:** Ensure new external API endpoints or background jobs correctly use `backend.core.resilience` decorators and asynchronous offloading to prevent propagating instability.

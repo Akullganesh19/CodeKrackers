@@ -1,0 +1,6 @@
+## 2025-03-01 — Predictive SMS Scan Pre-computation
+**Product understood as:** VSDP is a vishing and smishing defense platform that analyzes user inputs (like SMS texts) for regional Indian scams, generates FIRs, and logs evidence on the blockchain. The platform's SMS scanner analyzes the content of messages and warns users if it detects malicious intent.
+**Prediction invented:** Predictive SMS Scan Pre-computation (Oracle engine). The system automatically initiates a backend network request to evaluate an SMS message for scams as the user is typing or pasting it into the text area, without waiting for them to click the "Analyze SMS" button. It debounces inputs and caches the API response.
+**Data used:** The signal used is the `onChange` event from the SMS input `<textarea>`. It debounces typing to capture the intent when the user finishes pasting or pauses typing.
+**Impact:** When the user explicitly clicks "Analyze SMS", the network latency is effectively removed. Instead of waiting for a round-trip to the inference engine (typically 300-800ms), the frontend instantly resolves the prediction from the background-fetched cache, creating an immediate ("zero-latency") UI update.
+**Next opportunity:** Prefetching data for the "Call Monitor" page or proactively calculating threat risk for known active caller IDs in the background before the call initiates.

@@ -9,6 +9,7 @@ from ..models.orm import FIR, Threat, User
 from .ipc_tagger import tag_ipc_sections
 from ..utils.pdf_builder import generate_fir_pdf
 
+
 async def generate_fir_pipeline(db: AsyncSession, threat_id: uuid.UUID) -> FIR:
     """
     Executes the complete FIR generation pipeline:
@@ -18,7 +19,7 @@ async def generate_fir_pipeline(db: AsyncSession, threat_id: uuid.UUID) -> FIR:
     4. Document Production: Builds a tamper-proof PDF FIR.
     5. Persistence: Stores the record and document path in the database.
     """
-    
+
     # 1. Gather required data from Threat and User tables
     result = await db.execute(
         select(Threat, User)
@@ -26,7 +27,7 @@ async def generate_fir_pipeline(db: AsyncSession, threat_id: uuid.UUID) -> FIR:
         .where(Threat.id == threat_id)
     )
     data = result.first()
-    
+
     if not data:
         raise ValueError(f"Threat with ID {threat_id} or associated User not found.")
 
@@ -34,7 +35,7 @@ async def generate_fir_pipeline(db: AsyncSession, threat_id: uuid.UUID) -> FIR:
 
     # 2. Analyze threat for legal tagging
     # risk_factors in extra_info are used to determine specific offences (e.g. Identity Theft vs Cheating)
-    risk_factors = (threat.extra_info or {}).get('risk_factors', [])
+    risk_factors = (threat.extra_info or {}).get("risk_factors", [])
     ipc_tags = tag_ipc_sections(threat.type, risk_factors)
 
     # 3. Initialize the FIR record to obtain an ID
@@ -48,9 +49,9 @@ async def generate_fir_pipeline(db: AsyncSession, threat_id: uuid.UUID) -> FIR:
         scammer_details={
             "caller_id": threat.caller_id,
             "sender_id": threat.sender_id,
-            "urls": threat.suspicious_urls
+            "urls": threat.suspicious_urls,
         },
-        status='draft'
+        status="draft",
     )
 
     db.add(new_fir)
@@ -72,9 +73,9 @@ async def generate_fir_pipeline(db: AsyncSession, threat_id: uuid.UUID) -> FIR:
         "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "complainant": new_fir.complainant,
         "offence_type": new_fir.offence_type.upper(),
-        "ipc_sections": [tag['section'] for tag in ipc_tags],
+        "ipc_sections": [tag["section"] for tag in ipc_tags],
         "raw_content": threat.raw_content or "No content captured",
-        "evidence_hash": threat.evidence_hash or "NOT_Hashed"
+        "evidence_hash": threat.evidence_hash or "NOT_Hashed",
     }
 
     # Trigger PDF Generation

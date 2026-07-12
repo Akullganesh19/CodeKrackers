@@ -28,6 +28,6 @@ from .orm import (
     ChildLockMode,
     FIRStatus,
     SpamType,
-    SpamAction
+    SpamAction,
 )
 from .threat import ThreatStatus

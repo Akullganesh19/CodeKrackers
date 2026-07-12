@@ -1,0 +1,6 @@
+## 2025-03-09 — Auth Ecosystem Migration
+**Risk identified:** The backend authentication system relied on two aging dependencies: `passlib` (abandoned and fundamentally incompatible with modern `bcrypt` >= 4.0.0 due to structural changes) and `python-jose` (largely unmaintained, increasing risk of unresolved CVEs). Leaving these in place risked breaking updates, runtime crashes, and future security vulnerabilities.
+**Migration target:** The modern ecosystem standard: replacing `passlib` with the native `bcrypt` package (while enforcing the necessary 72-byte limit to prevent hashes from silently truncating or crashing) and replacing `python-jose` with the actively maintained `PyJWT`.
+**Migrated this session:** Replaced `passlib[bcrypt]` and `python-jose[cryptography]` in `requirements.txt`. Migrated hashing and verification functions in `backend/core/security.py` to use native `bcrypt`. Migrated JWT encode/decode logic in `backend/core/security.py` and exceptions in `backend/core/deps.py` to `PyJWT`. Enforced a 72-byte max password length in validation logic.
+**Remaining:** No immediate remaining work for core Auth libraries.
+**Next session:** Assess other dependencies or frameworks approaching EOL.

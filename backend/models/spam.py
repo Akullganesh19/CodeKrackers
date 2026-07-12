@@ -1,7 +1,20 @@
 """
 Spam Shield models — real-time spam call/SMS detection and auto-blocking.
 """
-from sqlalchemy import Column, Integer, String, Boolean, Float, DateTime, ForeignKey, JSON, Text, Index, Enum
+
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    Boolean,
+    Float,
+    DateTime,
+    ForeignKey,
+    JSON,
+    Text,
+    Index,
+    Enum,
+)
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import enum
@@ -12,7 +25,7 @@ from backend.db.base_class import Base, TimestampMixin
 class SpamAction(str, enum.Enum):
     ALLOW = "allow"
     BLOCK = "block"
-    FLAG = "flag"          # Flag for review
+    FLAG = "flag"  # Flag for review
     QUARANTINE = "quarantine"  # Hold for manual approval
 
 
@@ -23,25 +36,25 @@ class SpamType(str, enum.Enum):
 
 class SpamReport(TimestampMixin, Base):
     """Community-reported spam calls/SMS."""
+
     __tablename__ = "spam_report"
 
     id = Column(Integer, primary_key=True, index=True)
     reporter_id = Column(Integer, ForeignKey("user.id"), nullable=False, index=True)
     phone_number = Column(String(64), nullable=False, index=True)
     spam_type = Column(Enum(SpamType), nullable=False)
-    content = Column(Text, nullable=True)          # SMS text or call description
-    category = Column(String(64), nullable=True)   # telemarketing, fraud, robocall, etc.
+    content = Column(Text, nullable=True)  # SMS text or call description
+    category = Column(String(64), nullable=True)  # telemarketing, fraud, robocall, etc.
     is_verified = Column(Boolean, default=False)
 
     reporter = relationship("User")
 
-    __table_args__ = (
-        Index("ix_spam_phone_type", "phone_number", "spam_type"),
-    )
+    __table_args__ = (Index("ix_spam_phone_type", "phone_number", "spam_type"),)
 
 
 class SpamFilter(TimestampMixin, Base):
     """User-configurable spam filtering rules."""
+
     __tablename__ = "spam_filter"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -69,6 +82,7 @@ class SpamFilter(TimestampMixin, Base):
 
 class SpamLog(TimestampMixin, Base):
     """Log of every spam check performed — forensic record."""
+
     __tablename__ = "spam_log"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -80,6 +94,4 @@ class SpamLog(TimestampMixin, Base):
     reason = Column(Text, nullable=True)
     content_snippet = Column(String(200), nullable=True)
 
-    __table_args__ = (
-        Index("ix_spamlog_user_time", "user_id", "created_at"),
-    )
+    __table_args__ = (Index("ix_spamlog_user_time", "user_id", "created_at"),)

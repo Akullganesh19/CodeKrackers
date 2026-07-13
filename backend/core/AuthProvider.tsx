@@ -27,7 +27,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    syncAuthState();
+    setTimeout(syncAuthState, 0);
     // Sync state across tabs if one tab logs out
     window.addEventListener('storage', syncAuthState);
     return () => window.removeEventListener('storage', syncAuthState);

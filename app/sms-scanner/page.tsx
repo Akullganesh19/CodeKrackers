@@ -16,6 +16,7 @@ import {
   Loader2
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Oracle } from '@/app/lib/oracle'
 
 export default function SMSScannerPage() {
   const [mounted, setMounted] = useState(false)
@@ -29,8 +30,29 @@ export default function SMSScannerPage() {
     tags: string[];
   }>(null)
 
+  const typingTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  // Oracle 🔮: Detect when user stops typing and pre-compute the scan
   React.useEffect(() => {
-    setMounted(true)
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      if (text.trim().length > 15) {
+        const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+        Oracle.preComputeScan(text, token);
+      }
+    }, 800); // 800ms debounce
+
+    return () => {
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    };
+  }, [text]);
+
+
+  React.useEffect(() => {
+    setTimeout(() => setMounted(true), 0)
   }, [])
 
   const handleAnalyze = async () => {
@@ -40,6 +62,14 @@ export default function SMSScannerPage() {
     setResult(null)
 
     try {
+      // Oracle 🔮: Check if we already predicted this request
+      const prediction = await Oracle.resolvePrediction(text);
+      if (prediction) {
+        setResult(prediction);
+        setLoading(false);
+        return;
+      }
+
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
       const response = await fetch('http://localhost:8000/api/analytics/scan', {
         method: 'POST',

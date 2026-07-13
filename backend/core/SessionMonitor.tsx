@@ -104,7 +104,7 @@ export default function SessionMonitor({
 
   useEffect(() => {
     // Initial check
-    checkSession();
+    setTimeout(checkSession, 0);
 
     // Dynamically adjust interval: 1s for smooth countdown if warning is active,
     // otherwise use the background refresh rate.

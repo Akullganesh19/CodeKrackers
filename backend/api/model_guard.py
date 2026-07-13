@@ -146,7 +146,7 @@ def api_verify_model(
     is_valid, model = verify_model_integrity(db, name, file_path)
     if not model:
         raise HTTPException(status_code=404, detail="No active version found")
-    
+
     return {
         "is_valid": is_valid,
         "model_name": model.name,
@@ -168,12 +168,12 @@ def api_inference_logs(
 ):
     """View recent inference API calls and model extraction risk scores."""
     query = db.query(ModelInferenceLog).order_by(ModelInferenceLog.created_at.desc())
-    
+
     if suspicious_only:
         query = query.filter(ModelInferenceLog.is_suspicious == True)
-    
+
     logs = query.limit(limit).all()
-    
+
     return {
         "total_found": len(logs),
         "suspicious_count": sum(1 for l in logs if l.is_suspicious),
@@ -204,7 +204,7 @@ def api_adversarial_test(
 ):
     """
     Test a model's robustness against adversarial examples.
-    
+
     Applies common text perturbations (char swap, leet speak, whitespace)
     and measures how many flip the model's prediction.
     Returns an adversarial robustness score.
@@ -217,7 +217,7 @@ def api_adversarial_test(
         text_lower = text.lower()
         score = sum(1 for kw in scam_keywords if kw in text_lower)
         return 1 if score >= 2 else 0
-    
+
     test_samples = [
         "Your Aadhaar KYC is expiring. Update now to avoid suspension.",
         "Your parcel has been blocked by customs. Pay ₹500 to release.",
@@ -228,16 +228,16 @@ def api_adversarial_test(
         "Congratulations! You've won a lottery of ₹10 lakhs. Call now.",
     ]
     test_labels = [1, 1, 1, 0, 0, 0, 1]
-    
+
     robustness_score = compute_adversarial_robustness_score(
         model_predict_fn=mock_predict,
         test_samples=test_samples,
         test_labels=test_labels,
     )
-    
+
     # Generate augmented training data
     aug_samples, aug_labels = generate_adversarial_training_data(test_samples, test_labels)
-    
+
     return {
         "model_name": model_name,
         "adversarial_robustness_score": round(robustness_score, 4),
@@ -264,18 +264,18 @@ async def api_secure_detect_sms(
 ):
     """
     SMS detection with model extraction monitoring.
-    
+
     In addition to threat detection, this endpoint:
     1. Logs every inference for extraction analysis
     2. Detects parameterized queries (>50 QPM = extraction)
     3. Rate-limits based on extraction risk score
-    
+
     This replaces the unprotected /detect/sms endpoint.
     """
     client_ip = request.client.host if request.client else "unknown"
     user_agent = request.headers.get("user-agent", "unknown")
     start_time = time.time()
-    
+
     # 1. Run detection (reuse existing logic)
     # For now, use keyword-based detection
     scam_keywords = [
@@ -287,9 +287,9 @@ async def api_secure_detect_sms(
     keyword_score = sum(1 for kw in scam_keywords if kw in content_lower)
     is_scam = keyword_score >= 2
     confidence = min(keyword_score * 0.2, 1.0)
-    
+
     response_time_ms = (time.time() - start_time) * 1000
-    
+
     # 2. Log inference for extraction detection
     extraction_detector = get_extraction_detector()
     log_entry = extraction_detector.log_inference(
@@ -302,7 +302,7 @@ async def api_secure_detect_sms(
         user_agent=user_agent,
         api_key=f"user_{current_user.id}",
     )
-    
+
     # 3. Build response with security context
     result = {
         "is_scam": is_scam,
@@ -314,11 +314,11 @@ async def api_secure_detect_sms(
             "reason": log_entry.suspicion_reason or "normal",
         },
     }
-    
+
     if log_entry.is_suspicious:
         logger.warning(
             "MODEL EXTRACTION SUSPECTED on /detect endpoint: user=%d ip=%s risk=%.3f",
             current_user.id, client_ip, log_entry.extraction_risk_score,
         )
-    
+
     return result

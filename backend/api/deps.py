@@ -32,13 +32,13 @@ async def get_current_token_payload(token: str = Depends(oauth2_scheme)) -> dict
     return payload
 
 async def get_current_user(
-    db: AsyncSession = Depends(get_db), 
+    db: AsyncSession = Depends(get_db),
     payload: dict = Depends(get_current_token_payload)
 ) -> User:
     user_id = payload.get("sub")
     if not user_id:
         raise HTTPException(status_code=401, detail="Invalid token")
-    
+
     # First try lookup by primary key (real JWTs store str(user.id) as sub)
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()

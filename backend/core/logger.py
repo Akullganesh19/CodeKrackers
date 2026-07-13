@@ -7,12 +7,23 @@ def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
     """
     Configure standard logging and structlog.
     """
-    # Configure standard logging to route through structlog
+    from backend.core.redaction import redact_string, redact_data
+
+    class RedactingFormatter(logging.Formatter):
+        def format(self, record):
+            original_msg = super().format(record)
+            return redact_string(original_msg)
+
+    # Configure standard logging to route through structlog with redaction
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(RedactingFormatter("%(message)s"))
     logging.basicConfig(
-        format="%(message)s",
-        stream=sys.stdout,
+        handlers=[handler],
         level=log_level,
     )
+
+    def structlog_redactor(logger, log_method, event_dict):
+        return redact_data(event_dict)
 
     processors = [
         structlog.contextvars.merge_contextvars,
@@ -22,6 +33,7 @@ def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
         structlog.processors.TimeStamper(fmt="iso"),
         structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
+        structlog_redactor,
     ]
 
     if json_logs:

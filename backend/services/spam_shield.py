@@ -187,8 +187,8 @@ def check_spam(
                 points = ai_result["score_increase"]
                 spam_score += points
                 breakdown.append({
-                    "factor": f"AI Deep Scan: {ai_result['reason']}", 
-                    "points": f"+{points}", 
+                    "factor": f"AI Deep Scan: {ai_result['reason']}",
+                    "points": f"+{points}",
                     "type": "negative"
                 })
 
@@ -242,7 +242,7 @@ def _result(
 
     if action == SpamAction.BLOCK:
         logger.warning("SPAM_BLOCKED phone=%s score=%.2f reason=%s", phone, score, reason_str[:80])
-        
+
         # Trigger real-time notification to the user's phone
         user = db.query(User).filter(User.id == user_id).first()
         if user and user.phone_number:

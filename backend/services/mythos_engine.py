@@ -43,15 +43,15 @@ class MythosForensicEngine:
         This simulates the model 'thinking' about the intent over multiple loops.
         """
         logger.info(f"Mythos Engine: Starting 16-loop latent analysis on metadata...")
-        
+
         # Simulate input tensor
         # In a real setup, we'd tokenize the content
         input_ids = torch.randint(0, self.config.vocab_size, (1, 32))
-        
+
         with torch.no_grad():
             # Run the recurrent pass with 16 loops for 'deep reasoning'
             logits = self.model(input_ids, n_loops=16)
-            
+
         # Analysis complete
         return {
             "engine": "OpenMythos RDT",

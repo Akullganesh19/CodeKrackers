@@ -1,6 +1,6 @@
 def tag_ipc_sections(threat_type: str, risk_factors: list) -> list[dict]:
     """
-    Auto-tags relevant IPC (Indian Penal Code) and IT Act sections 
+    Auto-tags relevant IPC (Indian Penal Code) and IT Act sections
     based on the detected threat type and risk factors.
     """
     sections = []

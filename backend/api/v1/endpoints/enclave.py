@@ -74,7 +74,7 @@ class KeyExchangeRequest(BaseModel):
 async def detect_sms_endpoint(request: SMSDetectionRequest) -> Dict[str, Any]:
     """
     Classify an SMS message inside the hardware enclave.
-    
+
     The SMS text is encrypted with AES-256-GCM, sent over vsock to the
     Nitro Enclave, classified inside isolated memory, and the result
     is encrypted and returned.
@@ -106,7 +106,7 @@ async def detect_sms_endpoint(request: SMSDetectionRequest) -> Dict[str, Any]:
 async def detect_voice_endpoint(request: VoiceDetectionRequest) -> Dict[str, Any]:
     """
     Classify a voice call transcript inside the hardware enclave.
-    
+
     Detects vishing (voice phishing) patterns including coercion,
     impersonation, and urgent-action requests.
     """
@@ -140,7 +140,7 @@ async def attestation_endpoint(
 ) -> Dict[str, Any]:
     """
     Get cryptographic proof that the enclave is genuine hardware.
-    
+
     Returns PCR values (Platform Configuration Registers) that represent
     the enclave's identity — image hash, kernel hash, application hash.
     """
@@ -181,7 +181,7 @@ async def enclave_health_endpoint() -> Dict[str, Any]:
 async def key_exchange_endpoint(request: KeyExchangeRequest) -> Dict[str, Any]:
     """
     Set the shared AES-256-GCM encryption key for enclave communication.
-    
+
     This key should be obtained via the Nitro Attestation process:
     1. Enclave generates a key during boot
     2. Host calls GET /attestation to get the enclave's attestation
@@ -195,7 +195,7 @@ async def key_exchange_endpoint(request: KeyExchangeRequest) -> Dict[str, Any]:
             "note": "Mock mode — key exchange not needed",
             "mode": "mock",
         }
-    
+
     try:
         key_bytes = bytes.fromhex(request.shared_key_hex)
         set_shared_key(key_bytes)
@@ -228,7 +228,7 @@ async def key_exchange_endpoint(request: KeyExchangeRequest) -> Dict[str, Any]:
 async def enclave_status_endpoint() -> Dict[str, Any]:
     """Get comprehensive enclave security configuration status."""
     health = check_enclave_health()
-    
+
     return {
         "enclave_type": "AWS Nitro Enclaves" if not MOCK_MODE else "Mock Enclave (Demo)",
         "encryption": "AES-256-GCM",

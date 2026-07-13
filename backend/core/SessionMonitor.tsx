@@ -96,7 +96,7 @@ export default function SessionMonitor({
     setIsRefreshing(false);
     if (success) {
       setShowWarning(false);
-      checkSession(); // Re-check session to update expiry time
+      setTimeout(() => checkSession(), 0); // Re-check session to update expiry time
     } else {
       // refreshToken already calls logout on failure
     }
@@ -104,7 +104,7 @@ export default function SessionMonitor({
 
   useEffect(() => {
     // Initial check
-    checkSession();
+    setTimeout(() => checkSession(), 0);
 
     // Dynamically adjust interval: 1s for smooth countdown if warning is active,
     // otherwise use the background refresh rate.

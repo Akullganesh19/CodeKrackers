@@ -1,7 +1,6 @@
 """
 Legal endpoints: FIR generation with digital signatures and chain of custody.
 """
-
 import logging
 from typing import Any, List
 
@@ -9,9 +8,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from backend.api import deps
-from backend.models import FIR, Evidence, FIRStatus, Threat, User, UserRole
-from backend.schemas.legal import FIR as FIRSchema
-from backend.schemas.legal import FIRCreate
+from backend.models import Evidence, FIR, FIRStatus, Threat, User, UserRole
+from backend.schemas.legal import FIR as FIRSchema, FIRCreate
 from backend.utils.pdf import generate_fir_pdf
 
 logger = logging.getLogger("vas.legal")
@@ -31,13 +29,9 @@ def create_fir(
 
     # RBAC: only owner, officers, or admins can generate FIR
     if threat.owner_id != current_user.id and current_user.role not in {
-        UserRole.ADMIN,
-        UserRole.OFFICER,
-        UserRole.SUPER_ADMIN,
+        UserRole.ADMIN, UserRole.OFFICER, UserRole.SUPER_ADMIN
     }:
-        raise HTTPException(
-            status_code=403, detail="Not authorized to report this threat"
-        )
+        raise HTTPException(status_code=403, detail="Not authorized to report this threat")
 
     # Idempotency: return existing FIR if already generated
     existing_fir = db.query(FIR).filter(FIR.threat_id == threat_id).first()
@@ -58,16 +52,14 @@ def create_fir(
 
     # Generate digitally signed PDF
     threat_details = {
-        "type": threat.type.value if hasattr(threat.type, "value") else threat.type,
+        "type": threat.type.value if hasattr(threat.type, 'value') else threat.type,
         "source_number": threat.source_number,
         "content": threat.content,
         "confidence_score": threat.confidence_score,
     }
 
     try:
-        pdf_path, signature = generate_fir_pdf(
-            fir.id, current_user.full_name, threat_details
-        )
+        pdf_path, signature = generate_fir_pdf(fir.id, current_user.full_name, threat_details)
         fir.fir_copy_path = pdf_path
     except Exception as e:
         logger.error("PDF_GENERATION_FAILED fir_id=%d: %s", fir.id, e)
@@ -87,10 +79,7 @@ def create_fir(
 
     logger.info(
         "FIR_GENERATED id=%d threat=%d reporter=%d signature=%s",
-        fir.id,
-        threat_id,
-        current_user.id,
-        signature[:16] + "...",
+        fir.id, threat_id, current_user.id, signature[:16] + "...",
     )
     return fir
 
@@ -103,12 +92,7 @@ def read_firs(
     """Retrieve FIRs with RBAC filtering."""
     if current_user.role in {UserRole.ADMIN, UserRole.OFFICER, UserRole.SUPER_ADMIN}:
         return db.query(FIR).order_by(FIR.created_at.desc()).all()
-    return (
-        db.query(FIR)
-        .filter(FIR.reporter_id == current_user.id)
-        .order_by(FIR.created_at.desc())
-        .all()
-    )
+    return db.query(FIR).filter(FIR.reporter_id == current_user.id).order_by(FIR.created_at.desc()).all()
 
 
 @router.patch("/firs/{fir_id}/status")
@@ -133,7 +117,5 @@ def update_fir_status(
         )
 
     db.commit()
-    logger.info(
-        "FIR_STATUS_UPDATED id=%d status=%s by=%d", fir_id, new_status, current_user.id
-    )
+    logger.info("FIR_STATUS_UPDATED id=%d status=%s by=%d", fir_id, new_status, current_user.id)
     return {"id": fir_id, "status": fir.status}

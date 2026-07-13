@@ -1,22 +1,18 @@
-from typing import Any, AsyncGenerator, Generator
-
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy import select
+from typing import AsyncGenerator, Generator, Any
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
-
-from ..core import security
 from ..core.database import AsyncSessionLocal, SessionLocal
 from ..models.orm import User, UserRole
+from sqlalchemy import select
+from ..core import security
+from fastapi.security import OAuth2PasswordBearer
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
-
 
 async def get_db() -> AsyncGenerator:
     async with AsyncSessionLocal() as session:
         yield session
-
 
 def get_db_sync() -> Generator:
     db = SessionLocal()
@@ -24,7 +20,6 @@ def get_db_sync() -> Generator:
         yield db
     finally:
         db.close()
-
 
 async def get_current_token_payload(token: str = Depends(oauth2_scheme)) -> dict:
     payload = security.decode_token(token)
@@ -36,10 +31,9 @@ async def get_current_token_payload(token: str = Depends(oauth2_scheme)) -> dict
         )
     return payload
 
-
 async def get_current_user(
     db: AsyncSession = Depends(get_db),
-    payload: dict = Depends(get_current_token_payload),
+    payload: dict = Depends(get_current_token_payload)
 ) -> User:
     user_id = payload.get("sub")
     if not user_id:
@@ -58,38 +52,22 @@ async def get_current_user(
         raise HTTPException(status_code=401, detail="User not found")
     return user
 
-
-async def get_current_active_user(
-    current_user: User = Depends(get_current_user),
-) -> User:
+async def get_current_active_user(current_user: User = Depends(get_current_user)) -> User:
     if not current_user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
-
-async def get_current_active_admin(
-    current_user: User = Depends(get_current_active_user),
-) -> User:
+async def get_current_active_admin(current_user: User = Depends(get_current_active_user)) -> User:
     if current_user.role not in [UserRole.ADMIN, UserRole.SUPER_ADMIN]:
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return current_user
 
-
-async def get_current_officer_or_admin(
-    current_user: User = Depends(get_current_active_user),
-) -> User:
-    if current_user.role not in [
-        UserRole.OFFICER,
-        UserRole.ADMIN,
-        UserRole.SUPER_ADMIN,
-    ]:
+async def get_current_officer_or_admin(current_user: User = Depends(get_current_active_user)) -> User:
+    if current_user.role not in [UserRole.OFFICER, UserRole.ADMIN, UserRole.SUPER_ADMIN]:
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return current_user
 
-
-async def get_current_active_superuser(
-    current_user: User = Depends(get_current_active_user),
-) -> User:
+async def get_current_active_superuser(current_user: User = Depends(get_current_active_user)) -> User:
     if current_user.role != UserRole.SUPER_ADMIN:
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return current_user

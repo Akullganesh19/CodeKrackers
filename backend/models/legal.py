@@ -1,10 +1,8 @@
 """Legal models: Evidence chain and FIR with full audit trail."""
-
-import enum
-
-from sqlalchemy import Column, DateTime, Enum, ForeignKey, Index, Integer, String, Text
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, Enum, Index
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+import enum
 
 from backend.db.base_class import Base, TimestampMixin
 
@@ -58,7 +56,9 @@ class FIR(TimestampMixin, Base):
     reporter = relationship("User", back_populates="firs")
     threat = relationship("Threat")
 
-    __table_args__ = (Index("ix_fir_status_reporter", "status", "reporter_id"),)
+    __table_args__ = (
+        Index("ix_fir_status_reporter", "status", "reporter_id"),
+    )
 
     def __repr__(self) -> str:
         return f"<FIR(id={self.id}, status={self.status}, threat_id={self.threat_id})>"

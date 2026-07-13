@@ -3,12 +3,11 @@ import sys
 
 import structlog
 
-
 def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
     """
     Configure standard logging and structlog.
     """
-    from backend.core.redaction import redact_data, redact_string
+    from backend.core.redaction import redact_string, redact_data
 
     class RedactingFormatter(logging.Formatter):
         def format(self, record):
@@ -48,7 +47,6 @@ def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
         wrapper_class=structlog.stdlib.BoundLogger,
         cache_logger_on_first_use=True,
     )
-
 
 def get_logger(name: str):
     """

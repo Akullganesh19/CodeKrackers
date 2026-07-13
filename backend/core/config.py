@@ -1,8 +1,6 @@
-import os
-from typing import Optional
-
 from pydantic_settings import BaseSettings
-
+from typing import Optional
+import os
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "VSDP - Vishing & Smishing Defense Platform"
@@ -39,6 +37,5 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
-
 
 settings = Settings()

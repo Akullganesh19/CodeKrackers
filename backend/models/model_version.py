@@ -1,19 +1,6 @@
 """Model versioning with checksum verification to prevent supply chain poisoning."""
-
 from datetime import datetime
-
-from sqlalchemy import (
-    JSON,
-    Boolean,
-    Column,
-    DateTime,
-    Float,
-    Index,
-    Integer,
-    LargeBinary,
-    String,
-    Text,
-)
+from sqlalchemy import Column, Integer, String, DateTime, Text, Float, Boolean, JSON, Index, LargeBinary
 from sqlalchemy.sql import func
 
 from backend.db.base_class import Base, TimestampMixin
@@ -27,22 +14,17 @@ class ModelVersion(Base, TimestampMixin):
     Every model is registered with SHA-384 hash, source info, and
     a signed manifest before deployment.
     """
-
     __tablename__ = "model_versions"
 
     id = Column(Integer, primary_key=True, index=True)
 
     # Model identity
-    name = Column(
-        String(128), nullable=False, index=True
-    )  # e.g., "smishing-bert", "voice-rawnet2"
+    name = Column(String(128), nullable=False, index=True)  # e.g., "smishing-bert", "voice-rawnet2"
     version = Column(String(32), nullable=False, index=True)  # semver: "1.2.3"
     framework = Column(String(32), nullable=False)  # transformers, pytorch, sklearn
 
     # Checksum verification
-    sha384_hash = Column(
-        String(96), nullable=False
-    )  # SHA-384 hex digest of model weights
+    sha384_hash = Column(String(96), nullable=False)  # SHA-384 hex digest of model weights
     file_size_bytes = Column(Integer, nullable=False)
     original_filename = Column(String(256), nullable=True)
 
@@ -60,20 +42,14 @@ class ModelVersion(Base, TimestampMixin):
     # Quality metrics
     accuracy = Column(Float, nullable=True)
     f1_score = Column(Float, nullable=True)
-    adversarial_robustness = Column(
-        Float, nullable=True
-    )  # Robustness score against ART attacks
+    adversarial_robustness = Column(Float, nullable=True)  # Robustness score against ART attacks
 
     # Metadata
-    tags = Column(
-        JSON, nullable=True
-    )  # {"purpose": "smishing_detection", "language": "en"}
+    tags = Column(JSON, nullable=True)  # {"purpose": "smishing_detection", "language": "en"}
     notes = Column(Text, nullable=True)
 
     # Watermark
-    watermark_embedding = Column(
-        LargeBinary, nullable=True
-    )  # Serialized watermark fingerprint
+    watermark_embedding = Column(LargeBinary, nullable=True)  # Serialized watermark fingerprint
     watermark_verified = Column(Boolean, default=False, nullable=False)
 
     # Deployment
@@ -98,7 +74,6 @@ class ModelInferenceLog(Base, TimestampMixin):
     - >50 identical-structure queries/min = likely model extraction
     - Unusual input distributions = probing for vulnerabilities
     """
-
     __tablename__ = "model_inference_logs"
 
     id = Column(Integer, primary_key=True, index=True)

@@ -1,25 +1,10 @@
-import enum
 import uuid
 from datetime import datetime
-
-from sqlalchemy import (
-    JSON,
-    Boolean,
-    Column,
-    DateTime,
-    Enum,
-    Float,
-    ForeignKey,
-    Index,
-    Integer,
-    String,
-    Text,
-    func,
-)
-from sqlalchemy.orm import declarative_base, relationship
+import enum
+from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime, Text, ForeignKey, JSON, func, Index, Enum
+from sqlalchemy.orm import relationship, declarative_base
 
 Base = declarative_base()
-
 
 class ThreatType(str, enum.Enum):
     vishing = "vishing"
@@ -35,7 +20,6 @@ class ThreatType(str, enum.Enum):
     PHISHING = "phishing"
     OTHER = "other"
 
-
 class ThreatSeverity(str, enum.Enum):
     critical = "critical"
     high = "high"
@@ -50,7 +34,6 @@ class ThreatSeverity(str, enum.Enum):
     LOW = "low"
     INFO = "info"
 
-
 class UserRole(str, enum.Enum):
     citizen = "citizen"
     officer = "officer"
@@ -63,7 +46,6 @@ class UserRole(str, enum.Enum):
     ADMIN = "admin"
     SUPER_ADMIN = "super_admin"
 
-
 class FIRStatus(str, enum.Enum):
     DRAFT = "draft"
     SUBMITTED = "submitted"
@@ -71,17 +53,14 @@ class FIRStatus(str, enum.Enum):
     REJECTED = "rejected"
     CLOSED = "closed"
 
-
 class SpamType(str, enum.Enum):
     CALL = "call"
     SMS = "sms"
-
 
 class SpamAction(str, enum.Enum):
     ALLOW = "allow"
     BLOCK = "block"
     FLAG = "flag"
-
 
 class User(Base):
     __tablename__ = "users"
@@ -102,7 +81,6 @@ class User(Base):
     threats = relationship("Threat", back_populates="user")
     firs = relationship("FIR", back_populates="user")
     score_history = relationship("ScoreHistory", back_populates="user")
-
 
 class Threat(Base):
     __tablename__ = "threats"
@@ -127,14 +105,11 @@ class Threat(Base):
     user = relationship("User", back_populates="threats")
     evidence_blocks = relationship("Evidence", back_populates="threat")
     fir = relationship("FIR", back_populates="threat", uselist=False)
-    honeypot_session = relationship(
-        "HoneypotSession", back_populates="threat", uselist=False
-    )
+    honeypot_session = relationship("HoneypotSession", back_populates="threat", uselist=False)
 
     __table_args__ = (
-        Index("ix_threats_caller_id_detected_at", "caller_id", "detected_at"),
+        Index('ix_threats_caller_id_detected_at', 'caller_id', 'detected_at'),
     )
-
 
 class Evidence(Base):
     __tablename__ = "evidence_chain"
@@ -151,7 +126,6 @@ class Evidence(Base):
 
     threat = relationship("Threat", back_populates="evidence_blocks")
 
-
 class FIR(Base):
     __tablename__ = "firs"
 
@@ -165,7 +139,6 @@ class FIR(Base):
 
     threat = relationship("Threat", back_populates="fir")
     user = relationship("User", back_populates="firs")
-
 
 class HoneypotSession(Base):
     __tablename__ = "honeypot_sessions"
@@ -181,7 +154,6 @@ class HoneypotSession(Base):
 
     threat = relationship("Threat", back_populates="honeypot_session")
 
-
 class ScoreHistory(Base):
     __tablename__ = "score_history"
 
@@ -192,19 +164,17 @@ class ScoreHistory(Base):
 
     user = relationship("User", back_populates="score_history")
 
-
 class BlacklistType(str, enum.Enum):
     PHONE = "phone"
     URL = "url"
     IP = "ip"
     WALLET = "wallet"
 
-
 class Blacklist(Base):
     __tablename__ = "blacklist"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    value = Column(String(255), unique=True, index=True)  # Phone or URL
-    type = Column(Enum(BlacklistType))  # PHONE, URL, IP
+    value = Column(String(255), unique=True, index=True) # Phone or URL
+    type = Column(Enum(BlacklistType)) # PHONE, URL, IP
     reason = Column(Text)
     severity = Column(String(20), default="high")
     confidence = Column(Float, default=0.7)
@@ -213,12 +183,11 @@ class Blacklist(Base):
     source = Column(String(100), default="ai_detection")
     added_at = Column(DateTime, server_default=func.now())
 
-
 class CanaryTrap(Base):
     __tablename__ = "canary_traps"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     token = Column(String(255), unique=True, index=True)
-    token_type = Column(String(50))  # EMAIL, PHONE, URL
+    token_type = Column(String(50)) # EMAIL, PHONE, URL
     fake_email = Column(String(255))
     fake_phone = Column(String(20))
     fake_ssn = Column(String(20))
@@ -235,13 +204,11 @@ class CanaryTrap(Base):
     access_count = Column(Integer, default=0)
     created_at = Column(DateTime, server_default=func.now())
 
-
 class ChildLockMode(str, enum.Enum):
     FULL_LOCKDOWN = "full_lockdown"
     WHITELIST_ONLY = "whitelist_only"
     MONITOR_ONLY = "monitor_only"
     OFF = "off"
-
 
 class ChildProfile(Base):
     __tablename__ = "child_profiles"
@@ -252,7 +219,7 @@ class ChildProfile(Base):
     is_active = Column(Boolean, default=True)
     lock_mode = Column(Enum(ChildLockMode), default=ChildLockMode.OFF)
     allow_emergency_calls = Column(Boolean, default=True)
-    emergency_contacts = Column(JSON)  # List of numbers
+    emergency_contacts = Column(JSON) # List of numbers
     whitelisted_contacts = Column(JSON)
     block_all_calls = Column(Boolean, default=False)
     block_unknown_calls = Column(Boolean, default=True)
@@ -269,17 +236,15 @@ class ChildProfile(Base):
     allowed_sms_end = Column(String(5), default="21:00")
     created_at = Column(DateTime, server_default=func.now())
 
-
 class ChildActivityLog(Base):
     __tablename__ = "child_activity_logs"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     child_profile_id = Column(String(36), ForeignKey("child_profiles.id"))
-    event_type = Column(String(50))  # call_allowed, call_blocked, sms_filtered, etc.
+    event_type = Column(String(50)) # call_allowed, call_blocked, sms_filtered, etc.
     phone_number = Column(String(20))
     reason = Column(String(255))
     content_snippet = Column(Text)
     timestamp = Column(DateTime, server_default=func.now())
-
 
 class IntelLog(Base):
     __tablename__ = "intel_logs"
@@ -290,16 +255,14 @@ class IntelLog(Base):
     reputation_score = Column(Float)
     timestamp = Column(DateTime, server_default=func.now())
 
-
 class LegalDocument(Base):
     __tablename__ = "legal_documents"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     threat_id = Column(String(36), ForeignKey("threats.id"))
-    doc_type = Column(String(50))  # FIR, NOTICE, EVIDENCE_REPORT
+    doc_type = Column(String(50)) # FIR, NOTICE, EVIDENCE_REPORT
     file_path = Column(String(512))
-    sections_applied = Column(JSON)  # IPC/IT Act sections
+    sections_applied = Column(JSON) # IPC/IT Act sections
     created_at = Column(DateTime, server_default=func.now())
-
 
 class AuditLog(Base):
     __tablename__ = "audit_logs"
@@ -309,7 +272,6 @@ class AuditLog(Base):
     resource = Column(String(100))
     details = Column(JSON)
     timestamp = Column(DateTime, server_default=func.now())
-
 
 class ModelVersion(Base):
     __tablename__ = "model_versions"
@@ -330,7 +292,7 @@ class ModelVersion(Base):
     is_active = Column(Boolean, default=True)
     deployed_at = Column(DateTime)
     deployment_artifact = Column(String(512))
-    watermark_embedding = Column(Text)  # Storing as hex/base64 for simplicity
+    watermark_embedding = Column(Text) # Storing as hex/base64 for simplicity
     watermark_verified = Column(Boolean, default=False)
     adversarial_robustness = Column(Float)
     tags = Column(JSON)
@@ -338,7 +300,6 @@ class ModelVersion(Base):
     created_at = Column(DateTime, server_default=func.now())
     approved_by = Column(String(100))
     approved_at = Column(DateTime)
-
 
 class ModelInferenceLog(Base):
     __tablename__ = "model_inference_logs"
@@ -357,7 +318,6 @@ class ModelInferenceLog(Base):
     extraction_risk_score = Column(Float)
     created_at = Column(DateTime, server_default=func.now())
 
-
 class UserConsent(Base):
     __tablename__ = "user_consents"
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -373,7 +333,6 @@ class UserConsent(Base):
     revoked_at = Column(DateTime)
     consent_given_at = Column(DateTime, server_default=func.now())
 
-
 class PhoneLookup(Base):
     __tablename__ = "phone_lookups"
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -388,7 +347,6 @@ class PhoneLookup(Base):
     fraud_indicators = Column(JSON)
     threat_id = Column(String(36), ForeignKey("threats.id"), nullable=True)
     created_at = Column(DateTime, server_default=func.now())
-
 
 class DeviceInfo(Base):
     __tablename__ = "device_info"
@@ -415,7 +373,6 @@ class DeviceInfo(Base):
     language = Column(String(10))
     created_at = Column(DateTime, server_default=func.now())
 
-
 class SpamReport(Base):
     __tablename__ = "spam_reports"
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -425,7 +382,6 @@ class SpamReport(Base):
     content = Column(Text)
     category = Column(String(50))
     created_at = Column(DateTime, server_default=func.now())
-
 
 class SpamFilter(Base):
     __tablename__ = "spam_filters"
@@ -443,7 +399,6 @@ class SpamFilter(Base):
     silent_block = Column(Boolean, default=False)
     auto_report_blocked = Column(Boolean, default=False)
     created_at = Column(DateTime, server_default=func.now())
-
 
 class SpamLog(Base):
     __tablename__ = "spam_logs"

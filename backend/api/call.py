@@ -1,31 +1,21 @@
-import asyncio
-import io
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, WebSocket, WebSocketDisconnect
+from sqlalchemy.ext.asyncio import AsyncSession
+import uuid
 import os
 import shutil
 import tempfile
-import uuid
+import asyncio
 import wave
-
-from fastapi import (
-    APIRouter,
-    Depends,
-    File,
-    HTTPException,
-    UploadFile,
-    WebSocket,
-    WebSocketDisconnect,
-)
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Session
+import io
 
 # Internal module imports
 from backend.api import deps
 from backend.api.deps import get_current_active_user as get_current_user
-
-from ..models.orm import Threat, ThreatSeverity, ThreatType
-from ..services.risk_scorer import RiskScorer
 from ..services.transcriber import AudioTranscriber
 from ..services.voice_detector import VoiceDeepfakeDetector
+from ..services.risk_scorer import RiskScorer
+from ..models.orm import Threat, ThreatType, ThreatSeverity
+from sqlalchemy.orm import Session
 
 # Initialize analysis engines
 transcriber = AudioTranscriber()
@@ -34,17 +24,16 @@ risk_engine = RiskScorer()
 
 # Constants for WebSocket audio processing
 BUFFER_TIME_SECONDS = 3
-SAMPLE_RATE = 16000  # Hz
+SAMPLE_RATE = 16000 # Hz
 
 router = APIRouter(tags=["Call Analysis"])
-
 
 @router.post("/analyze-audio")
 async def analyze_audio(
     file: UploadFile = File(...),
     caller_id: str = None,
     db: Session = Depends(deps.get_db_sync),
-    current_user=Depends(get_current_user),
+    current_user = Depends(get_current_user)
 ):
     """
     Analyzes a call audio file for vishing threats.
@@ -59,7 +48,7 @@ async def analyze_audio(
     try:
         # --- 2. DEEPFAKE & TRANSCRIPTION ANALYSIS ---
         transcript_text = "Analysis in progress..."
-        deepfake_prob = 0.02  # Default safe
+        deepfake_prob = 0.02 # Default safe
 
         try:
             # 2a. Real Deepfake Detection (Look for AI markers)
@@ -73,13 +62,10 @@ async def analyze_audio(
             print(f"Deepfake/STT Engine Fallback: {te}")
             # Mock some interesting data for the demo if engines are missing
             transcript_text = "I am calling from head office. This is an automated voice message regarding your SIM card."
-            deepfake_prob = 0.94  # High probability for demo
+            deepfake_prob = 0.94 # High probability for demo
 
         # --- 3. HYBRID RISK SCORING ---
-        is_scam_text = any(
-            kw in transcript_text.lower()
-            for kw in ["trai", "aadhaar", "otp", "police", "arrest"]
-        )
+        is_scam_text = any(kw in transcript_text.lower() for kw in ["trai", "aadhaar", "otp", "police", "arrest"])
         is_deepfake = deepfake_prob > 0.5
 
         # Combined risk: Higher if BOTH text and voice are suspicious
@@ -89,25 +75,17 @@ async def analyze_audio(
         threat = Threat(
             user_id=current_user.id,
             type=ThreatType.VISHING,
-            severity=(
-                ThreatSeverity.CRITICAL
-                if final_risk > 0.85
-                else ThreatSeverity.HIGH if final_risk > 0.5 else ThreatSeverity.LOW
-            ),
+            severity=ThreatSeverity.CRITICAL if final_risk > 0.85 else ThreatSeverity.HIGH if final_risk > 0.5 else ThreatSeverity.LOW,
             status="detected",
             raw_content=transcript_text,
             risk_score=final_risk,
-            confidence=0.92,  # Confidence in the AI verdict
+            confidence=0.92, # Confidence in the AI verdict
             caller_id=caller_id,
             extra_info={
                 "deepfake_probability": deepfake_prob,
                 "is_ai_voice": is_deepfake,
-                "flagged_keywords": (
-                    ["AI Voice Pattern", "Impersonation"]
-                    if is_deepfake
-                    else ["Financial Scam"] if is_scam_text else []
-                ),
-            },
+                "flagged_keywords": ["AI Voice Pattern", "Impersonation"] if is_deepfake else ["Financial Scam"] if is_scam_text else []
+            }
         )
         db.add(threat)
         db.commit()
@@ -122,7 +100,7 @@ async def analyze_audio(
             "transcript": transcript_text,
             "deepfake_probability": deepfake_prob,
             "is_ai_voice": is_deepfake,
-            "flagged_keywords": threat.extra_info.get("flagged_keywords", []),
+            "flagged_keywords": threat.extra_info.get("flagged_keywords", [])
         }
 
     except Exception as e:
@@ -130,7 +108,7 @@ async def analyze_audio(
         return {
             "verdict": "ERROR",
             "transcript": "Could not process audio file.",
-            "risk_score": 0,
+            "risk_score": 0
         }
 
     finally:
@@ -138,10 +116,11 @@ async def analyze_audio(
         if os.path.exists(tmp_path):
             os.remove(tmp_path)
 
-
 @router.websocket("/ws/{session_id}")
 async def websocket_endpoint(
-    websocket: WebSocket, session_id: str, db: Session = Depends(deps.get_db_sync)
+    websocket: WebSocket,
+    session_id: str,
+    db: Session = Depends(deps.get_db_sync)
 ):
     """
     WebSocket endpoint for real-time streaming audio analysis.
@@ -170,15 +149,15 @@ async def websocket_endpoint(
                 if audio_buffer.tell() >= BUFFER_TIME_SECONDS * bytes_per_second:
                     audio_buffer.seek(0)
                     current_buffer_data = audio_buffer.read()
-                    audio_buffer.seek(0)  # Reset for next write
+                    audio_buffer.seek(0) # Reset for next write
                     audio_buffer.truncate(0)
 
                     # Write accumulated audio to WAV file for Whisper
-                    with wave.open(tmp_wav_path, "wb") as wf:
-                        wf.setnchannels(1)  # Mono
-                        wf.setsampwidth(2)  # 16-bit
+                    with wave.open(tmp_wav_path, 'wb') as wf:
+                        wf.setnchannels(1) # Mono
+                        wf.setsampwidth(2) # 16-bit
                         wf.setframerate(SAMPLE_RATE)
-                        wf.writeframes(total_audio_data)  # Write all accumulated audio
+                        wf.writeframes(total_audio_data) # Write all accumulated audio
 
                     # Transcribe the accumulated audio
                     transcription_result = transcriber.transcribe(tmp_wav_path)
@@ -189,9 +168,7 @@ async def websocket_endpoint(
                     last_transcript_length = len(full_transcript)
 
                     # Extract flagged phrases from the full transcript
-                    flagged_phrases = transcriber.extract_flagged_phrases(
-                        full_transcript
-                    )
+                    flagged_phrases = transcriber.extract_flagged_phrases(full_transcript)
 
                     # Simple real-time risk level based on flagged keywords
                     current_risk_level = "low"
@@ -202,30 +179,24 @@ async def websocket_endpoint(
 
                     alert = current_risk_level in ["medium", "high"]
 
-                    await websocket.send_json(
-                        {
-                            "transcript_chunk": transcript_chunk,
-                            "flagged_keywords": [
-                                hit["phrase"] for hit in flagged_phrases
-                            ],
-                            "current_risk_level": current_risk_level,
-                            "alert": alert,
-                        }
-                    )
+                    await websocket.send_json({
+                        "transcript_chunk": transcript_chunk,
+                        "flagged_keywords": [hit["phrase"] for hit in flagged_phrases],
+                        "current_risk_level": current_risk_level,
+                        "alert": alert
+                    })
 
             except WebSocketDisconnect:
                 print(f"WebSocket disconnected for session {session_id}")
                 break
             except Exception as e:
-                print(
-                    f"Error during WebSocket processing for session {session_id}: {e}"
-                )
+                print(f"Error during WebSocket processing for session {session_id}: {e}")
                 await websocket.send_json({"error": str(e)})
                 break
 
         # On connection close, perform final full analysis
         if total_audio_data:
-            with wave.open(tmp_wav_path, "wb") as wf:
+            with wave.open(tmp_wav_path, 'wb') as wf:
                 wf.setnchannels(1)
                 wf.setsampwidth(2)
                 wf.setframerate(SAMPLE_RATE)
@@ -235,9 +206,7 @@ async def websocket_endpoint(
             # This would ideally be a separate service call or a refactored function
             # For now, simulate the call to the existing analyze_audio logic
             # Note: This part needs a proper user_id and potentially a different way to pass the file
-            print(
-                f"Performing final analysis on {len(total_audio_data)} bytes of audio for session {session_id}"
-            )
+            print(f"Performing final analysis on {len(total_audio_data)} bytes of audio for session {session_id}")
             # In a real scenario, you'd call a background task or a dedicated function here
             # to avoid blocking the websocket close.
 

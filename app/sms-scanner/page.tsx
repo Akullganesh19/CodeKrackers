@@ -52,7 +52,7 @@ export default function SMSScannerPage() {
 
 
   React.useEffect(() => {
-    setMounted(true)
+    setTimeout(() => setMounted(true), 0)
   }, [])
 
   const handleAnalyze = async () => {

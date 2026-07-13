@@ -18,6 +18,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("Idle");
 
+
   useEffect(() => {
     requestSmsPermission();
     // Auto-scan every 10 seconds

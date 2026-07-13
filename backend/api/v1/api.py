@@ -1,31 +1,34 @@
 from fastapi import APIRouter
+
 from backend.api.v1.endpoints import (
-    login,
-    users,
-    threats,
-    legal,
     analytics,
-    detection,
-    honeypot,
-    honeypot_traps,
-    honeypot_root,
-    canary,
-    model_guard,
-    zk_privacy,
-    blacklist,
-    export,
-    intel,
-    spam,
-    childlock,
-    enclave,
     auth,
+    blacklist,
+    canary,
+    childlock,
+    detection,
+    enclave,
+    export,
+    honeypot,
+    honeypot_root,
+    honeypot_traps,
+    intel,
+    legal,
+    login,
+    model_guard,
+    spam,
+    threats,
+    users,
+    zk_privacy,
 )
 
 api_router = APIRouter()
 
+
 @api_router.get("/health", tags=["system"])
 def health_check():
     return {"status": "healthy", "version": "2.1.0", "environment": "vercel"}
+
 
 api_router.include_router(login.router, tags=["auth"])
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
@@ -44,5 +47,7 @@ api_router.include_router(childlock.router, prefix="/childlock", tags=["child-lo
 api_router.include_router(canary.router, prefix="/canary", tags=["canary"])
 api_router.include_router(honeypot_root.router, tags=["honeypot-root"])
 api_router.include_router(model_guard.router, prefix="/models", tags=["model-security"])
-api_router.include_router(zk_privacy.router, prefix="/zk", tags=["zero-knowledge-privacy"])
+api_router.include_router(
+    zk_privacy.router, prefix="/zk", tags=["zero-knowledge-privacy"]
+)
 api_router.include_router(enclave.router, prefix="/enclave", tags=["nitro-enclaves"])

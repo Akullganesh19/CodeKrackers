@@ -5,6 +5,7 @@ import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
 import OpenClawStatus from '@/components/OpenClawStatus'
 import { motion, AnimatePresence } from 'framer-motion'
+import { phantomFetch } from '@/app/lib/fetch'
 import {
   ShieldAlert,
   Users,
@@ -176,7 +177,8 @@ export default function Dashboard() {
     async function fetchSummary() {
       try {
         const token = typeof window !== 'undefined' ? localStorage.getItem('vsdp_token') : null
-        const res = await fetch('http://localhost:8000/api/analytics/dashboard-summary', {
+        // Oracle 🔮: Use phantomFetch to coalesce parallel network requests
+        const res = await phantomFetch('http://localhost:8000/api/analytics/dashboard-summary', {
           headers: { 'Authorization': `Bearer ${token || 'dummy_token'}` }
         })
         if (res.ok) {

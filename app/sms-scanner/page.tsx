@@ -15,7 +15,12 @@ import {
   BarChart3,
   Loader2
 } from 'lucide-react'
+
 import { motion, AnimatePresence } from 'framer-motion'
+
+// --- Predictive Cache ---
+const predictiveCache: Record<string, Promise<Response>> = {}
+
 
 export default function SMSScannerPage() {
   const [mounted, setMounted] = useState(false)
@@ -29,6 +34,45 @@ export default function SMSScannerPage() {
     tags: string[];
   }>(null)
 
+  const debounceTimerRef = React.useRef<NodeJS.Timeout | null>(null)
+
+  const triggerPredictiveScan = (textToScan: string) => {
+    if (!textToScan.trim()) return;
+
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      const trimmedText = textToScan.trim();
+      const cacheKey = trimmedText;
+
+      if (cacheKey in predictiveCache) return;
+
+      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+      const promise = fetch('http://localhost:8000/api/analytics/scan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ text: trimmedText })
+      }).then(res => {
+        if (!res.ok) {
+           throw new Error(`HTTP Error ${res.status}`);
+        }
+        return res;
+      }).catch((err) => {
+        delete predictiveCache[cacheKey];
+        console.error("Background fetch failed", err);
+        return new Response(null, { status: 500, statusText: "Background fetch failed" });
+      });
+
+      predictiveCache[cacheKey] = promise;
+    }, 500);
+  }
+
+
   React.useEffect(() => {
     setMounted(true)
   }, [])
@@ -41,14 +85,23 @@ export default function SMSScannerPage() {
 
     try {
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
+      const trimmedText = text.trim();
+      let response;
+
+      if (trimmedText in predictiveCache) {
+         response = await predictiveCache[trimmedText];
+         // Remove from cache once used so the stream isn't read twice on subsequent clicks
+         delete predictiveCache[trimmedText];
+      } else {
+         response = await fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text: trimmedText })
+        });
+      }
       
       console.log("Response Status:", response.status);
       if (!response.ok) {
@@ -70,18 +123,22 @@ export default function SMSScannerPage() {
       }
     } catch (error) {
       console.error("Connection Error:", error);
-      alert(`Connection failed: Make sure the backend is running on port 8000.\nDetails: ${error instanceof Error ? error.message : String(error)}`);
+      alert(`Connection failed: Make sure the backend is running on port 8000.
+Details: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setLoading(false);
     }
   }
 
   const loadSample = (type: 'scam' | 'safe') => {
+    let newText = '';
     if (type === 'scam') {
-      setText('URGENT: Your SBI account will be blocked in 24hrs. Update KYC now: http://sbi-kyc-update.xyz/verify')
+      newText = 'URGENT: Your SBI account will be blocked in 24hrs. Update KYC now: http://sbi-kyc-update.xyz/verify';
     } else {
-      setText('Your OTP for SBI NetBanking is 847291. Valid 10 min. Do not share with anyone. -SBI')
+      newText = 'Your OTP for SBI NetBanking is 847291. Valid 10 min. Do not share with anyone. -SBI';
     }
+    setText(newText);
+    triggerPredictiveScan(newText);
   }
 
   const handleReportToCybercrime = async () => {
@@ -172,7 +229,10 @@ export default function SMSScannerPage() {
               <div className="relative group">
                 <textarea
                   value={text}
-                  onChange={(e) => setText(e.target.value)}
+                                    onChange={(e) => {
+                    setText(e.target.value);
+                    triggerPredictiveScan(e.target.value);
+                  }}
                   placeholder="Paste suspicious SMS here..."
                   className="w-full bg-surface/50 border border-white/10 rounded-lg p-5 font-mono text-sm min-height-[140px] focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder:text-white/10 resize-none h-40"
                 />

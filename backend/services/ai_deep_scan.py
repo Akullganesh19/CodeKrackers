@@ -4,25 +4,8 @@ from groq import Groq
 from backend.core.config import settings
 from backend.services.ollama_scan import ollama_deep_scan
 import requests
-from backend.core.resilience import with_retries, circuit_breaker
 
 logger = logging.getLogger("vas.ai_scan")
-
-import httpx
-
-@with_retries(max_retries=3, base_delay=1.0, exceptions=(httpx.RequestError, requests.RequestException))
-@circuit_breaker(failure_threshold=3, recovery_timeout=60.0, exceptions=(httpx.RequestError, requests.RequestException))
-def _call_groq(client: Groq, prompt: str, source_type: str) -> dict:
-    chat_completion = client.chat.completions.create(
-        messages=[
-            {"role": "system", "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection."},
-            {"role": "user", "content": prompt}
-        ],
-        model=settings.GROQ_MODEL,
-        response_format={"type": "json_object"}
-    )
-    import json
-    return json.loads(chat_completion.choices[0].message.content)
 
 def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     """
@@ -60,7 +43,17 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
         4. "risk_factors": list of strings
         """
 
-        result = _call_groq(client, prompt, source_type)
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection."},
+                {"role": "user", "content": prompt}
+            ],
+            model=settings.GROQ_MODEL,
+            response_format={"type": "json_object"}
+        )
+
+        import json
+        result = json.loads(chat_completion.choices[0].message.content)
         
         return {
             "score_increase": round(result.get("confidence", 0.0), 2) if result.get("is_scam") else 0.0,

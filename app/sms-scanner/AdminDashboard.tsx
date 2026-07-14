@@ -5,6 +5,7 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line
 } from 'recharts';
 import dynamic from 'next/dynamic';
+import { phantomFetch } from '@/app/lib/fetch'
 
 // Dynamically import Map to avoid SSR issues with Leaflet
 const ScammerMap = dynamic(() => import('./ScammerMap'), { ssr: false });
@@ -18,7 +19,7 @@ export default function AdminDashboard() {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const response = await fetch('/api/analytics/admin/dashboard');
+                const response = await phantomFetch('/api/analytics/admin/dashboard', { ttl: 60000 });
                 const data = await response.json();
                 setStats(data.stats);
                 setTrend(data.visualization.threat_trend_7d);
@@ -38,7 +39,8 @@ export default function AdminDashboard() {
         if (!points || isNaN(parseFloat(points))) return;
 
         try {
-            const response = await fetch('/api/analytics/admin/reward-user', {
+            const response = await phantomFetch('/api/analytics/admin/reward-user', {
+          ttl: 60000, // 1 min cache
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ user_id: userId, points: parseFloat(points) })

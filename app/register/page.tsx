@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 // import ReCAPTCHA from 'react-google-recaptcha' // Temporarily disabled if package not installed, or I'll install it
 import { Shield, Eye, EyeOff, Lock, UserPlus, ArrowRight, Smartphone, Mail, Loader2 } from 'lucide-react'
+import { phantomFetch } from '@/app/lib/fetch'
 
 const roles = [
   { id: 'citizen', label: '👤 Citizen' },
@@ -34,7 +35,7 @@ export default function RegisterPage() {
 
     setIsLoading(true)
     try {
-      const response = await fetch('/api/v1/auth/register', {
+      const response = await phantomFetch('/api/v1/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 

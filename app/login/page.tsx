@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Shield, Check, Eye, EyeOff, Globe, Lock, Cpu, Phone, ArrowRight } from 'lucide-react'
+import { phantomFetch } from '@/app/lib/fetch'
 
 const roles = [
   { id: 'citizen', label: '👤 Citizen' },
@@ -34,7 +35,7 @@ export default function LoginPage() {
       if (email && password) {
         setIsVerifying(true)
         try {
-          const res = await fetch('http://localhost:8000/api/auth/login', {
+          const res = await phantomFetch('http://localhost:8000/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

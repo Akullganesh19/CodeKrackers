@@ -1,4 +1,5 @@
 'use client'
+import { phantomFetch } from '@/app/lib/fetch';
 
 import { useState, useEffect, useCallback } from 'react'
 import Sidebar from '@/components/Sidebar'
@@ -115,6 +116,7 @@ function GridMap() {
 
 import Link from 'next/link'
 
+
 function CommandMetric({ label, val, sub, trend, href, colorClass = "text-accent" }: any) {
   const content = (
     <div className={`vsdp-card p-6 flex flex-col justify-between group h-40 transition-all ${href ? 'hover:border-accent/40 hover:bg-accent/5 cursor-pointer' : ''}`}>
@@ -176,7 +178,8 @@ export default function Dashboard() {
     async function fetchSummary() {
       try {
         const token = typeof window !== 'undefined' ? localStorage.getItem('vsdp_token') : null
-        const res = await fetch('http://localhost:8000/api/analytics/dashboard-summary', {
+        const res = await phantomFetch('http://localhost:8000/api/analytics/dashboard-summary', {
+          ttl: 60000, // 1 min cache
           headers: { 'Authorization': `Bearer ${token || 'dummy_token'}` }
         })
         if (res.ok) {

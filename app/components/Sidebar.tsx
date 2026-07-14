@@ -1,3 +1,4 @@
+import { phantomFetch } from '@/app/lib/fetch';
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
@@ -125,7 +126,7 @@ export default function Sidebar() {
         ...prev,
         [pathname]: 0
       }))
-      // Optional: Add a fetch() call here to notify the backend to persist the "read" state
+      // Optional: Add a phantomFetch() call here to notify the backend to persist the "read" state
     }
   }, [pathname, notifications])
 

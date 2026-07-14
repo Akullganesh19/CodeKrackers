@@ -1,6 +1,7 @@
 import httpx
 import re
 from backend.core.config import settings
+from backend.core.resilience import with_retries, circuit_breaker
 
 def extract_crypto_addresses(text: str) -> list[str]:
     """
@@ -9,6 +10,8 @@ def extract_crypto_addresses(text: str) -> list[str]:
     pattern = r"0x[a-fA-F0-9]{40}"
     return re.findall(pattern, text)
 
+@with_retries(max_retries=3, base_delay=0.5, exceptions=(httpx.RequestError,))
+@circuit_breaker(failure_threshold=5, recovery_timeout=60.0, exceptions=(httpx.RequestError,))
 async def check_crypto_honeypot(address: str) -> dict:
     """
     Check if a crypto address/token is a honeypot using honeypot.is API.

@@ -1,0 +1,6 @@
+## 2026-07-14 — Centralized Logging Redaction for PII
+**Data traced:** Email addresses, phone numbers, and One-Time Passwords (OTPs) (PII).
+**Exposure found:** Plaintext leakage in application logs (`backend/api/auth.py`, `backend/services/notifier.py` and other service endpoints), exposing sensitive data to internal monitoring platforms and developers.
+**Fix:** Created a centralized redaction layer (`backend/core/redaction.py`) with regex strategies for masking emails (e.g. `t***@example.com`), phones (`[REDACTED_PHONE]`), and context-aware OTP codes (`[REDACTED_OTP]`). Injected `RedactingFormatter` and `redact_structlog` into the global logger config in `backend/core/logger.py` to ensure all standard and structured logs are scrubbed securely before dispatch.
+**Coverage confirmed:** Tested standard `logging` and structured `structlog` formatting chains with script validations. Confirmed masking applies reliably without disrupting application functionality or execution logic.
+**Still exposed elsewhere:** There are potential structural gaps around missing consent enforcement endpoints and data deletion capabilities that need future investigation, but active log exposure is now closed.

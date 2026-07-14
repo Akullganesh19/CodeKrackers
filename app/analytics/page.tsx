@@ -1,4 +1,5 @@
 'use client'
+import { phantomFetch } from '@/app/lib/fetch';
 
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
@@ -17,6 +18,7 @@ import {
 
 import { useState, useEffect } from 'react'
 
+
 export default function Analytics() {
   const [mounted, setMounted] = useState(false)
   const [summary, setSummary] = useState<any>(null)
@@ -29,10 +31,12 @@ export default function Analytics() {
       try {
         const token = localStorage.getItem('vsdp_token') || 'dummy_token'
         const [summaryRes, mapRes] = await Promise.all([
-          fetch('http://localhost:8000/api/analytics/dashboard-summary', {
+          phantomFetch('http://localhost:8000/api/analytics/dashboard-summary', {
+          ttl: 60000, // 1 min cache
             headers: { 'Authorization': `Bearer ${token}` }
           }),
-          fetch('http://localhost:8000/api/analytics/threat_map', {
+          phantomFetch('http://localhost:8000/api/analytics/threat_map', {
+          ttl: 60000, // 1 min cache
             headers: { 'Authorization': `Bearer ${token}` }
           })
         ])

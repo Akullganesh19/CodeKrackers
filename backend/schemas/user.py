@@ -15,12 +15,12 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     email: EmailStr
-    password: str = Field(..., min_length=8, max_length=128)
+    password: str = Field(..., min_length=8, max_length=72)
     full_name: str = Field(..., min_length=1, max_length=256)
 
 
 class UserUpdate(UserBase):
-    password: Optional[str] = Field(None, min_length=8, max_length=128)
+    password: Optional[str] = Field(None, min_length=8, max_length=72)
 
 
 class UserInDBBase(UserBase):

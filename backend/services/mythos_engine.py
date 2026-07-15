@@ -3,6 +3,7 @@ import torch
 import logging
 import sys
 import os
+from backend.core.resilience import with_retries, circuit_breaker
 
 # Add OpenMythos to sys.path
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "OpenMythos"))
@@ -37,6 +38,8 @@ class MythosForensicEngine:
         self.model = OpenMythos(self.config)
         self.model.eval()
 
+    @circuit_breaker(failure_threshold=3, recovery_timeout=60.0)
+    @with_retries(max_attempts=2, base_delay=0.5)
     def deep_analyze(self, content_meta: str):
         """
         Performs a 'Deep Recurrence' analysis on the threat metadata.

@@ -16,10 +16,12 @@ import {
   Loader2
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Oracle } from '@/app/lib/oracle'
 
 export default function SMSScannerPage() {
   const [mounted, setMounted] = useState(false)
   const [text, setText] = useState('')
+  const debounceTimer = React.useRef<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<null | {
     isScam: boolean;
@@ -28,6 +30,24 @@ export default function SMSScannerPage() {
     recommendation: string;
     tags: string[];
   }>(null)
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newText = e.target.value;
+    setText(newText);
+
+    // Clear existing timer
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+
+    // Set new timer for pre-computation
+    debounceTimer.current = setTimeout(() => {
+      if (newText.length >= 10) {
+        const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+        Oracle.preComputeScan(newText, token);
+      }
+    }, 500);
+  }
 
   React.useEffect(() => {
     setMounted(true)
@@ -41,14 +61,7 @@ export default function SMSScannerPage() {
 
     try {
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
+      const response = await Oracle.getScanResult(text, token);
       
       console.log("Response Status:", response.status);
       if (!response.ok) {
@@ -172,7 +185,7 @@ export default function SMSScannerPage() {
               <div className="relative group">
                 <textarea
                   value={text}
-                  onChange={(e) => setText(e.target.value)}
+                  onChange={handleTextChange}
                   placeholder="Paste suspicious SMS here..."
                   className="w-full bg-surface/50 border border-white/10 rounded-lg p-5 font-mono text-sm min-height-[140px] focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder:text-white/10 resize-none h-40"
                 />

@@ -5,10 +5,12 @@ import structlog
 
 from backend.core.redaction import redact_string, redact_dict
 
+
 class RedactingFormatter(logging.Formatter):
     def format(self, record):
         msg = super().format(record)
         return redact_string(msg)
+
 
 def redact_structlog_processor(logger, method_name, event_dict):
     event_dict = redact_dict(event_dict)

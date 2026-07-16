@@ -9,10 +9,10 @@ from sqlalchemy.orm import Session
 
 from backend.api import deps
 from backend.core import security
-from backend.models import User, UserRole
+from backend.models import User, UserRole, Threat, ScoreHistory
 from backend.schemas.user import UserCreate, User as UserSchema
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 
 logger = logging.getLogger("vas.users")
 router = APIRouter()
@@ -74,6 +74,42 @@ async def list_users(
     """List all users (admin only)."""
     result = await db.execute(select(User).offset(skip).limit(min(limit, 100)))
     return result.scalars().all()
+
+
+@router.get("/me/safety")
+async def read_user_safety(
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user),
+) -> Any:
+    """Get current user's personal safety profile metrics."""
+    # Fetch score history
+    history_result = await db.execute(
+        select(ScoreHistory)
+        .where(ScoreHistory.user_id == current_user.id)
+        .order_by(ScoreHistory.recorded_at.asc())
+        .limit(30)
+    )
+    score_history = history_result.scalars().all()
+
+    # Fetch reported threats count
+    threats_result = await db.execute(
+        select(func.count(Threat.id))
+        .where(Threat.user_id == current_user.id)
+        .where(Threat.is_reported == True)
+    )
+    reported_threats = threats_result.scalar() or 0
+
+    return {
+        "safety_score": current_user.safety_score,
+        "scams_avoided": current_user.scams_avoided,
+        "reported_threats": reported_threats,
+        "history": [
+            {
+                "score": h.score,
+                "date": h.recorded_at.isoformat() if h.recorded_at else None
+            } for h in score_history
+        ]
+    }
 
 
 @router.put("/me/password")

@@ -15,11 +15,13 @@ import {
   Search,
   Lock,
   LogOut,
-  Bell
+  Bell,
+  Shield
 } from 'lucide-react'
 
 const navItems = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard, roles: ['citizen', 'bank', 'officer', 'admin', 'superadmin'] },
+  { name: 'My Safety Profile', href: '/dashboard/my-safety', icon: Shield, roles: ['citizen', 'bank', 'officer', 'admin', 'superadmin'] },
   { name: 'Report Threat', href: '/dashboard/report', icon: ShieldAlert, roles: ['citizen', 'bank', 'officer', 'admin', 'superadmin'] },
   { name: 'Fraud Verification', href: '/dashboard/verification', icon: Search, roles: ['bank', 'officer', 'admin', 'superadmin'] },
   { name: 'Investigation', href: '/dashboard/investigation', icon: Lock, roles: ['officer', 'admin', 'superadmin'] },

@@ -168,8 +168,8 @@ class EvidenceChain:
             "complainant": {"name": user.full_name, "email": user.email, "phone": user.phone},
             "incident": {c.name: getattr(threat, c.name) for c in threat.__table__.columns},
             "fir_filing": {c.name: getattr(fir, c.name) for c in fir.__table__.columns} if fir else None,
-            "blockchain_audit_trail": [
-                {c.name: getattr(b, c.name) for b in b.__table__.columns} 
+                        "blockchain_audit_trail": [
+                {c.name: getattr(b, c.name) for c in b.__table__.columns}
                 for b in blocks
             ]
         }

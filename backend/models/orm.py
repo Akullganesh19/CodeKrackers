@@ -73,6 +73,8 @@ class User(Base):
     role = Column(Enum(UserRole), server_default=UserRole.CITIZEN)
     rbac_level = Column(Integer, server_default="1")
     is_active = Column(Boolean, server_default="1", default=True)
+    locked_until = Column(DateTime, nullable=True)
+    failed_login_attempts = Column(Integer, server_default="0", default=0)
     safety_score = Column(Float, server_default="100.0", default=100.0)
     scams_avoided = Column(Integer, server_default="0", default=0)
     created_at = Column(DateTime, server_default=func.now())

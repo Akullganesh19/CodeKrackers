@@ -30,24 +30,20 @@ except Exception as e:
 
 class OTPSend(BaseModel):
     identifier: str
-    role: str = "citizen"
 
 class OTPVerify(BaseModel):
     identifier: str
     code: str
-    role: str = "citizen"
 
 class LoginRequest(BaseModel):
     username: str = ""
     email: str = ""
     password: str
-    role: str = "citizen"
 
 class UserRegister(BaseModel):
     email: str
     password: str
     phone_number: Optional[str] = None
-    role: str = "citizen"
 
 @router.post("/send")
 @limiter.limit(settings.RATE_LIMIT_AUTH)
@@ -114,7 +110,7 @@ async def verify_otp(
         )
 
     redis_key = f"otp:{otp_verify.identifier}"
-    stored_code = redis_client.get(redis_key) if redis_client else otp_code # Mock pass if redis down for demo
+    stored_code = redis_client.get(redis_key) if redis_client else otp_verify.code # Mock pass if redis down for demo
 
     if not stored_code or otp_verify.code != stored_code:
         if user:
@@ -130,7 +126,7 @@ async def verify_otp(
             email=otp_verify.identifier if "@" in otp_verify.identifier else None,
             phone_number=otp_verify.identifier if "@" not in otp_verify.identifier else None,
             is_active=True,
-            role=UserRole(otp_verify.role)
+            role=UserRole.CITIZEN
         )
         db.add(user)
         db.commit()
@@ -252,7 +248,7 @@ async def register_user(
         email=user_in.email,
         phone_number=user_in.phone_number,
         hashed_password=security.get_password_hash(user_in.password),
-        role=UserRole(user_in.role),
+        role=UserRole.CITIZEN,
         is_active=True
     )
     db.add(new_user)

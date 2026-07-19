@@ -1,0 +1,6 @@
+## 2025-07-19 — Predictive Smishing Scan
+**Product understood as:** A Vishing & Smishing Defense Platform for scanning suspicious SMS and voice calls in real-time, detecting threats like e-challan, KYC, and Bank Alert scams.
+**Prediction invented:** Implemented a predictive pre-computation engine (`Oracle.preComputeScan`) that triggers an API call while the user is still typing or immediately when they load a sample SMS, using a debounced input handler.
+**Data used:** The `onChange` text content of the SMS input `<textarea>` and sample SMS load triggers.
+**Impact:** Eliminates perceived latency. By the time a user clicks "ANALYZE SMS →", the network request has typically already completed or is in-flight in the background, providing zero-latency threat detection instead of forcing the user to wait for the BERT inference model to load and respond synchronously.
+**Next opportunity:** Expand the Oracle module to predict and prefetch the dashboard metrics or call-monitoring components based on historical user navigation paths.

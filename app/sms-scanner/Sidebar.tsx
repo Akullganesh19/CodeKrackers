@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { phantomFetch } from '@/app/lib/fetch';
 
 const navItems = [
     { name: 'SMS Scanner', href: '/scanner', icon: '📱' },
@@ -22,11 +21,7 @@ export default function Sidebar() {
     const [isExpiringSoon, setIsExpiringSoon] = useState(false);
 
     useEffect(() => {
-        phantomFetch('/api/analytics/safety-score', {
-            ttl: 30000,
-            swr: true,
-            retries: 3
-        })
+        fetch('/api/analytics/safety-score')
             .then(res => res.json())
             .then(data => {
                 setSafetyData(data);

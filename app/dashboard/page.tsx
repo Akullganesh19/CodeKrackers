@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Sidebar from '@/components/Sidebar'
-import { phantomFetch } from '@/app/lib/fetch'
 import Topbar from '@/components/Topbar'
 import OpenClawStatus from '@/components/OpenClawStatus'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -177,11 +176,8 @@ export default function Dashboard() {
     async function fetchSummary() {
       try {
         const token = typeof window !== 'undefined' ? localStorage.getItem('vsdp_token') : null
-        const res = await phantomFetch('http://localhost:8000/api/analytics/dashboard-summary', {
-          headers: { 'Authorization': `Bearer ${token || 'dummy_token'}` },
-          ttl: 30000,
-          swr: true,
-          retries: 3
+        const res = await fetch('http://localhost:8000/api/analytics/dashboard-summary', {
+          headers: { 'Authorization': `Bearer ${token || 'dummy_token'}` }
         })
         if (res.ok) {
           const data = await res.json()

@@ -1,4 +1,6 @@
 'use client'
+import { phantomFetch } from '@/app/lib/fetch';
+
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'

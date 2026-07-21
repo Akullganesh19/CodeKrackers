@@ -1,8 +1,9 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
+import { Oracle } from '@/app/lib/oracle'
 import {
   ShieldAlert,
   ShieldCheck,
@@ -21,6 +22,7 @@ export default function SMSScannerPage() {
   const [mounted, setMounted] = useState(false)
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(false)
+  const predictTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [result, setResult] = useState<null | {
     isScam: boolean;
     confidence: number;
@@ -41,14 +43,11 @@ export default function SMSScannerPage() {
 
     try {
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
+
+      // ORACLE PREDICTIVE INTELLIGENCE:
+      // We retrieve the result from the predictive cache if available,
+      // avoiding a full round-trip network delay.
+      const response = await Oracle.getScanResult(text, token);
       
       console.log("Response Status:", response.status);
       if (!response.ok) {
@@ -76,12 +75,38 @@ export default function SMSScannerPage() {
     }
   }
 
-  const loadSample = (type: 'scam' | 'safe') => {
-    if (type === 'scam') {
-      setText('URGENT: Your SBI account will be blocked in 24hrs. Update KYC now: http://sbi-kyc-update.xyz/verify')
-    } else {
-      setText('Your OTP for SBI NetBanking is 847291. Valid 10 min. Do not share with anyone. -SBI')
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newText = e.target.value;
+    setText(newText);
+
+    // ORACLE PREDICTIVE INTELLIGENCE:
+    // Debounce the input and preemptively trigger the backend scan
+    // while the user is still typing or pausing. When they finally click "Analyze",
+    // the result will likely already be loaded in the cache, yielding a 0ms wait.
+    if (predictTimeoutRef.current) {
+      clearTimeout(predictTimeoutRef.current);
     }
+
+    if (newText.trim().length > 15) {
+      predictTimeoutRef.current = setTimeout(() => {
+        const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+        Oracle.preComputeScan(newText, token);
+      }, 500); // 500ms debounce
+    }
+  }
+
+  const loadSample = (type: 'scam' | 'safe') => {
+    let sampleText = '';
+    if (type === 'scam') {
+      sampleText = 'URGENT: Your SBI account will be blocked in 24hrs. Update KYC now: http://sbi-kyc-update.xyz/verify';
+    } else {
+      sampleText = 'Your OTP for SBI NetBanking is 847291. Valid 10 min. Do not share with anyone. -SBI';
+    }
+    setText(sampleText);
+
+    // Preemptively scan sample text
+    const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+    Oracle.preComputeScan(sampleText, token);
   }
 
   const handleReportToCybercrime = async () => {
@@ -172,7 +197,7 @@ export default function SMSScannerPage() {
               <div className="relative group">
                 <textarea
                   value={text}
-                  onChange={(e) => setText(e.target.value)}
+                  onChange={handleTextChange}
                   placeholder="Paste suspicious SMS here..."
                   className="w-full bg-surface/50 border border-white/10 rounded-lg p-5 font-mono text-sm min-height-[140px] focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder:text-white/10 resize-none h-40"
                 />

@@ -1,5 +1,6 @@
 'use client';
 
+import { phantomFetch } from '@/app/lib/fetch';
 import React, { useEffect, useState } from 'react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line
@@ -18,7 +19,7 @@ export default function AdminDashboard() {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const response = await fetch('/api/analytics/admin/dashboard');
+                const response = await phantomFetch('/api/analytics/admin/dashboard');
                 const data = await response.json();
                 setStats(data.stats);
                 setTrend(data.visualization.threat_trend_7d);
@@ -38,7 +39,7 @@ export default function AdminDashboard() {
         if (!points || isNaN(parseFloat(points))) return;
 
         try {
-            const response = await fetch('/api/analytics/admin/reward-user', {
+            const response = await phantomFetch('/api/analytics/admin/reward-user', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ user_id: userId, points: parseFloat(points) })

@@ -1,0 +1,6 @@
+## 2025-01-20 — User Profile Dashboard
+**Product understood as:** VSDP is a platform to detect, analyze, and mitigate voice and SMS-based fraud (Vishing and Smishing).
+**Derivation reasoning:** This product has User models with safety_score and scams_avoided, and tracks Threats tied to a user_id. Users scan SMS and calls. Therefore users obviously need a Profile Dashboard to see their personal safety score, recent scans, and connected devices — because currently they only see global stats and have no way to track their own protection history. It doesn't exist because the initial focus was on the administrative/global command center. I'm building it because it gives individual users (citizens) visibility into how the platform is protecting them specifically.
+**Feature built:** Created an API endpoint `/api/users/profile` and a frontend page `/dashboard/profile` to display user safety score, recent detected threats, and registered devices.
+**User impact:** Users can now view their personal fraud protection history, safety score, and manage their active devices.
+**Next logical feature:** A weekly digest or email notification summarizing the user's fraud protection activity and safety score updates.

@@ -1,0 +1,8 @@
+## 2025-02-28 — Global Request Coalescing and SWR Caching
+
+**Gap found:** Multiple components on identical page routes make identical and synchronous API calls independently. There is no request deduplication resulting in identical API calls being made multiple times within one page load, no edge-cache, and caching layer, resulting in network bottlenecks and perceived latency for the users on initial and frequent data fetches.
+**Why it existed:** The native `fetch` was used without any wrappers globally, with independent client components responsible for data fetching logic with naive assumptions of state.
+**Built:** A `PhantomProvider` that wraps the global `window.fetch` using a client side React context. It intelligently intercepts all standard HTTP `GET` requests, utilizing a Stale-While-Revalidate (SWR) background caching mechanism and coalescing in-flight request streams to ensure any duplicate calls map to single network transactions.
+**Hot path affected:** Every standard native `fetch` HTTP GET request across the entire client side UI. This speeds up dashboard data processing and prevents race conditions or duplicated calls from concurrent component renders.
+**Measurable improvement:** Saved multiple redundant network round-trips for the same data (e.g., dashboard analytics) on navigation. Perceived latency should drop to near-zero milliseconds on navigation as stale data is presented from cache immediately while revalidation occurs silently in the background.
+**Next opportunity:** Investigate adding optimistic state mutation wrappers for the UI to predict the outcomes of actions like API POST operations.

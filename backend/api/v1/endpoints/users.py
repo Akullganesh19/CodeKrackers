@@ -1,6 +1,7 @@
 """
 User management endpoints with password policy and RBAC.
 """
+
 import logging
 from typing import Any, List
 
@@ -18,8 +19,7 @@ logger = logging.getLogger("vas.users")
 router = APIRouter()
 
 
-@router.post("/", response_model=UserSchema,
-             status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=UserSchema, status_code=status.HTTP_201_CREATED)
 def create_user(
     *,
     db: Session = Depends(deps.get_db),
@@ -86,9 +86,7 @@ def change_password(
     old_password = body.get("old_password", "")
     new_password = body.get("new_password", "")
 
-    if not security.verify_password(
-            old_password,
-            current_user.hashed_password):
+    if not security.verify_password(old_password, current_user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Incorrect current password",
@@ -135,17 +133,19 @@ def get_user_profile(
 
     threats_data = []
     for t in recent_threats:
-        threats_data.append({
-            "id": t.id,
-            "type": t.type.value if hasattr(t.type, "value") else t.type,
-            "severity": (t.severity.value if hasattr(t.severity, "value")
-                         else t.severity),
-            "status": t.status,
-            "detected_at": (t.detected_at.isoformat()
-                            if t.detected_at else None),
-            "source_number": t.sender_id or t.caller_id,
-            "confidence": t.confidence
-        })
+        threats_data.append(
+            {
+                "id": t.id,
+                "type": t.type.value if hasattr(t.type, "value") else t.type,
+                "severity": (
+                    t.severity.value if hasattr(t.severity, "value") else t.severity
+                ),
+                "status": t.status,
+                "detected_at": (t.detected_at.isoformat() if t.detected_at else None),
+                "source_number": t.sender_id or t.caller_id,
+                "confidence": t.confidence,
+            }
+        )
 
     devices_data = []
     for d in devices:
@@ -155,24 +155,27 @@ def get_user_profile(
         os_v = d.os_version or ""
         dev_name = f"{brand} {model}".strip() or "Unknown"
         os_full = f"{os_n} {os_v}".strip()
-        reg_at = d.created_at.isoformat() \
-            if getattr(d, "created_at", None) else None
+        reg_at = d.created_at.isoformat() if getattr(d, "created_at", None) else None
 
-        devices_data.append({
-            "id": d.id,
-            "device": dev_name,
-            "os": os_full,
-            "ip": d.ip_address,
-            "registered_at": reg_at
-        })
+        devices_data.append(
+            {
+                "id": d.id,
+                "device": dev_name,
+                "os": os_full,
+                "ip": d.ip_address,
+                "registered_at": reg_at,
+            }
+        )
 
     return {
         "id": current_user.id,
         "email": current_user.email,
         "full_name": current_user.full_name,
-        "role": current_user.role.value if hasattr(
-            current_user.role,
-            'value') else current_user.role,
+        "role": (
+            current_user.role.value
+            if hasattr(current_user.role, "value")
+            else current_user.role
+        ),
         "safety_score": current_user.safety_score,
         "scams_avoided": current_user.scams_avoided,
         "recent_threats": threats_data,

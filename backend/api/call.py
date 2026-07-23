@@ -1,29 +1,31 @@
+import asyncio
+import io
+import os
+import shutil
+import tempfile
+import uuid
+import wave
+
 from fastapi import (
     APIRouter,
     Depends,
+    File,
     HTTPException,
     UploadFile,
-    File,
     WebSocket,
     WebSocketDisconnect,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
-import uuid
-import os
-import shutil
-import tempfile
-import asyncio
-import wave
-import io
+from sqlalchemy.orm import Session
 
 # Internal module imports
 from backend.api import deps
 from backend.api.deps import get_current_active_user as get_current_user
+
+from ..models.orm import Threat, ThreatSeverity, ThreatType
+from ..services.risk_scorer import RiskScorer
 from ..services.transcriber import AudioTranscriber
 from ..services.voice_detector import VoiceDeepfakeDetector
-from ..services.risk_scorer import RiskScorer
-from ..models.orm import Threat, ThreatType, ThreatSeverity
-from sqlalchemy.orm import Session
 
 # Initialize analysis engines
 transcriber = AudioTranscriber()

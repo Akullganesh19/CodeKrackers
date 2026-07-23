@@ -8,23 +8,23 @@ import re
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from sqlalchemy.orm import Session
 from sqlalchemy import func
+from sqlalchemy.orm import Session
 
+from backend.core.config import settings
+from backend.models import Blacklist as BlacklistEntry
 from backend.models import (
-    SpamReport,
+    BlacklistType,
+    SpamAction,
     SpamFilter,
     SpamLog,
-    SpamAction,
+    SpamReport,
     SpamType,
-    Blacklist as BlacklistEntry,
-    BlacklistType,
     User,
 )
-from backend.services.phone_intel import analyze_phone_number
 from backend.services.ai_deep_scan import ai_deep_scan
 from backend.services.notifier import send_threat_alert
-from backend.core.config import settings
+from backend.services.phone_intel import analyze_phone_number
 
 logger = logging.getLogger("vas.spam")
 

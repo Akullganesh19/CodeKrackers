@@ -1,18 +1,19 @@
 """Blacklist and reputation models for threat intelligence."""
 
+import enum
+
 from sqlalchemy import (
+    Boolean,
     Column,
+    DateTime,
+    Enum,
+    Float,
+    Index,
     Integer,
     String,
-    DateTime,
-    Boolean,
-    Float,
     Text,
-    Index,
-    Enum,
 )
 from sqlalchemy.sql import func
-import enum
 
 from backend.db.base_class import Base, TimestampMixin
 

@@ -1,7 +1,8 @@
+import logging
+from typing import List, Optional
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List, Optional
-import logging
 
 logger = logging.getLogger("vas.openclaw")
 router = APIRouter()

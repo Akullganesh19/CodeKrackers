@@ -7,7 +7,8 @@ import logging
 from typing import Any, Dict, Optional
 
 import phonenumbers
-from phonenumbers import carrier, geocoder, timezone as pn_tz, number_type
+from phonenumbers import carrier, geocoder, number_type
+from phonenumbers import timezone as pn_tz
 from phonenumbers.phonenumberutil import PhoneNumberType
 from sqlalchemy.orm import Session
 

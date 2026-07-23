@@ -1,12 +1,12 @@
-import sys
 import os
+import sys
 
 # Add the project root to sys.path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from backend.core.config import settings
 from backend.db.base import Base  # noqa
 from backend.db.session import engine  # noqa
-from backend.core.config import settings
 
 
 def migrate():

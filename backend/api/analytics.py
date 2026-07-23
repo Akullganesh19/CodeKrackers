@@ -2,28 +2,28 @@
 Analytics endpoints with real aggregation queries and trend analysis.
 """
 
+import json
 import logging
+import os
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from fastapi import APIRouter, Depends, Query, HTTPException
-from sqlalchemy import func, case, select
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
 from backend.api import deps
 from backend.models.orm import (
     FIR,
-    Threat,
-    User,
     Blacklist,
     BlacklistType,
-    ThreatType,
+    Threat,
     ThreatSeverity,
+    ThreatType,
+    User,
 )
 from backend.utils.ai import client as groq_client
-import json
-import os
 
 logger = logging.getLogger("vas.analytics")
 router = APIRouter()

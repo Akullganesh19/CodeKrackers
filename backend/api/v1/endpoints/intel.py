@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from backend.api import deps
 from backend.models.intel import DeviceInfo, PhoneLookup, UserConsent
 from backend.models.user import User
-from backend.services.phone_intel import lookup_phone_number, check_user_consent
+from backend.services.phone_intel import check_user_consent, lookup_phone_number
 
 logger = logging.getLogger("vas.intel")
 router = APIRouter()

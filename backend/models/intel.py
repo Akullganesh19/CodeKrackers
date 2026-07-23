@@ -4,15 +4,15 @@ All data collection requires explicit user consent (GDPR/IT Act compliant).
 """
 
 from sqlalchemy import (
+    JSON,
+    Boolean,
     Column,
+    DateTime,
+    ForeignKey,
+    Index,
     Integer,
     String,
-    DateTime,
-    Boolean,
-    ForeignKey,
     Text,
-    JSON,
-    Index,
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func

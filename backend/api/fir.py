@@ -1,13 +1,15 @@
+import os
+import uuid
+
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-import uuid
-import os
-from ..core.database import get_db
-from ..services.generator import generate_fir_pipeline
 from pydantic import BaseModel
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from ..core.database import get_db
 from ..models.orm import FIR
+from ..services.generator import generate_fir_pipeline
 
 router = APIRouter(tags=["FIR Management"])
 

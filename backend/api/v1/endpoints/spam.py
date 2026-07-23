@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from backend.api import deps
-from backend.models.spam import SpamFilter, SpamReport, SpamLog, SpamType
+from backend.models.spam import SpamFilter, SpamLog, SpamReport, SpamType
 from backend.models.user import User
 from backend.services.spam_shield import check_spam
 

@@ -1,17 +1,18 @@
 """Model versioning with checksum verification to prevent supply chain poisoning."""
 
 from datetime import datetime
+
 from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    DateTime,
-    Text,
-    Float,
-    Boolean,
     JSON,
+    Boolean,
+    Column,
+    DateTime,
+    Float,
     Index,
+    Integer,
     LargeBinary,
+    String,
+    Text,
 )
 from sqlalchemy.sql import func
 

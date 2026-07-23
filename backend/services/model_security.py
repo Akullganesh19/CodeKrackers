@@ -9,24 +9,24 @@ Uses IBM Adversarial Robustness Toolbox (ART) for adversarial training
 and Radioactive Data techniques for model watermarking.
 """
 
-import os
-import json
-import time
 import hashlib
+import json
 import logging
+import os
+import time
 
 try:
     import numpy as np
 except ImportError:
     np = None
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Any
 from collections import defaultdict, deque
 from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 from sqlalchemy.orm import Session
 
-from backend.models import ModelVersion, ModelInferenceLog
+from backend.models import ModelInferenceLog, ModelVersion
 
 logger = logging.getLogger("vas.model_security")
 

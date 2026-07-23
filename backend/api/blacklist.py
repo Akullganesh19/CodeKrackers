@@ -9,8 +9,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from backend.api import deps
+from backend.models.orm import Blacklist as BlacklistEntry
 from backend.models.orm import (
-    Blacklist as BlacklistEntry,
     BlacklistType,
     User,
     UserRole,

@@ -1,5 +1,7 @@
-import httpx
 import re
+
+import httpx
+
 from backend.core.config import settings
 
 

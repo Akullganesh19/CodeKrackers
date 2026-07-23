@@ -15,11 +15,11 @@ In DEMO/MOCK mode (no actual AWS Nitro hardware), this falls back to calling the
 enclave functions directly — simulating what the enclave would do.
 """
 
-import os
 import json
-import socket
 import logging
-from typing import Dict, Any, Optional, Union
+import os
+import socket
+from typing import Any, Dict, Optional, Union
 
 logger = logging.getLogger("vas.enclave_client")
 

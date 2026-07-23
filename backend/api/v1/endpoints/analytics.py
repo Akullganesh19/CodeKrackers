@@ -7,12 +7,12 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import func, case
+from sqlalchemy import case, func
 from sqlalchemy.orm import Session
 
 from backend.api import deps
 from backend.models.legal import FIR
-from backend.models.threat import Threat, ThreatType, ThreatSeverity
+from backend.models.threat import Threat, ThreatSeverity, ThreatType
 from backend.models.user import User
 
 logger = logging.getLogger("vas.analytics")

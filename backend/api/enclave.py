@@ -11,18 +11,18 @@ Architecture:
 """
 
 import logging
-from typing import Dict, Any
+from typing import Any, Dict
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from backend.enclave.enclave_client import (
+    MOCK_MODE,
+    check_enclave_health,
     detect_sms_in_enclave,
     detect_voice_in_enclave,
     get_enclave_attestation,
-    check_enclave_health,
     set_shared_key,
-    MOCK_MODE,
 )
 
 logger = logging.getLogger("vas.enclave_api")

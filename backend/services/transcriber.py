@@ -1,5 +1,6 @@
-import whisper
 import os
+
+import whisper
 
 
 class AudioTranscriber:

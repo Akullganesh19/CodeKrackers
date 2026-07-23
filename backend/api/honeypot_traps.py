@@ -4,9 +4,10 @@ Honeypot endpoints - decoy APIs that look real to trap attackers.
 
 import logging
 import secrets
-from typing import Optional
 from datetime import datetime, timezone
-from fastapi import APIRouter, Request, Query
+from typing import Optional
+
+from fastapi import APIRouter, Query, Request
 from fastapi.responses import JSONResponse
 
 from backend.db.session import SessionLocal

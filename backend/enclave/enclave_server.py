@@ -14,13 +14,13 @@ Production: Build with `nitro-cli build-enclave --docker-uri ...`
 Demo: Run as a standalone Python process (mock_enclave mode)
 """
 
-import os
-import json
-import time
 import hashlib
+import json
 import logging
+import os
 import secrets
-from typing import Optional, Dict, Any
+import time
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger("vas.enclave")
 
@@ -241,8 +241,8 @@ def get_attestation_document(user_data: bytes = b"") -> Dict[str, Any]:
     In mock mode: returns a simulated attestation
     """
     try:
-        import subprocess
         import base64
+        import subprocess
 
         result = subprocess.run(
             ["nitro-cli", "get-attestation-document", "--user-data", user_data.hex()],

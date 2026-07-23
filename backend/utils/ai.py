@@ -1,5 +1,7 @@
 import os
+
 from groq import Groq
+
 from backend.core.config import settings
 
 client = None

@@ -10,12 +10,13 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from backend.api import deps
-from backend.models.user import User
-from backend.schemas.threat import ThreatCreate, Threat as ThreatSchema
 from backend.api.v1.endpoints.threats import create_threat
 from backend.core.config import settings
+from backend.models.user import User
+from backend.schemas.threat import Threat as ThreatSchema
+from backend.schemas.threat import ThreatCreate
 from backend.utils.ai import client
-from backend.utils.crypto import extract_crypto_addresses, check_crypto_honeypot
+from backend.utils.crypto import check_crypto_honeypot, extract_crypto_addresses
 
 logger = logging.getLogger("vas.detection")
 router = APIRouter()

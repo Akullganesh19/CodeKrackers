@@ -2,21 +2,22 @@
 Child Lock models — parental controls for calls and messages.
 """
 
+import enum
+
 from sqlalchemy import (
+    JSON,
+    Boolean,
     Column,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Index,
     Integer,
     String,
-    Boolean,
-    DateTime,
-    ForeignKey,
-    JSON,
     Time,
-    Enum,
-    Index,
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-import enum
 
 from backend.db.base_class import Base, TimestampMixin
 

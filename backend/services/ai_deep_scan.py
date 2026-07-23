@@ -1,9 +1,11 @@
 import logging
-from typing import Dict, Any
+from typing import Any, Dict
+
+import requests
 from groq import Groq
+
 from backend.core.config import settings
 from backend.services.ollama_scan import ollama_deep_scan
-import requests
 
 logger = logging.getLogger("vas.ai_scan")
 

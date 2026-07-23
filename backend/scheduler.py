@@ -1,11 +1,13 @@
+import logging
+
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
+
 from .tasks import (
-    verify_all_evidence_chains,
     record_daily_safety_scores,
     restore_user_safety_scores,
+    verify_all_evidence_chains,
 )
-import logging
 
 logger = logging.getLogger(__name__)
 

@@ -3,10 +3,11 @@ Production-grade WebSocket connection manager with heartbeat and cleanup.
 """
 
 import asyncio
-import logging
 import json
+import logging
 from datetime import datetime, timezone
 from typing import List
+
 from fastapi import WebSocket
 
 logger = logging.getLogger("vas.ws")

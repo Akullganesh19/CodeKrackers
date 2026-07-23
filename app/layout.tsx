@@ -3,7 +3,6 @@ import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
 import SessionMonitor from "@/backend/core/SessionMonitor"
 import { AuthProvider } from "@/backend/core/AuthProvider"
-import { PhantomProvider } from "@/components/PhantomProvider"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space" })
@@ -36,7 +35,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
 
         {/* Content */}
         <div style={{ position: "relative", zIndex: 10 }}>
-          <PhantomProvider />
           <AuthProvider>
             {children}
             <SessionMonitor soundUrl="/sounds/cyber-alert.mp3" />

@@ -61,7 +61,7 @@ async def send_otp(
     Generates a 6-digit OTP and stores it in Redis with a TTL.
     """
     otp_code = f"{random.randint(100000, 999999)}"
-    
+
     redis_key = f"otp:{otp_in.identifier}"
     if redis_client:
         redis_client.setex(redis_key, settings.OTP_EXPIRE_SECONDS, otp_code)
@@ -91,7 +91,7 @@ async def send_otp(
             logger.error(f"EMAIL_GATEWAY_ERROR: Failed to send OTP to {otp_in.identifier}: {e}")
 
     logger.info(f"SECURITY: Generated OTP for {otp_in.identifier} -> {otp_code}")
-    
+
     return {"message": "OTP sent successfully"}
 
 @router.post("/verify")
@@ -104,7 +104,7 @@ async def verify_otp(
     Verifies the OTP and issues a signed JWT access token.
     """
     user = db.query(User).filter(
-        (User.email == otp_verify.identifier) | (User.phone_number == otp_verify.identifier)
+        (User.email == otp_verify.identifier) | (User.phone == otp_verify.identifier)
     ).first()
 
     if user and security.check_account_locked(user.locked_until):
@@ -114,7 +114,7 @@ async def verify_otp(
         )
 
     redis_key = f"otp:{otp_verify.identifier}"
-    stored_code = redis_client.get(redis_key) if redis_client else otp_code # Mock pass if redis down for demo
+    stored_code = redis_client.get(redis_key) if redis_client else None
 
     if not stored_code or otp_verify.code != stored_code:
         if user:
@@ -128,9 +128,9 @@ async def verify_otp(
     if not user:
         user = User(
             email=otp_verify.identifier if "@" in otp_verify.identifier else None,
-            phone_number=otp_verify.identifier if "@" not in otp_verify.identifier else None,
+            phone=otp_verify.identifier if "@" not in otp_verify.identifier else None,
             is_active=True,
-            role=UserRole(otp_verify.role)
+            role=UserRole.citizen  # Sentinel: Hardcode citizen role to prevent privilege escalation
         )
         db.add(user)
         db.commit()
@@ -145,8 +145,8 @@ async def verify_otp(
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return {
         "access_token": security.create_access_token(
-            user.id, 
-            role=user.role.value, 
+            user.id,
+            role=user.role.value,
             expires_delta=access_token_expires
         ),
         "token_type": "bearer",
@@ -244,15 +244,15 @@ async def register_user(
         raise HTTPException(status_code=400, detail="Email already registered.")
 
     if user_in.phone_number:
-        existing_phone = db.query(User).filter(User.phone_number == user_in.phone_number).first()
+        existing_phone = db.query(User).filter(User.phone == user_in.phone_number).first()
         if existing_phone:
             raise HTTPException(status_code=400, detail="Phone number already registered.")
 
     new_user = User(
         email=user_in.email,
-        phone_number=user_in.phone_number,
+        phone=user_in.phone_number,
         hashed_password=security.get_password_hash(user_in.password),
-        role=UserRole(user_in.role),
+        role=UserRole.citizen,  # Sentinel: Hardcode citizen role to prevent privilege escalation
         is_active=True
     )
     db.add(new_user)

@@ -18,7 +18,7 @@ async def generate_fir_pipeline(db: AsyncSession, threat_id: uuid.UUID) -> FIR:
     4. Document Production: Builds a tamper-proof PDF FIR.
     5. Persistence: Stores the record and document path in the database.
     """
-    
+
     # 1. Gather required data from Threat and User tables
     result = await db.execute(
         select(Threat, User)
@@ -26,7 +26,7 @@ async def generate_fir_pipeline(db: AsyncSession, threat_id: uuid.UUID) -> FIR:
         .where(Threat.id == threat_id)
     )
     data = result.first()
-    
+
     if not data:
         raise ValueError(f"Threat with ID {threat_id} or associated User not found.")
 

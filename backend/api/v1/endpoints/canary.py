@@ -33,10 +33,10 @@ async def track_canary(
 ):
     """
     Tracking URL embedded in fake database records.
-    
+
     When an attacker accesses this URL (e.g., by clicking a link in
     exfiltrated data), we capture their IP, User-Agent, and timestamp.
-    
+
     Returns a 1x1 transparent GIF to avoid detection.
     """
     client_ip = request.client.host if request.client else "unknown"

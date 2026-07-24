@@ -1,5 +1,9 @@
 'use client'
 
+// This module provides predictive intelligence capabilities (Oracle).
+// It anticipates that a user pasting text into the SMS Scanner will click "Analyze" shortly after.
+// We intercept typing pauses (via debounce) and fire the API request in the background.
+
 const MAX_CACHE_SIZE = 10;
 const predictiveCache: Record<string, Promise<Response | null>> = {};
 

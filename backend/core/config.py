@@ -2,12 +2,13 @@ from pydantic_settings import BaseSettings
 from typing import Optional
 import os
 
+
 class Settings(BaseSettings):
     PROJECT_NAME: str = "VSDP - Vishing & Smishing Defense Platform"
-    
+
     # Database
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./vsdp.db")
-    
+
     # Security
     SECRET_KEY: str = os.getenv("SECRET_KEY", "your-super-secret-key-for-vsdp-platform")
     ALGORITHM: str = "HS256"
@@ -20,7 +21,7 @@ class Settings(BaseSettings):
 
     # ML Config
     WHISPER_MODEL_SIZE: str = os.getenv("WHISPER_MODEL_SIZE", "base")
-    
+
     # External APIs
     CYBERCRIME_PORTAL_URL: str = "https://cybercrime.gov.in/api"
     TWILIO_ACCOUNT_SID: Optional[str] = os.getenv("TWILIO_ACCOUNT_SID")
@@ -34,8 +35,9 @@ class Settings(BaseSettings):
     # Rate Limiting
     RATE_LIMIT_DEFAULT: str = "100/minute"
     RATE_LIMIT_AUTH: str = "5/minute"
-    
+
     class Config:
         env_file = ".env"
+
 
 settings = Settings()

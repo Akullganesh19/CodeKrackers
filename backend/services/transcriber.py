@@ -1,7 +1,6 @@
 import whisper
 import os
 
-
 class AudioTranscriber:
     def __init__(self):
         """
@@ -23,7 +22,7 @@ class AudioTranscriber:
             audio_path,
             language=None,  # Enables automatic language detection
             task="transcribe",
-            word_timestamps=True,
+            word_timestamps=True
         )
 
         # Flatten word-level data from segments for easier analysis
@@ -36,7 +35,7 @@ class AudioTranscriber:
             "text": result.get("text", "").strip(),
             "language": result.get("language", "unknown"),
             "segments": result.get("segments", []),
-            "words": all_words,
+            "words": all_words
         }
 
     def extract_flagged_phrases(self, transcript: str) -> list[dict]:
@@ -44,31 +43,9 @@ class AudioTranscriber:
         Scans the transcript for high-risk vishing phrases categorized by threat type.
         """
         risk_dictionary = {
-            "Authority": [
-                "i am calling from",
-                "trai",
-                "cbi",
-                "police",
-                "court notice",
-                "legal action",
-                "arrest warrant",
-            ],
-            "Financial": [
-                "send money",
-                "transfer",
-                "otp",
-                "upi pin",
-                "card number",
-                "cvv",
-                "account blocked",
-            ],
-            "Urgency": [
-                "immediately",
-                "within 2 hours",
-                "or else",
-                "last warning",
-                "final notice",
-            ],
+            "Authority": ["i am calling from", "trai", "cbi", "police", "court notice", "legal action", "arrest warrant"],
+            "Financial": ["send money", "transfer", "otp", "upi pin", "card number", "cvv", "account blocked"],
+            "Urgency": ["immediately", "within 2 hours", "or else", "last warning", "final notice"]
         }
 
         flagged_hits = []
@@ -78,14 +55,12 @@ class AudioTranscriber:
             for phrase in phrases:
                 start = 0
                 while (idx := text_lower.find(phrase, start)) != -1:
-                    flagged_hits.append(
-                        {
-                            "phrase": phrase,
-                            "category": category,
-                            "start_index": idx,
-                            "end_index": idx + len(phrase),
-                        }
-                    )
+                    flagged_hits.append({
+                        "phrase": phrase,
+                        "category": category,
+                        "start_index": idx,
+                        "end_index": idx + len(phrase)
+                    })
                     start = idx + len(phrase)
 
         return flagged_hits

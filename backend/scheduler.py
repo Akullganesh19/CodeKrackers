@@ -1,17 +1,12 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
-from .tasks import (
-    verify_all_evidence_chains,
-    record_daily_safety_scores,
-    restore_user_safety_scores,
-)
+from .tasks import verify_all_evidence_chains, record_daily_safety_scores, restore_user_safety_scores
 import logging
 
 logger = logging.getLogger(__name__)
 
 # Initialize the AsyncIOScheduler which works natively with FastAPI's event loop
 scheduler = AsyncIOScheduler()
-
 
 def setup_scheduler():
     """
@@ -23,7 +18,7 @@ def setup_scheduler():
         CronTrigger(hour=0, minute=0),
         id="daily_integrity_audit",
         replace_existing=True,
-        misfire_grace_time=3600,  # Allow the job to run up to an hour late if the server was down
+        misfire_grace_time=3600  # Allow the job to run up to an hour late if the server was down
     )
 
     scheduler.add_job(
@@ -31,7 +26,7 @@ def setup_scheduler():
         CronTrigger(hour=23, minute=59),  # Run just before midnight
         id="daily_score_snapshot",
         replace_existing=True,
-        misfire_grace_time=3600,
+        misfire_grace_time=3600
     )
 
     scheduler.add_job(
@@ -39,7 +34,7 @@ def setup_scheduler():
         CronTrigger(hour=1, minute=0),  # Run at 1 AM daily
         id="daily_score_restoration",
         replace_existing=True,
-        misfire_grace_time=3600,
+        misfire_grace_time=3600
     )
 
     scheduler.start()

@@ -3,7 +3,6 @@ import sys
 
 import structlog
 
-
 def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
     """
     Configure standard logging and structlog.
@@ -36,7 +35,6 @@ def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
         wrapper_class=structlog.stdlib.BoundLogger,
         cache_logger_on_first_use=True,
     )
-
 
 def get_logger(name: str):
     """

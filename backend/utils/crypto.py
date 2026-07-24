@@ -2,14 +2,12 @@ import httpx
 import re
 from backend.core.config import settings
 
-
 def extract_crypto_addresses(text: str) -> list[str]:
     """
     Extract EVM (Ethereum-style) addresses from text.
     """
     pattern = r"0x[a-fA-F0-9]{40}"
     return re.findall(pattern, text)
-
 
 async def check_crypto_honeypot(address: str) -> dict:
     """

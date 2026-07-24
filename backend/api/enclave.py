@@ -32,44 +32,35 @@ router = APIRouter()
 
 # ─── Request Models ────────────────────────────────────────────────
 
-
 class SMSDetectionRequest(BaseModel):
     sms_text: str = Field(
-        ...,
-        min_length=1,
-        max_length=10000,
+        ..., min_length=1, max_length=10000,
         description="The SMS message text to classify inside the enclave",
     )
 
 
 class VoiceDetectionRequest(BaseModel):
     transcript: str = Field(
-        ...,
-        min_length=1,
-        max_length=50000,
+        ..., min_length=1, max_length=50000,
         description="Voice call transcript to analyze for vishing patterns",
     )
 
 
 class AttestationRequest(BaseModel):
     user_data: str = Field(
-        "",
-        max_length=4096,
+        "", max_length=4096,
         description="Optional data to include in the attestation document",
     )
 
 
 class KeyExchangeRequest(BaseModel):
     shared_key_hex: str = Field(
-        ...,
-        min_length=64,
-        max_length=64,
+        ..., min_length=64, max_length=64,
         description="64-char hex string representing 32-byte AES-256-GCM shared key",
     )
 
 
 # ─── Endpoints ─────────────────────────────────────────────────────
-
 
 @router.post(
     "/detect/sms",
@@ -239,22 +230,12 @@ async def enclave_status_endpoint() -> Dict[str, Any]:
     health = check_enclave_health()
 
     return {
-        "enclave_type": (
-            "AWS Nitro Enclaves" if not MOCK_MODE else "Mock Enclave (Demo)"
-        ),
+        "enclave_type": "AWS Nitro Enclaves" if not MOCK_MODE else "Mock Enclave (Demo)",
         "encryption": "AES-256-GCM",
         "key_size": 256,
-        "communication": (
-            "vsock (CID=16, port=5000)" if not MOCK_MODE else "in-process (mock)"
-        ),
-        "attestation": (
-            "AWS Nitro Attestation" if not MOCK_MODE else "Simulated (PCR mock)"
-        ),
-        "model_inference": (
-            "Hardware-isolated memory"
-            if not MOCK_MODE
-            else "Fallback keyword classifier"
-        ),
+        "communication": "vsock (CID=16, port=5000)" if not MOCK_MODE else "in-process (mock)",
+        "attestation": "AWS Nitro Attestation" if not MOCK_MODE else "Simulated (PCR mock)",
+        "model_inference": "Hardware-isolated memory" if not MOCK_MODE else "Fallback keyword classifier",
         "reachable": health.get("enclave_reachable", False),
         "mode": MOCK_MODE and "mock" or "production",
     }

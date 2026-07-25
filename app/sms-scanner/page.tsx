@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
+import { preComputeScan, getScanResult } from '@/app/lib/oracle'
 import {
   ShieldAlert,
   ShieldCheck,
@@ -28,6 +29,26 @@ export default function SMSScannerPage() {
     recommendation: string;
     tags: string[];
   }>(null)
+  const prefetchTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  React.useEffect(() => {
+    if (!text.trim()) return;
+
+    if (prefetchTimeoutRef.current) {
+      clearTimeout(prefetchTimeoutRef.current);
+    }
+
+    prefetchTimeoutRef.current = setTimeout(() => {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('vsdp_token') || 'dummy_token' : 'dummy_token';
+      preComputeScan(text, token);
+    }, 500);
+
+    return () => {
+      if (prefetchTimeoutRef.current) {
+        clearTimeout(prefetchTimeoutRef.current);
+      }
+    };
+  }, [text]);
 
   React.useEffect(() => {
     setMounted(true)
@@ -40,15 +61,8 @@ export default function SMSScannerPage() {
     setResult(null)
 
     try {
-      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
+      const token = typeof window !== 'undefined' ? localStorage.getItem('vsdp_token') || 'dummy_token' : 'dummy_token';
+      const response = await getScanResult(text, token);
       
       console.log("Response Status:", response.status);
       if (!response.ok) {

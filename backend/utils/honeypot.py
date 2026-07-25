@@ -1,10 +1,12 @@
 from backend.utils.ai import client as groq_client
 
+
 class EinsteinBot:
     """
     Einstein-bot logic for active scam-baiting.
     Modular design inspired by honeybot.
     """
+
     def __init__(self):
         self.system_prompt = (
             "You are 'Einstein-bot', a hyper-intelligent AI honeypot. "
@@ -21,17 +23,18 @@ class EinsteinBot:
             # Check if client exists
             if not groq_client:
                 return "Oh dear, my hearing aid is buzzing. What did you say?"
-                
+
             completion = groq_client.chat.completions.create(
                 model="llama3-8b-8192",
                 messages=[
                     {"role": "system", "content": self.system_prompt},
-                    {"role": "user", "content": input_text}
-                ]
+                    {"role": "user", "content": input_text},
+                ],
             )
             return completion.choices[0].message.content
         except Exception as e:
             print(f"Honeypot Error: {e}")
             return "Oh dear, my internet is acting up again. What did you say?"
+
 
 einstein_bot = EinsteinBot()

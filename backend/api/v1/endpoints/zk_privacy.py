@@ -11,6 +11,7 @@ Endpoints:
   GET  /zk/privacy-report       — Get privacy configuration validation report
   POST /zk/hash                 — Hash PII for the client (never stored)
 """
+
 import time
 import logging
 from typing import Optional
@@ -41,6 +42,7 @@ router = APIRouter()
 
 # ─── Blind Credential Authentication ──────────────────────────────
 
+
 @router.post("/register-commitment", summary="Register blind auth commitment")
 def api_register_commitment(
     request: Request,
@@ -48,10 +50,10 @@ def api_register_commitment(
 ):
     """
     Register a public commitment for blind authentication.
-    
+
     The user generates a private_secret client-side and registers only the
     commitment: SHA-384("vas-blind-auth-v1" || private_secret).
-    
+
     The server stores ONLY the commitment. The private secret is never
     transmitted or stored. Even a full server breach yields zero credentials.
     """
@@ -75,13 +77,13 @@ def api_challenge(
 ):
     """
     Request an authentication challenge.
-    
+
     The server creates a time-limited challenge. The user must sign it
     with their private secret to prove identity without revealing it.
     """
     manager = get_blind_credential_manager()
     challenge_id = manager.create_challenge(public_commitment)
-    
+
     return {
         "challenge_id": challenge_id,
         "expires_in_seconds": 300,
@@ -97,16 +99,16 @@ def api_authenticate(
 ):
     """
     Authenticate by proving knowledge of your private secret.
-    
+
     The server verifies your response against the stored commitment.
     Your private secret is NEVER transmitted.
     """
     manager = get_blind_credential_manager()
     is_valid = manager.verify_response(challenge_id, response_hash)
-    
+
     if not is_valid:
         raise HTTPException(status_code=401, detail="Authentication failed")
-    
+
     # In production, issue a JWT or session token here
     # The user's identity is verified without ever knowing their credentials
     return {
@@ -117,20 +119,23 @@ def api_authenticate(
 
 # ─── ZK Threat Verification ──────────────────────────────────────
 
+
 @router.post("/verify-threat", summary="Verify ZK threat proof without seeing content")
 def api_verify_threat(
     request: Request,
     message_hash: str = Query(..., description="SHA-384 hash of the message"),
-    threat_hash: str = Query(..., description="Proof hash binding message to threat classification"),
+    threat_hash: str = Query(
+        ..., description="Proof hash binding message to threat classification"
+    ),
     severity_hash: str = Query(..., description="Proof hash of severity level"),
     proof_nonce: str = Query(..., description="One-time proof identifier"),
     timestamp: float = Query(..., description="When the proof was generated"),
 ):
     """
     Verify a Zero-Knowledge threat proof.
-    
+
     The proof proves "this SMS is a scam" WITHOUT revealing the SMS content.
-    
+
     Inputs:
     - message_hash: commitment to the original message (can't reverse to content)
     - threat_hash: proof that classify(message) = threat
@@ -144,9 +149,9 @@ def api_verify_threat(
         proof_nonce=proof_nonce,
         timestamp=timestamp,
     )
-    
+
     is_valid = verify_threat_proof(proof)
-    
+
     return {
         "proof_valid": is_valid,
         "message_hash_preview": message_hash[:16] + "...",
@@ -164,14 +169,14 @@ def api_generate_proof(
 ):
     """
     Generate a ZK proof that can be verified without revealing the message.
-    
+
     The original message is hashed and the proof structure created.
     Only the hash + proof structure is stored/shared — never the content.
-    
+
     Use this when you want to prove a threat was detected without storing PII.
     """
     proof = generate_threat_proof(message, is_threat, severity)
-    
+
     return {
         "proof": proof.to_dict(),
         "privacy_note": "The original message was hashed and discarded. Only the proof remains.",
@@ -180,6 +185,7 @@ def api_generate_proof(
 
 # ─── Sealed Sender (Anonymous Reporting) ──────────────────────────
 
+
 @router.post("/sealed-report", summary="Submit anonymous threat report (sealed sender)")
 def api_sealed_report(
     request: Request,
@@ -187,18 +193,19 @@ def api_sealed_report(
 ):
     """
     Submit an anonymous threat report using sealed sender protocol.
-    
+
     The server receives and processes the report without ever knowing
     who submitted it. The reporter gets a receipt they can use later
     to prove authorship — without revealing their identity.
     """
     sealed = SealedSender.create_report(report_data)
-    
+
     logger.info(
         "Sealed report received: hash=%s... timestamp=%.0f",
-        sealed["report_hash"][:16], sealed["timestamp"],
+        sealed["report_hash"][:16],
+        sealed["timestamp"],
     )
-    
+
     return {
         "report_hash": sealed["report_hash"],
         "receipt": sealed["receipt"],  # Reporter MUST save this
@@ -214,11 +221,13 @@ def api_claim_report(
     request: Request,
     receipt: str = Query(..., description="The receipt from your sealed report"),
     report_hash: str = Query(..., description="The report hash you want to claim"),
-    claim_data: str = Query(..., description="The original report content to verify against"),
+    claim_data: str = Query(
+        ..., description="The original report content to verify against"
+    ),
 ):
     """
     Prove you authored a previously submitted anonymous report.
-    
+
     Using your secret receipt, you can prove you were the original reporter
     without revealing your identity to anyone — including the server.
     """
@@ -228,10 +237,10 @@ def api_claim_report(
         original_report=original_report,
         claim_data=claim_data,
     )
-    
+
     if not is_owner:
         raise HTTPException(status_code=403, detail="Claim verification failed")
-    
+
     return {
         "ownership_verified": True,
         "report_hash": report_hash,
@@ -240,6 +249,7 @@ def api_claim_report(
 
 
 # ─── Privacy Utilities ────────────────────────────────────────────
+
 
 @router.get("/privacy-report", summary="Get privacy configuration report")
 def api_privacy_report():
@@ -255,10 +265,10 @@ def api_hash_pii(
 ):
     """
     Hash personally identifiable information for deduplication.
-    
+
     The original data is NEVER stored. Only the hash remains.
     Choose the data type to get domain-separated hashing.
-    
+
     Domain separation means: hash("user@example.com") as email
     != hash("user@example.com") as phone — even though the input is identical.
     Prevents cross-correlation attacks.
@@ -269,14 +279,14 @@ def api_hash_pii(
         "sms": DOMAIN_SMS_CONTENT,
         "sender": DOMAIN_SENDER_NUMBER,
     }
-    
+
     domain = domain_map.get(data_type)
     if not domain:
         # Custom domain — just use generic hash
         domain = b"vas-zk-custom-v1"
-    
+
     hashed = zk_hash(data, domain)
-    
+
     return {
         "hashed_value": hashed,
         "data_type": data_type,

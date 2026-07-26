@@ -1,4 +1,5 @@
 """Security middleware for request sanitization, audit logging, header hardening, and RASP."""
+
 import re
 import time
 import json
@@ -25,8 +26,12 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
-        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        response.headers["Permissions-Policy"] = (
+            "camera=(), microphone=(), geolocation=()"
+        )
+        response.headers["Strict-Transport-Security"] = (
+            "max-age=31536000; includeSubDomains"
+        )
         response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
         response.headers["Pragma"] = "no-cache"
         response.headers["Cross-Origin-Embedder-Policy"] = "require-corp"
@@ -78,9 +83,17 @@ class InputSanitizationMiddleware(BaseHTTPMiddleware):
     """Block requests with obviously malicious payloads."""
 
     BLOCKED_PATTERNS = [
-        "<script", "javascript:", "onclick=", "onerror=",
-        "union select", "drop table", "'; --", "1=1",
-        "../", "..\\", "%00",
+        "<script",
+        "javascript:",
+        "onclick=",
+        "onerror=",
+        "union select",
+        "drop table",
+        "'; --",
+        "1=1",
+        "../",
+        "..\\",
+        "%00",
     ]
 
     async def dispatch(self, request: Request, call_next) -> Response:
@@ -148,7 +161,9 @@ class RAPSMiddleware(BaseHTTPMiddleware):
 
     # ─── Command Injection / RCE Patterns ───
     RCE_PATTERNS = [
-        re.compile(r"[;&|`](\s*)(whoami|id|uname|cat\s+/etc/passwd|ls\s+-la)", re.IGNORECASE),
+        re.compile(
+            r"[;&|`](\s*)(whoami|id|uname|cat\s+/etc/passwd|ls\s+-la)", re.IGNORECASE
+        ),
         re.compile(r"exec\s*\(", re.IGNORECASE),
         re.compile(r"eval\s*\(", re.IGNORECASE),
         re.compile(r"system\s*\(", re.IGNORECASE),
@@ -203,10 +218,26 @@ class RAPSMiddleware(BaseHTTPMiddleware):
 
     # ─── Known Attack Tool Fingerprints ───
     ATTACK_TOOL_UA = [
-        "nmap", "nikto", "sqlmap", "burpsuite", "owasp zap",
-        "acunetix", "netsparker", "wpscan", "dirb", "gobuster",
-        "ffuf", "wfuzz", "hydra", "medusa", "metasploit",
-        "sqliv", "xsser", "commix", "beef", "slowloris",
+        "nmap",
+        "nikto",
+        "sqlmap",
+        "burpsuite",
+        "owasp zap",
+        "acunetix",
+        "netsparker",
+        "wpscan",
+        "dirb",
+        "gobuster",
+        "ffuf",
+        "wfuzz",
+        "hydra",
+        "medusa",
+        "metasploit",
+        "sqliv",
+        "xsser",
+        "commix",
+        "beef",
+        "slowloris",
     ]
 
     # ─── Zero-Day / Emerging Attack Patterns ───
@@ -287,8 +318,8 @@ class RAPSMiddleware(BaseHTTPMiddleware):
 
     def __init__(self, app):
         super().__init__(app)
-        self.request_counts = {}   # IP -> {count, timestamps}
-        self._admin_probes = {}    # IP -> {count, last_timestamp}
+        self.request_counts = {}  # IP -> {count, timestamps}
+        self._admin_probes = {}  # IP -> {count, last_timestamp}
         self._anomaly_detector = None  # Lazy init
 
     def _get_anomaly_detector(self):
@@ -311,27 +342,33 @@ class RAPSMiddleware(BaseHTTPMiddleware):
         # ─── 1. URL & query string analysis ───
         path = request.url.path
         query = str(request.url.query)
-        matched_patterns = self._check_patterns(path + " " + query, [
-            (self.SQLI_PATTERNS, "sqli", 30),
-            (self.NOSQL_PATTERNS, "nosqli", 30),
-            (self.RCE_PATTERNS, "rce", 40),
-            (self.PATH_TRAVERSAL_PATTERNS, "path_traversal", 25),
-            (self.SSRF_PATTERNS, "ssrf", 35),
-            (self.XXE_PATTERNS, "xxe", 35),
-            (self.SSTI_PATTERNS, "ssti", 40),
-            (self.LDAP_PATTERNS, "ldapi", 35),
-            (self.PROTO_POLLUTION_PATTERNS, "prototype_pollution", 30),
-            (self.CRLF_PATTERNS, "crlf_injection", 25),
-            (self.PROBE_PATTERNS, "reconnaissance", 15),
-            (self.GRAPHQL_ABUSE_PATTERNS, "graphql_abuse", 20),
-        ])
+        matched_patterns = self._check_patterns(
+            path + " " + query,
+            [
+                (self.SQLI_PATTERNS, "sqli", 30),
+                (self.NOSQL_PATTERNS, "nosqli", 30),
+                (self.RCE_PATTERNS, "rce", 40),
+                (self.PATH_TRAVERSAL_PATTERNS, "path_traversal", 25),
+                (self.SSRF_PATTERNS, "ssrf", 35),
+                (self.XXE_PATTERNS, "xxe", 35),
+                (self.SSTI_PATTERNS, "ssti", 40),
+                (self.LDAP_PATTERNS, "ldapi", 35),
+                (self.PROTO_POLLUTION_PATTERNS, "prototype_pollution", 30),
+                (self.CRLF_PATTERNS, "crlf_injection", 25),
+                (self.PROBE_PATTERNS, "reconnaissance", 15),
+                (self.GRAPHQL_ABUSE_PATTERNS, "graphql_abuse", 20),
+            ],
+        )
 
         for pattern_name, pattern, score in matched_patterns:
             attack_indicators.append(pattern_name)
             risk_score += score
             logger.warning(
                 "RASP DETECTED [%s] from %s: pattern=%s path=%s",
-                pattern_name.upper(), client_ip, pattern, path,
+                pattern_name.upper(),
+                client_ip,
+                pattern,
+                path,
             )
 
         # ─── 2. User-Agent fingerprinting ───
@@ -347,15 +384,18 @@ class RAPSMiddleware(BaseHTTPMiddleware):
                 body_bytes = await request.body()
                 body_str = body_bytes.decode("utf-8", errors="ignore")
 
-                body_patterns = self._check_patterns(body_str, [
-                    (self.SQLI_PATTERNS, "sqli_body", 30),
-                    (self.NOSQL_PATTERNS, "nosqli_body", 30),
-                    (self.RCE_PATTERNS, "rce_body", 40),
-                    (self.SSRF_PATTERNS, "ssrf_body", 35),
-                    (self.XXE_PATTERNS, "xxe_body", 35),
-                    (self.SSTI_PATTERNS, "ssti_body", 40),
-                    (self.PROTO_POLLUTION_PATTERNS, "proto_pollution_body", 30),
-                ])
+                body_patterns = self._check_patterns(
+                    body_str,
+                    [
+                        (self.SQLI_PATTERNS, "sqli_body", 30),
+                        (self.NOSQL_PATTERNS, "nosqli_body", 30),
+                        (self.RCE_PATTERNS, "rce_body", 40),
+                        (self.SSRF_PATTERNS, "ssrf_body", 35),
+                        (self.XXE_PATTERNS, "xxe_body", 35),
+                        (self.SSTI_PATTERNS, "ssti_body", 40),
+                        (self.PROTO_POLLUTION_PATTERNS, "proto_pollution_body", 30),
+                    ],
+                )
 
                 for pattern_name, pattern, score in body_patterns:
                     attack_indicators.append(pattern_name)
@@ -403,10 +443,14 @@ class RAPSMiddleware(BaseHTTPMiddleware):
 
                 if is_anomaly:
                     attack_indicators.append(f"ml_anomaly:score={anomaly_score:.2f}")
-                    risk_score += int(anomaly_score * 40)  # Up to 40 additional risk points
+                    risk_score += int(
+                        anomaly_score * 40
+                    )  # Up to 40 additional risk points
                     logger.warning(
                         "RASP ML ANOMALY from %s path=%s score=%.4f",
-                        client_ip, path, anomaly_score,
+                        client_ip,
+                        path,
+                        anomaly_score,
                     )
 
                 # Always add sample (even for normal traffic) to improve model
@@ -417,7 +461,9 @@ class RAPSMiddleware(BaseHTTPMiddleware):
 
         # ─── 7. Block or allow ───
         if risk_score >= 50:  # High-confidence attack
-            self._log_attack(request, client_ip, attack_indicators, risk_score, start_time)
+            self._log_attack(
+                request, client_ip, attack_indicators, risk_score, start_time
+            )
             return JSONResponse(
                 status_code=HTTP_403_FORBIDDEN,
                 content={
@@ -428,7 +474,11 @@ class RAPSMiddleware(BaseHTTPMiddleware):
         elif risk_score >= 30:  # Suspicious - log warning
             logger.warning(
                 "RASP SUSPICIOUS request from %s (risk=%d): %s %s indicators=%s",
-                client_ip, risk_score, request.method, path, ",".join(attack_indicators),
+                client_ip,
+                risk_score,
+                request.method,
+                path,
+                ",".join(attack_indicators),
             )
 
         # ─── 8. Continue ───
@@ -438,7 +488,9 @@ class RAPSMiddleware(BaseHTTPMiddleware):
         if response.status_code >= 500:
             logger.warning(
                 "RASP ERROR RESPONSE %d from %s to %s - possible exploitation attempt",
-                response.status_code, client_ip, path,
+                response.status_code,
+                client_ip,
+                path,
             )
 
         return response
@@ -464,7 +516,10 @@ class RAPSMiddleware(BaseHTTPMiddleware):
     def _check_headers(self, headers) -> Optional[str]:
         if "x-forwarded-for" in headers:
             xff = headers["x-forwarded-for"]
-            if any(internal in xff for internal in ["127.0.0.1", "localhost", "10.", "192.168."]):
+            if any(
+                internal in xff
+                for internal in ["127.0.0.1", "localhost", "10.", "192.168."]
+            ):
                 return "xff_internal_ip"
         return None
 
@@ -487,7 +542,9 @@ class RAPSMiddleware(BaseHTTPMiddleware):
         if data["count"] > threshold:
             return f"rate_exceeded_{data['count']}rps"
 
-        if method == "GET" and ("/admin" in path or "/export" in path or "/internal" in path):
+        if method == "GET" and (
+            "/admin" in path or "/export" in path or "/internal" in path
+        ):
             if ip not in self._admin_probes:
                 self._admin_probes[ip] = {"count": 0}
             self._admin_probes[ip]["count"] += 1

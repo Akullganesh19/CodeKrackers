@@ -3,6 +3,7 @@ import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
 import SessionMonitor from "@/backend/core/SessionMonitor"
 import { AuthProvider } from "@/backend/core/AuthProvider"
+import PhantomInterceptor from "@/app/components/PhantomInterceptor"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space" })
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" className="dark">
       <body className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased`}>
+        <PhantomInterceptor />
         {/* Global aesthetic overlays */}
         <div className="grid-bg" />
         <div className="scan-overlay" />

@@ -20,7 +20,7 @@ class AuditLog(Base):
     action = Column(String(64), nullable=False, index=True)  # LOGIN_SUCCESS, THREAT_CREATED, FIR_GENERATED, etc.
     resource_type = Column(String(64), nullable=True)  # user, threat, fir, evidence
     resource_id = Column(Integer, nullable=True)
-    
+
     # Details
     details = Column(JSON, nullable=True)
     severity = Column(String(16), default="info")  # info, warning, critical

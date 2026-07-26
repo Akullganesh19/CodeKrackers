@@ -16,7 +16,7 @@ async def get_current_user(
     """
     result = await db.execute(select(User).where(User.email == "admin@vsdp.org"))
     user = result.scalar_one_or_none()
-    
+
     if user is None:
         # Fallback if DB is empty
         user = User(

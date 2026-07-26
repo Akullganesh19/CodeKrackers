@@ -148,7 +148,7 @@ async def get_hourly_trend(
             .filter(Threat.type == ThreatType.SMISHING, Threat.detected_at.between(hour_start, hour_end))
         )
         smishing = smishing_res.scalar() or 0
-        
+
         vishing_res = await db.execute(
             select(func.count(Threat.id))
             .filter(Threat.type == ThreatType.VISHING, Threat.detected_at.between(hour_start, hour_end))

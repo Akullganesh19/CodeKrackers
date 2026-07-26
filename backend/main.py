@@ -64,7 +64,7 @@ async def startup_event():
     """
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    
+
     # Auto-seed admin user if not exists
     async with AsyncSessionLocal() as db:
         result = await db.execute(select(User).where(User.email == "admin@vsdp.org"))
@@ -79,7 +79,7 @@ async def startup_event():
             db.add(admin)
             await db.commit()
             print("Auto-seeded admin user: admin@vsdp.org / admin123")
-    
+
     # setup_scheduler()
     print("VSDP Backend Startup Complete (Scheduler Disabled for Demo).")
 

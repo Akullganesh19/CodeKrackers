@@ -55,7 +55,7 @@ def create_canary_token(
 ) -> CanaryToken:
     """
     Create and plant a new canary token.
-    
+
     The token will be invisible to normal users but detectable by attackers
     who exfiltrate data. The tracking URL is embedded in the fake data.
     """
@@ -104,7 +104,7 @@ def trigger_canary(
 ) -> Optional[CanaryToken]:
     """
     Mark a canary token as accessed/triggered.
-    
+
     This is called when the tracking URL is requested or when token
     values are detected in incoming request data (indicating exfiltration).
     """
@@ -229,7 +229,7 @@ def scan_request_for_tokens(
 ) -> List[CanaryToken]:
     """
     Scan a string (query params, body, headers) for known canary token values.
-    
+
     If a token value is found in incoming data, it means the attacker has
     exfiltrated data and is now using it — immediate alert.
     """

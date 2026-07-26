@@ -4,7 +4,7 @@ import os
 class AudioTranscriber:
     def __init__(self):
         """
-        Initializes the Whisper model. 
+        Initializes the Whisper model.
         The model size is determined by the WHISPER_MODEL_SIZE environment variable.
         Valid sizes: 'tiny', 'base', 'small', 'medium', 'large'.
         """
@@ -19,12 +19,12 @@ class AudioTranscriber:
         """
         # Run inference with word_timestamps=True for forensic detail
         result = self.model.transcribe(
-            audio_path, 
+            audio_path,
             language=None,  # Enables automatic language detection
             task="transcribe",
             word_timestamps=True
         )
-        
+
         # Flatten word-level data from segments for easier analysis
         all_words = []
         for segment in result.get("segments", []):
@@ -47,10 +47,10 @@ class AudioTranscriber:
             "Financial": ["send money", "transfer", "otp", "upi pin", "card number", "cvv", "account blocked"],
             "Urgency": ["immediately", "within 2 hours", "or else", "last warning", "final notice"]
         }
-        
+
         flagged_hits = []
         text_lower = transcript.lower()
-        
+
         for category, phrases in risk_dictionary.items():
             for phrase in phrases:
                 start = 0
@@ -62,5 +62,5 @@ class AudioTranscriber:
                         "end_index": idx + len(phrase)
                     })
                     start = idx + len(phrase)
-                    
+
         return flagged_hits

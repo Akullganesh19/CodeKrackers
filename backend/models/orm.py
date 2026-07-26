@@ -12,7 +12,7 @@ class ThreatType(str, enum.Enum):
     crypto_scam = "crypto_scam"
     phishing = "phishing"
     other = "other"
-    
+
     # Uppercase aliases
     VISHING = "vishing"
     SMISHING = "smishing"
@@ -26,7 +26,7 @@ class ThreatSeverity(str, enum.Enum):
     medium = "medium"
     low = "low"
     info = "info"
-    
+
     # Uppercase aliases
     CRITICAL = "critical"
     HIGH = "high"
@@ -39,7 +39,7 @@ class UserRole(str, enum.Enum):
     officer = "officer"
     admin = "admin"
     super_admin = "super_admin"
-    
+
     # Uppercase aliases for backward compatibility
     CITIZEN = "citizen"
     OFFICER = "officer"

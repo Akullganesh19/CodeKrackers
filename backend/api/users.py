@@ -1,7 +1,6 @@
 """
 User management endpoints with password policy and RBAC.
 """
-
 import logging
 from typing import Any, List
 

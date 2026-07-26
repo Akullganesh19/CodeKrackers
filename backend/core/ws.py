@@ -1,7 +1,6 @@
 """
 Production-grade WebSocket connection manager with heartbeat and cleanup.
 """
-
 import asyncio
 import logging
 import json

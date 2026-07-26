@@ -11,7 +11,6 @@ Endpoints:
   - POST /models/adversarial-test — Test model robustness against adversarial examples
   - POST /detect/secure-sms — Protected SMS detection with extraction monitoring
 """
-
 import time
 import hashlib
 import logging
@@ -41,7 +40,6 @@ router = APIRouter()
 
 # ─── Model Registry ───────────────────────────────────────────────
 
-
 @router.post("/register", summary="Register a model with checksum + watermark")
 def api_register_model(
     request: Request,
@@ -49,9 +47,7 @@ def api_register_model(
     current_user: User = Depends(deps.get_current_active_superuser),
     name: str = Query(..., description="Model name"),
     version: str = Query(..., description="Semver version"),
-    framework: str = Query(
-        ..., description="Framework (transformers, pytorch, sklearn)"
-    ),
+    framework: str = Query(..., description="Framework (transformers, pytorch, sklearn)"),
     file_path: str = Query(..., description="Path to model weights file"),
     trained_by: Optional[str] = Query(None),
     training_dataset: Optional[str] = Query(None),
@@ -82,11 +78,7 @@ def api_register_model(
             "version": model.version,
             "sha384_hash": f"{model.sha384_hash[:16]}...",
             "file_size": model.file_size_bytes,
-            "watermark": (
-                hashlib.sha384(model.watermark_embedding).hexdigest()[:16]
-                if model.watermark_embedding
-                else "N/A"
-            ),
+            "watermark": hashlib.sha384(model.watermark_embedding).hexdigest()[:16] if model.watermark_embedding else "N/A",
             "is_approved": model.is_approved,
             "is_active": model.is_active,
         }
@@ -169,7 +161,6 @@ def api_verify_model(
 
 # ─── Inference Monitoring ─────────────────────────────────────────
 
-
 @router.get("/inferences", summary="View inference logs with extraction risk")
 def api_inference_logs(
     db: Session = Depends(get_db),
@@ -207,7 +198,6 @@ def api_inference_logs(
 
 # ─── Adversarial Testing ──────────────────────────────────────────
 
-
 @router.post("/adversarial-test", summary="Test model robustness")
 def api_adversarial_test(
     request: Request,
@@ -221,20 +211,11 @@ def api_adversarial_test(
     and measures how many flip the model's prediction.
     Returns an adversarial robustness score.
     """
-
     # Simulated model prediction function
     # In production, replace with actual model inference
     def mock_predict(text: str) -> int:
         # Mock: "scammy" keywords trigger "scam" (1) else "safe" (0)
-        scam_keywords = [
-            "kyc",
-            "aadhaar",
-            "otp",
-            "blocked",
-            "urgent",
-            "expir",
-            "suspended",
-        ]
+        scam_keywords = ["kyc", "aadhaar", "otp", "blocked", "urgent", "expir", "suspended"]
         text_lower = text.lower()
         score = sum(1 for kw in scam_keywords if kw in text_lower)
         return 1 if score >= 2 else 0
@@ -257,9 +238,7 @@ def api_adversarial_test(
     )
 
     # Generate augmented training data
-    aug_samples, aug_labels = generate_adversarial_training_data(
-        test_samples, test_labels
-    )
+    aug_samples, aug_labels = generate_adversarial_training_data(test_samples, test_labels)
 
     return {
         "model_name": model_name,
@@ -268,23 +247,16 @@ def api_adversarial_test(
         "augmented_samples": len(aug_samples) - len(test_samples),
         "adversarial_perturbations_tested": list(ADVERSARIAL_PERTURBATIONS.keys()),
         "recommendation": (
-            "Model is robust"
-            if robustness_score >= 0.8
-            else (
-                "Recommended: retrain with adversarial examples"
-                if robustness_score >= 0.5
-                else "CRITICAL: Model is highly vulnerable to adversarial attacks"
-            )
+            "Model is robust" if robustness_score >= 0.8
+            else "Recommended: retrain with adversarial examples" if robustness_score >= 0.5
+            else "CRITICAL: Model is highly vulnerable to adversarial attacks"
         ),
     }
 
 
 # ─── Secure Detection (with Extraction Monitoring) ────────────────
 
-
-@router.post(
-    "/protect/detect-sms", summary="Protected SMS detection with extraction monitoring"
-)
+@router.post("/protect/detect-sms", summary="Protected SMS detection with extraction monitoring")
 async def api_secure_detect_sms(
     request: Request,
     db: Session = Depends(get_db),
@@ -309,20 +281,9 @@ async def api_secure_detect_sms(
     # 1. Run detection (reuse existing logic)
     # For now, use keyword-based detection
     scam_keywords = [
-        "kyc",
-        "aadhaar",
-        "otp",
-        "blocked",
-        "suspended",
-        "verify",
-        "urgent",
-        "immediately",
-        "expir",
-        "lottery",
-        "won",
-        "reward",
-        "click here",
-        "update now",
+        "kyc", "aadhaar", "otp", "blocked", "suspended", "verify",
+        "urgent", "immediately", "expir", "lottery", "won", "reward",
+        "click here", "update now",
     ]
     content_lower = body.lower()
     keyword_score = sum(1 for kw in scam_keywords if kw in content_lower)
@@ -359,9 +320,7 @@ async def api_secure_detect_sms(
     if log_entry.is_suspicious:
         logger.warning(
             "MODEL EXTRACTION SUSPECTED on /detect endpoint: user=%d ip=%s risk=%.3f",
-            current_user.id,
-            client_ip,
-            log_entry.extraction_risk_score,
+            current_user.id, client_ip, log_entry.extraction_risk_score,
         )
 
     return result

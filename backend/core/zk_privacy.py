@@ -11,7 +11,6 @@ Principles:
 Uses deterministic hashing with domain separation for dedup,
 and a simplified ZK-SNARK-style commitment scheme for threat verification.
 """
-
 import os
 import re
 import json
@@ -51,7 +50,6 @@ def _get_pepper() -> bytes:
 
 
 # ─── Cryptographic Primitives ─────────────────────────────────────
-
 
 def zk_hash(
     data: str,
@@ -136,7 +134,6 @@ def verify_blind_auth(
 
 # ─── PII Protection ───────────────────────────────────────────────
 
-
 class PIIProtector:
     """
     Handles all PII operations — never stores raw data.
@@ -186,7 +183,6 @@ class PIIProtector:
 
 # ─── ZK Proof Generation for Threat Detection ─────────────────────
 
-
 @dataclass
 class ZKThreatProof:
     """
@@ -199,12 +195,11 @@ class ZKThreatProof:
 
     Without revealing M.
     """
-
-    message_hash: str  # Hash of the original message
-    threat_hash: str  # Hash proving threat classification
-    severity_hash: str  # Hash of severity level
-    proof_nonce: str  # One-time proof identifier
-    timestamp: float  # When the proof was generated
+    message_hash: str           # Hash of the original message
+    threat_hash: str            # Hash proving threat classification
+    severity_hash: str          # Hash of severity level
+    proof_nonce: str            # One-time proof identifier
+    timestamp: float            # When the proof was generated
 
     def to_dict(self) -> dict:
         return {
@@ -285,16 +280,12 @@ def verify_threat_proof(proof: ZKThreatProof) -> bool:
     # The verifier would need to recompute: SHA-384("vas-zk-threat-proof-v1" || message_hash || ...)
     # But since the nonce is part of the hash, we verify the binding exists
 
-    logger.debug(
-        "ZK threat proof verified: hash=%s... nonce=%s",
-        proof.message_hash[:16],
-        proof.proof_nonce[:8],
-    )
+    logger.debug("ZK threat proof verified: hash=%s... nonce=%s",
+                 proof.message_hash[:16], proof.proof_nonce[:8])
     return True
 
 
 # ─── Sealed Sender (Anonymous Reporting) ──────────────────────────
-
 
 class SealedSender:
     """
@@ -312,9 +303,7 @@ class SealedSender:
     """
 
     @staticmethod
-    def create_report(
-        report_data: str, metadata: Optional[dict] = None
-    ) -> Dict[str, Any]:
+    def create_report(report_data: str, metadata: Optional[dict] = None) -> Dict[str, Any]:
         """
         Create a sealed (anonymous) threat report.
 
@@ -346,19 +335,13 @@ class SealedSender:
             "receipt": receipt,
             "content_hash": content_hash,
             "timestamp": time.time(),
-            "metadata_hash": (
-                hashlib.sha384(
-                    json.dumps(metadata or {}, sort_keys=True).encode("utf-8")
-                ).hexdigest()[:16]
-                if metadata
-                else None
-            ),
+            "metadata_hash": hashlib.sha384(
+                json.dumps(metadata or {}, sort_keys=True).encode("utf-8")
+            ).hexdigest()[:16] if metadata else None,
         }
 
     @staticmethod
-    def verify_report_ownership(
-        receipt: str, original_report: dict, claim_data: str
-    ) -> bool:
+    def verify_report_ownership(receipt: str, original_report: dict, claim_data: str) -> bool:
         """
         Verify that someone claiming to be the original reporter actually is.
 
@@ -381,7 +364,6 @@ class SealedSender:
 
 
 # ─── Blind Credential Authentication ─────────────────────────────
-
 
 class BlindCredentialManager:
     """
@@ -446,7 +428,6 @@ class BlindCredentialManager:
 
 
 # ─── Configuration Validation ─────────────────────────────────────
-
 
 def validate_privacy_config() -> Dict[str, Any]:
     """

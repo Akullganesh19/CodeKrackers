@@ -5,33 +5,26 @@ import sys
 import os
 
 # Add OpenMythos to sys.path
-sys.path.append(
-    os.path.join(
-        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-        "OpenMythos",
-    )
-)
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "OpenMythos"))
 
 from open_mythos.main import OpenMythos, MythosConfig
 
 logger = logging.getLogger("vas.mythos")
-
 
 class MythosForensicEngine:
     """
     Advanced Forensic Engine based on the OpenMythos Recurrent-Depth Architecture.
     Simulates deep 'latent thinking' across multiple reasoning loops.
     """
-
     def __init__(self):
         logger.info("Initializing Mythos RDT (Recurrent-Depth Transformer)...")
         # Lightweight configuration for forensic metadata analysis
         self.config = MythosConfig(
-            vocab_size=50257,  # GPT-2 style
+            vocab_size=50257, # GPT-2 style
             dim=128,
             n_heads=4,
             max_seq_len=256,
-            max_loop_iters=16,  # High recurrence for 'deep thinking'
+            max_loop_iters=16, # High recurrence for 'deep thinking'
             prelude_layers=2,
             coda_layers=2,
             n_experts=4,
@@ -39,7 +32,7 @@ class MythosForensicEngine:
             n_experts_per_tok=1,
             expert_dim=64,
             lora_rank=4,
-            attn_type="gqa",
+            attn_type="gqa"
         )
         self.model = OpenMythos(self.config)
         self.model.eval()
@@ -64,10 +57,9 @@ class MythosForensicEngine:
             "engine": "OpenMythos RDT",
             "recurrence_loops": 16,
             "architecture": "Recurrent-Depth Transformer",
-            "intent_confidence": 0.98,  # Theoretical derived from the RDT pass
-            "status": "Forensic validation complete",
+            "intent_confidence": 0.98, # Theoretical derived from the RDT pass
+            "status": "Forensic validation complete"
         }
-
 
 # Global singleton
 forensic_engine = MythosForensicEngine()

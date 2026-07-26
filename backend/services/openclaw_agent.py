@@ -8,7 +8,6 @@ logger = logging.getLogger("vas.openclaw")
 OPENCLAW_URL = "http://127.0.0.1:18789"
 OPENCLAW_TOKEN = "22b3d0f8bbe1f335aab557204ab619d5260b91ab8533d3c4"
 
-
 def openclaw_analysis(content: str):
     """
     Sends suspicious content to the OpenClaw autonomous agent for deep forensic investigation.
@@ -28,7 +27,7 @@ def openclaw_analysis(content: str):
         return {
             "status": "engaged",
             "agent": "OpenClaw Sentinel",
-            "gateway": OPENCLAW_URL,
+            "gateway": OPENCLAW_URL
         }
     except Exception as e:
         logger.error(f"OpenClaw Agent offline: {e}")

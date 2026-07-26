@@ -1,7 +1,6 @@
 """
 Audit service for persistent forensic event logging.
 """
-
 import logging
 from typing import Any, Optional
 

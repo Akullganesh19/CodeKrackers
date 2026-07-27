@@ -16,6 +16,8 @@ import {
   Loader2
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Oracle } from '@/app/lib/oracle'
+import { useRef } from 'react'
 
 export default function SMSScannerPage() {
   const [mounted, setMounted] = useState(false)
@@ -29,9 +31,26 @@ export default function SMSScannerPage() {
     tags: string[];
   }>(null)
 
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   React.useEffect(() => {
     setMounted(true)
   }, [])
+
+  const handleTextChange = (newText: string) => {
+    setText(newText)
+
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      if (newText.trim().length > 10) {
+        const token = localStorage.getItem('vsdp_token') || 'dummy_token'
+        Oracle.preComputeScan(newText, token)
+      }
+    }, 500)
+  }
 
   const handleAnalyze = async () => {
     if (!text.trim()) return
@@ -41,14 +60,21 @@ export default function SMSScannerPage() {
 
     try {
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
+
+      // Try to get predictive result first
+      let response = await Oracle.getScanResult(text);
+
+      // Fallback to normal fetch if not pre-computed
+      if (!response) {
+        response = await fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text })
+        });
+      }
       
       console.log("Response Status:", response.status);
       if (!response.ok) {
@@ -77,11 +103,14 @@ export default function SMSScannerPage() {
   }
 
   const loadSample = (type: 'scam' | 'safe') => {
-    if (type === 'scam') {
-      setText('URGENT: Your SBI account will be blocked in 24hrs. Update KYC now: http://sbi-kyc-update.xyz/verify')
-    } else {
-      setText('Your OTP for SBI NetBanking is 847291. Valid 10 min. Do not share with anyone. -SBI')
-    }
+    const sampleText = type === 'scam'
+      ? 'URGENT: Your SBI account will be blocked in 24hrs. Update KYC now: http://sbi-kyc-update.xyz/verify'
+      : 'Your OTP for SBI NetBanking is 847291. Valid 10 min. Do not share with anyone. -SBI'
+
+    setText(sampleText)
+
+    const token = localStorage.getItem('vsdp_token') || 'dummy_token'
+    Oracle.preComputeScan(sampleText, token)
   }
 
   const handleReportToCybercrime = async () => {
@@ -172,7 +201,7 @@ export default function SMSScannerPage() {
               <div className="relative group">
                 <textarea
                   value={text}
-                  onChange={(e) => setText(e.target.value)}
+                  onChange={(e) => handleTextChange(e.target.value)}
                   placeholder="Paste suspicious SMS here..."
                   className="w-full bg-surface/50 border border-white/10 rounded-lg p-5 font-mono text-sm min-height-[140px] focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder:text-white/10 resize-none h-40"
                 />

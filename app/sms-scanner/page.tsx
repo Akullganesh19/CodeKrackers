@@ -29,9 +29,55 @@ export default function SMSScannerPage() {
     tags: string[];
   }>(null)
 
+  // 🛸 Oracle: Predictive Prefetch Cache & Typing Timeout
+  const predictionCache = React.useRef<Record<string, Promise<Response> | undefined>>({})
+  const typingTimeoutRef = React.useRef<NodeJS.Timeout | null>(null)
+
   React.useEffect(() => {
     setMounted(true)
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current)
+      }
+    }
   }, [])
+
+  const triggerPredictivePrefetch = (currentText: string) => {
+    if (!currentText.trim()) return;
+
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Debounce to wait for user to pause typing (500ms)
+    typingTimeoutRef.current = setTimeout(() => {
+      // If we haven't already pre-computed this exact string
+      if (!predictionCache.current[currentText]) {
+        console.log("🛸 Oracle: Pre-computing analysis for:", currentText.substring(0, 20) + "...");
+        const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+
+        // Background fetch, cached as a Promise
+        predictionCache.current[currentText] = fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text: currentText })
+        }).catch(err => {
+          // Graceful degradation: catch network errors to prevent unhandled rejection
+          console.error("🛸 Oracle Prefetch Error:", err);
+          return new Response(JSON.stringify({ error: "Prefetch failed" }), { status: 500 });
+        });
+      }
+    }, 500);
+  }
+
+  const handleTextChange = (newText: string) => {
+    setText(newText);
+    triggerPredictivePrefetch(newText);
+  }
 
   const handleAnalyze = async () => {
     if (!text.trim()) return
@@ -40,16 +86,27 @@ export default function SMSScannerPage() {
     setResult(null)
 
     try {
-      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
-      
+      let response: Response;
+
+      // 🛸 Oracle: Check if we already have a pre-computed promise for this exact text
+      if (predictionCache.current[text]) {
+        console.log("🛸 Oracle: Using pre-computed result!");
+        const cachedResponse = await predictionCache.current[text];
+        // Clone the response so we don't encounter "body stream already read" if clicked multiple times
+        response = cachedResponse.clone();
+      } else {
+        // Fallback: normal fetch
+        const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+        response = await fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text })
+        });
+      }
+
       console.log("Response Status:", response.status);
       if (!response.ok) {
         const errorText = await response.text();
@@ -77,11 +134,13 @@ export default function SMSScannerPage() {
   }
 
   const loadSample = (type: 'scam' | 'safe') => {
+    let sample = '';
     if (type === 'scam') {
-      setText('URGENT: Your SBI account will be blocked in 24hrs. Update KYC now: http://sbi-kyc-update.xyz/verify')
+      sample = 'URGENT: Your SBI account will be blocked in 24hrs. Update KYC now: http://sbi-kyc-update.xyz/verify';
     } else {
-      setText('Your OTP for SBI NetBanking is 847291. Valid 10 min. Do not share with anyone. -SBI')
+      sample = 'Your OTP for SBI NetBanking is 847291. Valid 10 min. Do not share with anyone. -SBI';
     }
+    handleTextChange(sample);
   }
 
   const handleReportToCybercrime = async () => {
@@ -172,7 +231,7 @@ export default function SMSScannerPage() {
               <div className="relative group">
                 <textarea
                   value={text}
-                  onChange={(e) => setText(e.target.value)}
+                  onChange={(e) => handleTextChange(e.target.value)}
                   placeholder="Paste suspicious SMS here..."
                   className="w-full bg-surface/50 border border-white/10 rounded-lg p-5 font-mono text-sm min-height-[140px] focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder:text-white/10 resize-none h-40"
                 />

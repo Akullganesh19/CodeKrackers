@@ -46,9 +46,9 @@
 							"options": {"raw": {"language": "json"}}
 						},
 						"url": {
-							"raw": "{{base_url}}/api/v1/threats/",
+							"raw": "{{base_url}}/api/threats/",
 							"host": ["{{base_url}}"],
-							"path": ["api", "v1", "threats", ""]
+							"path": ["api", "threats", ""]
 						}
 					}
 				},
@@ -60,9 +60,9 @@
 							{"key": "Authorization", "value": "Bearer {{token}}", "type": "text"}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/v1/threats/",
+							"raw": "{{base_url}}/api/threats/",
 							"host": ["{{base_url}}"],
-							"path": ["api", "v1", "threats", ""]
+							"path": ["api", "threats", ""]
 						}
 					}
 				}
@@ -79,9 +79,9 @@
 							{"key": "Authorization", "value": "Bearer {{token}}", "type": "text"}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/v1/legal/generate-fir/1",
+							"raw": "{{base_url}}/api/legal/generate-fir/1",
 							"host": ["{{base_url}}"],
-							"path": ["api", "v1", "legal", "generate-fir", "1"]
+							"path": ["api", "legal", "generate-fir", "1"]
 						}
 					}
 				}
@@ -98,9 +98,9 @@
 							{"key": "Authorization", "value": "Bearer {{token}}", "type": "text"}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/v1/analytics/dashboard-summary",
+							"raw": "{{base_url}}/api/analytics/dashboard-summary",
 							"host": ["{{base_url}}"],
-							"path": ["api", "v1", "analytics", "dashboard-summary"]
+							"path": ["api", "analytics", "dashboard-summary"]
 						}
 					}
 				}

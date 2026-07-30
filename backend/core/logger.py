@@ -29,15 +29,23 @@ class RedactingFormatter(logging.Formatter):
         original_msg = super().format(record)
 
         # If the output is a JSON string (likely from structlog JSONRenderer),
-        # avoid regex-replacing unquoted integers and corrupting JSON.
-        # It has already been redacted by `redact_structlog_dict`.
+        # we must still redact it safely. Standard logger strings that happen
+        # to be JSON shouldn't bypass redaction. If it's valid JSON, we parse it,
+        # apply dictionary redaction, and re-serialize.
         if original_msg.strip().startswith('{') and original_msg.strip().endswith('}'):
             try:
-                # Validating if it is valid JSON
-                json.loads(original_msg)
-                return original_msg
+                # Attempt to parse
+                parsed = json.loads(original_msg)
+
+                # In case structlog already redacted it, applying it again is harmless.
+                # In case it's a raw standard log that is JSON, it gets redacted safely.
+                redact_structlog_dict(None, None, parsed)
+
+                return json.dumps(parsed)
             except json.JSONDecodeError:
                 pass
+        elif isinstance(original_msg, str):
+            return redact_string(original_msg)
 
         return redact_string(original_msg)
 

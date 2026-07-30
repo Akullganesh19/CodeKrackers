@@ -1,0 +1,6 @@
+## 2024-05-24 — Structural Log Redaction for PII
+**Data traced:** PII (Email, Phone Numbers, OTPs, Passwords, SSN)
+**Exposure found:** Sensitive fields logged in plaintext in auth/notifier standard Python log statements (e.g., `SECURITY: Generated OTP for user@example.com -> 123456`, `SIMULATED OTP SENT TO +919876543210: 123456`), and unredacted logging in structlog processors.
+**Fix:** Modified `backend/core/logger.py` to add `RedactingFormatter` for `logging` and a dictionary mutation processor `redact_structlog_dict` for `structlog`. These intercept all logs before they hit standard output or disk, masking known structural keys and using contextual regex to mask inline OTPs, phones, and emails.
+**Coverage confirmed:** Tested the `logging` and `structlog` loggers using identical string formats from `auth.py` and `notifier.py`. Confirmed robust redaction of context-aware OTPs, phone patterns, and emails while keeping non-PII characters intact. Tested dictionary kwarg masking (such as `otp="..."`).
+**Still exposed elsewhere:** Potential leaks to third parties or via un-redacted DB export tools (e.g. `export_threats_json` / `export_threats_csv` from admin UI) which contain sensitive phone numbers, and childlock tracking logs (not investigated in depth this session).

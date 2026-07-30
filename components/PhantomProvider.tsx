@@ -6,8 +6,8 @@ export function PhantomProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    if ((window as any).__phantomInitialized) return;
-    (window as any).__phantomInitialized = true;
+    if ((window as unknown as Record<string, unknown>).__phantomInitialized) return;
+    (window as unknown as Record<string, unknown>).__phantomInitialized = true;
 
     const originalFetch = window.fetch;
     const inFlight = new Map<string, Promise<Response>>();

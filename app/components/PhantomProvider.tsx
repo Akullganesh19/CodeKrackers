@@ -18,11 +18,14 @@ export function PhantomProvider({ children }: { children: React.ReactNode }) {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       const method = (init?.method || (input instanceof Request ? input.method : 'GET')).toUpperCase();
 
+      // Robust header extraction
+      const initHeaders = new Headers(init?.headers);
+      const inputHeaders = input instanceof Request ? input.headers : new Headers();
+
       // Bypass next.js internal requests
       const isNextInternal =
-        (init?.headers as Record<string, string>)?.['RSC'] ||
-        (init?.headers as Record<string, string>)?.['Next-Router-Prefetch'] ||
-        (input instanceof Request && (input.headers.has('RSC') || input.headers.has('Next-Router-Prefetch')));
+        initHeaders.has('RSC') || initHeaders.has('Next-Router-Prefetch') ||
+        inputHeaders.has('RSC') || inputHeaders.has('Next-Router-Prefetch');
 
       // Bypass if cache is no-store or it's not a GET request
       if (isNextInternal || method !== 'GET' || init?.cache === 'no-store') {
@@ -30,7 +33,8 @@ export function PhantomProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Request Coalescing key
-      const cacheKey = `${method}:${url}`;
+      const authHeader = initHeaders.get('Authorization') || inputHeaders.get('Authorization') || '';
+      const cacheKey = `${method}:${url}:${authHeader}`;
 
       // In-flight deduplication
       if (inFlightRequests.has(cacheKey)) {

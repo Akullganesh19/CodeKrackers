@@ -7,15 +7,9 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Optional, Union
 
 from jose import jwt
-from passlib.context import CryptContext
+import bcrypt
 
 from backend.core.config import settings
-
-pwd_context = CryptContext(
-    schemes=["bcrypt"],
-    deprecated="auto",
-    bcrypt__rounds=12,  # Production-grade cost factor
-)
 
 ALGORITHM = "HS256"
 
@@ -85,11 +79,23 @@ def decode_token(token: str) -> dict:
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    """Verify a plain password against a bcrypt hash."""
+    try:
+        # bcrypt requires bytes
+        password_bytes = plain_password.encode('utf-8')
+        hash_bytes = hashed_password.encode('utf-8')
+        return bcrypt.checkpw(password_bytes, hash_bytes)
+    except Exception:
+        return False
 
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    """Hash a password using bcrypt."""
+    password_bytes = password.encode('utf-8')
+    # Use cost factor 12 as previously configured
+    salt = bcrypt.gensalt(rounds=12)
+    hashed_bytes = bcrypt.hashpw(password_bytes, salt)
+    return hashed_bytes.decode('ascii')
 
 
 # ─── Brute-force Protection ───

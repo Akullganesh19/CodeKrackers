@@ -101,3 +101,33 @@ def change_password(
 
     logger.info("PASSWORD_CHANGED user=%d", current_user.id)
     return {"message": "Password updated successfully"}
+
+
+@router.get("/me/safety-score")
+def get_user_safety_score(
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user),
+) -> Any:
+    """Get personal security score and history."""
+    from backend.models.orm import ScoreHistory
+
+    # Get last 7 days of score history
+    history = (
+        db.query(ScoreHistory)
+        .filter(ScoreHistory.user_id == current_user.id)
+        .order_by(ScoreHistory.recorded_at.asc())
+        .limit(30)
+        .all()
+    )
+
+    return {
+        "safety_score": current_user.safety_score,
+        "scams_avoided": current_user.scams_avoided,
+        "history": [
+            {
+                "score": entry.score,
+                "recorded_at": entry.recorded_at.isoformat() if entry.recorded_at else None
+            }
+            for entry in history
+        ]
+    }

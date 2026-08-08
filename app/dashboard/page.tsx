@@ -145,6 +145,7 @@ export default function Dashboard() {
   const [mounted, setMounted] = useState(false)
   const [loading, setLoading] = useState(true)
   const [summary, setSummary] = useState<any>(null)
+  const [safetyScore, setSafetyScore] = useState<any>(null)
   const [selectedSector, setSelectedSector] = useState('01')
 
   useEffect(() => {
@@ -182,6 +183,17 @@ export default function Dashboard() {
         if (res.ok) {
           const data = await res.json()
           setSummary(data)
+        } else {
+          setSummary(mockSummary)
+        }
+
+        // Fetch User Safety Score
+        const scoreRes = await fetch('/api/users/me/safety-score', {
+          headers: { 'Authorization': `Bearer ${token || 'dummy_token'}` }
+        })
+        if (scoreRes.ok) {
+          const scoreData = await scoreRes.json()
+          setSafetyScore(scoreData)
         } else {
           // Use mock data if response is not ok
           setSummary(mockSummary)
@@ -306,6 +318,35 @@ export default function Dashboard() {
                     animate={{ width: '94%' }}
                     transition={{ duration: 1.5, ease: "easeOut" }}
                   />
+                </div>
+              </div>
+            </div>
+
+            {/* PERSONAL SECURITY SCORE WIDGET */}
+            <div className="vsdp-card p-10 space-y-6 bg-gradient-to-br from-bg to-accent/5">
+              <div className="flex justify-between items-center border-b border-white/5 pb-4">
+                <h3 className="font-space text-lg font-bold uppercase tracking-tight text-accent">My Safety Score</h3>
+                <div className="px-3 py-1 bg-accent/10 border border-accent/20 rounded-full font-mono text-[0.5rem] text-accent uppercase">
+                  {safetyScore?.safety_score >= 90 ? 'Excellent' : safetyScore?.safety_score >= 70 ? 'Good' : 'Needs Attention'}
+                </div>
+              </div>
+              <div className="flex items-center gap-6">
+                <div className="relative w-24 h-24 flex items-center justify-center">
+                  <svg className="absolute inset-0 w-full h-full -rotate-90">
+                    <circle cx="48" cy="48" r="42" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8" />
+                    <circle cx="48" cy="48" r="42" fill="none" stroke="#c4b5fd" strokeWidth="8" strokeDasharray="264" strokeDashoffset={264 - (264 * (safetyScore?.safety_score || 100)) / 100} className="transition-all duration-1000" />
+                  </svg>
+                  <span className="font-space text-3xl font-black text-white">{Math.round(safetyScore?.safety_score || 100)}</span>
+                </div>
+                <div className="space-y-3 flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[0.6rem] text-muted uppercase tracking-widest">Scams Avoided</span>
+                    <span className="font-space text-lg font-bold text-success">{safetyScore?.scams_avoided || 0}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[0.6rem] text-muted uppercase tracking-widest">Status</span>
+                    <span className="font-mono text-[0.55rem] text-accent uppercase tracking-widest bg-accent/10 px-2 py-0.5 rounded">Protected</span>
+                  </div>
                 </div>
               </div>
             </div>

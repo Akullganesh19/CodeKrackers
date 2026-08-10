@@ -1,8 +1,11 @@
 import logging
 from twilio.rest import Client
 from backend.core.config import settings
+from backend.core.resilience import with_retry_sync, CircuitBreaker, CircuitBreakerError
 
 logger = logging.getLogger("vas.notifier")
+
+twilio_circuit_breaker = CircuitBreaker(max_failures=3, reset_timeout=300, name="twilio_api")
 
 def send_threat_alert(phone_number: str, threat_type: str, score: float, original_sender: str):
     """
@@ -23,14 +26,21 @@ def send_threat_alert(phone_number: str, threat_type: str, score: float, origina
             f"⚠️ DO NOT click any links or share OTPs. This message has been logged for evidence."
         )
 
-        message = client.messages.create(
-            body=alert_msg,
-            from_=settings.TWILIO_PHONE_NUMBER,
-            to=phone_number
-        )
+        @with_retry_sync(max_attempts=3, initial_backoff_ms=500)
+        def _send_alert():
+            return client.messages.create(
+                body=alert_msg,
+                from_=settings.TWILIO_PHONE_NUMBER,
+                to=phone_number
+            )
+
+        message = twilio_circuit_breaker.call(_send_alert)
         
         logger.info(f"Notification sent to {phone_number}. SID: {message.sid}")
         return True
+    except CircuitBreakerError as e:
+        logger.error(f"Failed to send notification: Circuit Breaker OPEN {e}")
+        return False
     except Exception as e:
         logger.error(f"Failed to send notification: {e}")
         return False
@@ -56,13 +66,21 @@ def send_otp(phone_number: str) -> str:
             "Valid for 5 minutes. DO NOT share this with anyone."
         )
 
-        client.messages.create(
-            body=msg_body,
-            from_=settings.TWILIO_PHONE_NUMBER,
-            to=phone_number
-        )
+        @with_retry_sync(max_attempts=3, initial_backoff_ms=500)
+        def _send_otp_sms():
+            return client.messages.create(
+                body=msg_body,
+                from_=settings.TWILIO_PHONE_NUMBER,
+                to=phone_number
+            )
+
+        twilio_circuit_breaker.call(_send_otp_sms)
         
         logger.info(f"OTP sent to {phone_number}")
+        return otp_code
+    except CircuitBreakerError as e:
+        logger.error(f"Failed to send OTP: Circuit Breaker OPEN {e}")
+        logger.warning(f"FALLBACK SIMULATED OTP: {otp_code}")
         return otp_code
     except Exception as e:
         logger.error(f"Failed to send OTP: {e}")

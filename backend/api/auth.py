@@ -17,9 +17,14 @@ from backend.core import security
 from backend.core.security import get_lockout_time, MAX_LOGIN_ATTEMPTS
 from backend.core.config import settings
 from backend.models.orm import User, UserRole
+import asyncio
+from backend.core.resilience import with_retry_async, CircuitBreaker, CircuitBreakerError
 
 router = APIRouter()
 logger = logging.getLogger("vas.auth")
+
+twilio_circuit_breaker = CircuitBreaker(max_failures=3, reset_timeout=300, name="auth_twilio_api")
+sendgrid_circuit_breaker = CircuitBreaker(max_failures=3, reset_timeout=300, name="auth_sendgrid_api")
 
 try:
     redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True)
@@ -69,11 +74,20 @@ async def send_otp(
     if "@" not in otp_in.identifier and settings.TWILIO_ACCOUNT_SID and settings.TWILIO_AUTH_TOKEN:
         try:
             client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-            client.messages.create(
-                body=f"VSDP Security Code: {otp_code}. Valid for 5 minutes. Do not share.",
-                from_=settings.TWILIO_PHONE_NUMBER,
-                to=otp_in.identifier
-            )
+            @with_retry_async(max_attempts=3, initial_backoff_ms=500)
+            async def _send_otp_sms_auth():
+                loop = asyncio.get_running_loop()
+                return await loop.run_in_executor(
+                    None,
+                    lambda: client.messages.create(
+                        body=f"VSDP Security Code: {otp_code}. Valid for 5 minutes. Do not share.",
+                        from_=settings.TWILIO_PHONE_NUMBER,
+                        to=otp_in.identifier
+                    )
+                )
+            await twilio_circuit_breaker.call_async(_send_otp_sms_auth)
+        except CircuitBreakerError as e:
+            logger.error(f"SMS_GATEWAY_CIRCUIT_OPEN: {e}")
         except Exception as e:
             logger.error(f"SMS_GATEWAY_ERROR: Failed to send OTP to {otp_in.identifier}: {e}")
 
@@ -86,7 +100,13 @@ async def send_otp(
                 plain_text_content=f"Your VSDP security code is: {otp_code}. Valid for 5 minutes. Do not share."
             )
             sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
-            sg.send(message)
+            @with_retry_async(max_attempts=3, initial_backoff_ms=500)
+            async def _send_otp_email_auth():
+                loop = asyncio.get_running_loop()
+                return await loop.run_in_executor(None, sg.send, message)
+            await sendgrid_circuit_breaker.call_async(_send_otp_email_auth)
+        except CircuitBreakerError as e:
+            logger.error(f"EMAIL_GATEWAY_CIRCUIT_OPEN: {e}")
         except Exception as e:
             logger.error(f"EMAIL_GATEWAY_ERROR: Failed to send OTP to {otp_in.identifier}: {e}")
 

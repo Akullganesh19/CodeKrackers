@@ -74,6 +74,7 @@ async def send_otp(
     if "@" not in otp_in.identifier and settings.TWILIO_ACCOUNT_SID and settings.TWILIO_AUTH_TOKEN:
         try:
             client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+
             @with_retry_async(max_attempts=3, initial_backoff_ms=500)
             async def _send_otp_sms_auth():
                 loop = asyncio.get_running_loop()
@@ -100,6 +101,7 @@ async def send_otp(
                 plain_text_content=f"Your VSDP security code is: {otp_code}. Valid for 5 minutes. Do not share."
             )
             sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
+
             @with_retry_async(max_attempts=3, initial_backoff_ms=500)
             async def _send_otp_email_auth():
                 loop = asyncio.get_running_loop()
@@ -134,7 +136,7 @@ async def verify_otp(
         )
 
     redis_key = f"otp:{otp_verify.identifier}"
-    stored_code = redis_client.get(redis_key) if redis_client else otp_code # Mock pass if redis down for demo
+    stored_code = redis_client.get(redis_key) if redis_client else otp_verify.code # Mock pass if redis down for demo
 
     if not stored_code or otp_verify.code != stored_code:
         if user:

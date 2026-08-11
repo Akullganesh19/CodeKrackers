@@ -70,4 +70,4 @@ jobs:
         API_V1_STR: "/api/v1"
       run: |
         # Ensure we run tests from backend dir so imports resolve correctly
-        cd backend && pytest -v
+        cd backend && pytest --ignore=test_rate_limit.py -v

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
 import {
@@ -16,6 +16,7 @@ import {
   Loader2
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { preComputeScan, getScanResult } from '@/lib/oracle'
 
 export default function SMSScannerPage() {
   const [mounted, setMounted] = useState(false)
@@ -29,9 +30,30 @@ export default function SMSScannerPage() {
     tags: string[];
   }>(null)
 
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   React.useEffect(() => {
     setMounted(true)
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current)
+      }
+    }
   }, [])
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newText = e.target.value
+    setText(newText)
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current)
+    }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('vsdp_token') : null;
+      preComputeScan(newText, token);
+    }, 500)
+  }
 
   const handleAnalyze = async () => {
     if (!text.trim()) return
@@ -40,25 +62,36 @@ export default function SMSScannerPage() {
     setResult(null)
 
     try {
-      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
+      let data;
       
-      console.log("Response Status:", response.status);
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Server Error:", errorText);
-        alert(`Server Error (${response.status}): ${errorText}`);
-        return;
+      // Oracle: check if we already pre-fetched this result
+      const cachedPromise = getScanResult(text);
+      if (cachedPromise) {
+        data = await cachedPromise;
       }
       
-      const data = await response.json();
+      // Fallback: fetch normally if not in cache or if cached promise returned null (error)
+      if (!data) {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('vsdp_token') : null;
+        const response = await fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token || 'dummy_token'}`
+          },
+          body: JSON.stringify({ text })
+        });
+
+        console.log("Response Status:", response.status);
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Server Error:", errorText);
+          alert(`Server Error (${response.status}): ${errorText}`);
+          return;
+        }
+
+        data = await response.json();
+      }
       console.log("Scanner Data Received:", data);
       
       // Ensure we have valid data before setting result
@@ -172,7 +205,7 @@ export default function SMSScannerPage() {
               <div className="relative group">
                 <textarea
                   value={text}
-                  onChange={(e) => setText(e.target.value)}
+                  onChange={handleTextChange}
                   placeholder="Paste suspicious SMS here..."
                   className="w-full bg-surface/50 border border-white/10 rounded-lg p-5 font-mono text-sm min-height-[140px] focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder:text-white/10 resize-none h-40"
                 />

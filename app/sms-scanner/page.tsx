@@ -16,11 +16,14 @@ import {
   Loader2
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Oracle } from '@/lib/oracle'
+import { useRef } from 'react'
 
 export default function SMSScannerPage() {
   const [mounted, setMounted] = useState(false)
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(false)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [result, setResult] = useState<null | {
     isScam: boolean;
     confidence: number;
@@ -33,6 +36,15 @@ export default function SMSScannerPage() {
     setMounted(true)
   }, [])
 
+  const handleTextChange = (val: string) => {
+    setText(val)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('vsdp_token') : null;
+      Oracle.preComputeScan(val, token);
+    }, 300)
+  }
+
   const handleAnalyze = async () => {
     if (!text.trim()) return
 
@@ -41,24 +53,37 @@ export default function SMSScannerPage() {
 
     try {
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
       
-      console.log("Response Status:", response.status);
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Server Error:", errorText);
-        alert(`Server Error (${response.status}): ${errorText}`);
-        return;
+      let data = null;
+      const cachedPromise = Oracle.getScanResult(text);
+
+      if (cachedPromise) {
+        console.log("Oracle: Using pre-computed scan result");
+        data = await cachedPromise;
       }
       
-      const data = await response.json();
+      // If no cached promise, or if cached promise resolved to null (failed), fetch natively
+      if (!data) {
+        const response = await fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text })
+        });
+
+        console.log("Response Status:", response.status);
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Server Error:", errorText);
+          alert(`Server Error (${response.status}): ${errorText}`);
+          return;
+        }
+
+        data = await response.json();
+      }
+
       console.log("Scanner Data Received:", data);
       
       // Ensure we have valid data before setting result
@@ -172,7 +197,7 @@ export default function SMSScannerPage() {
               <div className="relative group">
                 <textarea
                   value={text}
-                  onChange={(e) => setText(e.target.value)}
+                  onChange={(e) => handleTextChange(e.target.value)}
                   placeholder="Paste suspicious SMS here..."
                   className="w-full bg-surface/50 border border-white/10 rounded-lg p-5 font-mono text-sm min-height-[140px] focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder:text-white/10 resize-none h-40"
                 />

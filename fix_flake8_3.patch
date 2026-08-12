@@ -1,0 +1,102 @@
+--- backend/api/call.py
++++ backend/api/call.py
+@@ -148,7 +148,6 @@
+                 if audio_buffer.tell() > 32000:  # e.g. approx 1s of 16kHz audio
+                     audio_buffer.seek(0)
+                     # In real scenario, stream this chunk to a speech-to-text service
+-                    current_buffer_data = audio_buffer.read()
+                     # Then run detection on the partial transcript
+
+                     # Simulate delay
+--- backend/api/canary.py
++++ backend/api/canary.py
+@@ -56,7 +56,6 @@
+
+     # Create a 1x1 transparent GIF
+     # (Hardcoded base64 representation of a standard 1x1 transparent GIF)
+-    gif_data = (
+-        b"GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\x01"
+-        b"\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;"
+-    )
+     return Response(
+         content=b"GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;",
+         media_type="image/gif"
+--- backend/api/honeypot_traps.py
++++ backend/api/honeypot_traps.py
+@@ -183,7 +183,6 @@
+ ) -> Any:
+     # We leak a fake "canary" variable in the error output
+     # that monitors if the attacker tries to use it.
+-    canary = secrets.token_urlsafe(32)
+     await log_honeypot_access(
+         db=db,
+         request=request,
+--- backend/api/v1/endpoints/analytics.py
++++ backend/api/v1/endpoints/analytics.py
+@@ -26,7 +26,6 @@
+         today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+-        week_ago = now - timedelta(days=7)
+
+         # 1. Platform Totals
+         total_users = db.query(User).count()
+--- backend/api/v1/endpoints/canary.py
++++ backend/api/v1/endpoints/canary.py
+@@ -58,7 +58,6 @@
+
+     # Create a 1x1 transparent GIF
+     # (Hardcoded base64 representation of a standard 1x1 transparent GIF)
+-    gif_data = (
+-        b"GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\x01"
+-        b"\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;"
+-    )
+     return Response(
+         content=b"GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;",
+         media_type="image/gif"
+--- backend/api/v1/endpoints/honeypot_traps.py
++++ backend/api/v1/endpoints/honeypot_traps.py
+@@ -183,7 +183,6 @@
+ ) -> Any:
+     # We leak a fake "canary" variable in the error output
+     # that monitors if the attacker tries to use it.
+-    canary = secrets.token_urlsafe(32)
+     await log_honeypot_access(
+         db=db,
+         request=request,
+--- backend/services/canary_service.py
++++ backend/services/canary_service.py
+@@ -60,7 +60,6 @@
+     """Generates a tracking URL linking to a 1x1 pixel."""
+     token_val = create_tracking_token(db, user_id, channel, metadata)
+
+-    tracking_url = generate_tracking_url(token_val)
+     # You might inject this into an HTML email or SMS:
+     # <img src="https://api.vsdp.gov.in/v1/canary/track/{token_val}" width="1" height="1" />
+     return token_val
+--- backend/services/model_security.py
++++ backend/services/model_security.py
+@@ -208,7 +208,6 @@
+         """
+         model = db.query(ModelVersion).filter(ModelVersion.version_tag == version_tag).first()
+         if not model:
+             return {"valid": False, "reason": "Model not found"}
+
+-        fp_hash = hashlib.sha384(model.watermark_embedding).hexdigest() if model.watermark_embedding else ""
+
+         # In reality, load weights and compute hash.
+@@ -438,7 +437,6 @@
+     def check_rate_limit(self, client_ip: str, model_name: str) -> bool:
+         """Basic in-memory rate limiting to prevent DoS attacks on inference."""
+         now = time.time()
+-        model_key = f"{model_name}:{client_ip}"
+
+         # Clean old requests
+         self.request_counts[client_ip] = [t for t in self.request_counts.get(client_ip, []) if now - t < 60]
+--- backend/services/mythos_engine.py
++++ backend/services/mythos_engine.py
+@@ -50,7 +50,6 @@
+             input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
+             # Standard causal language modeling (just a stub representation)
+-            logits = self.model(input_ids, n_loops=16)
+             return "Synthetic Vishing Script Generation Output (OpenMythos Simulation)"
+         except Exception as e:
+             logger.error("OpenMythos generation failed: %s", e)

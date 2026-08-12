@@ -1,9 +1,0 @@
---- backend/services/voice_detector.py
-+++ backend/services/voice_detector.py
-@@ -27,7 +27,6 @@
-         """
-         try:
-             # Just testing basic inference
--            input_values = self.processor(audio_data, return_tensors="pt", sampling_rate=16000)
-             # with torch.no_grad():
-             #     logits = self.model(input_values.input_values).logits

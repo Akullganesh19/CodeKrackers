@@ -17,6 +17,7 @@ from backend.core import security
 from backend.core.security import get_lockout_time, MAX_LOGIN_ATTEMPTS
 from backend.core.config import settings
 from backend.models.orm import User, UserRole
+from backend.core.resilience import with_retry_sync
 
 router = APIRouter()
 logger = logging.getLogger("vas.auth")
@@ -49,6 +50,26 @@ class UserRegister(BaseModel):
     phone_number: Optional[str] = None
     role: str = "citizen"
 
+@with_retry_sync(max_attempts=3, initial_backoff=0.2)
+def send_twilio_otp(to_number: str, otp_code: str):
+    client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+    client.messages.create(
+        body=f"VSDP Security Code: {otp_code}. Valid for 5 minutes. Do not share.",
+        from_=settings.TWILIO_PHONE_NUMBER,
+        to=to_number
+    )
+
+@with_retry_sync(max_attempts=3, initial_backoff=0.2)
+def send_sendgrid_otp(to_email: str, otp_code: str):
+    message = Mail(
+        from_email=settings.FROM_EMAIL,
+        to_emails=to_email,
+        subject='VSDP Security Code',
+        plain_text_content=f"Your VSDP security code is: {otp_code}. Valid for 5 minutes. Do not share."
+    )
+    sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
+    sg.send(message)
+
 @router.post("/send")
 @limiter.limit(settings.RATE_LIMIT_AUTH)
 async def send_otp(
@@ -68,27 +89,17 @@ async def send_otp(
 
     if "@" not in otp_in.identifier and settings.TWILIO_ACCOUNT_SID and settings.TWILIO_AUTH_TOKEN:
         try:
-            client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-            client.messages.create(
-                body=f"VSDP Security Code: {otp_code}. Valid for 5 minutes. Do not share.",
-                from_=settings.TWILIO_PHONE_NUMBER,
-                to=otp_in.identifier
-            )
+            send_twilio_otp(otp_in.identifier, otp_code)
         except Exception as e:
             logger.error(f"SMS_GATEWAY_ERROR: Failed to send OTP to {otp_in.identifier}: {e}")
+            raise HTTPException(status_code=503, detail="Failed to send SMS OTP due to gateway error.")
 
     if "@" in otp_in.identifier and settings.SENDGRID_API_KEY:
         try:
-            message = Mail(
-                from_email=settings.FROM_EMAIL,
-                to_emails=otp_in.identifier,
-                subject='VSDP Security Code',
-                plain_text_content=f"Your VSDP security code is: {otp_code}. Valid for 5 minutes. Do not share."
-            )
-            sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
-            sg.send(message)
+            send_sendgrid_otp(otp_in.identifier, otp_code)
         except Exception as e:
             logger.error(f"EMAIL_GATEWAY_ERROR: Failed to send OTP to {otp_in.identifier}: {e}")
+            raise HTTPException(status_code=503, detail="Failed to send Email OTP due to gateway error.")
 
     logger.info(f"SECURITY: Generated OTP for {otp_in.identifier} -> {otp_code}")
     

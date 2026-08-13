@@ -16,6 +16,7 @@ import {
   Loader2
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { oracle } from '@/lib/oracle'
 
 export default function SMSScannerPage() {
   const [mounted, setMounted] = useState(false)
@@ -29,9 +30,26 @@ export default function SMSScannerPage() {
     tags: string[];
   }>(null)
 
+
+  const typingTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
   React.useEffect(() => {
     setMounted(true)
   }, [])
+
+  React.useEffect(() => {
+    if (typingTimer.current) clearTimeout(typingTimer.current);
+    typingTimer.current = setTimeout(() => {
+      if (text.length > 15) {
+        const token = localStorage.getItem('vsdp_token');
+        oracle.preComputeScan(text, token);
+      }
+    }, 600);
+    return () => {
+      if (typingTimer.current) clearTimeout(typingTimer.current);
+    };
+  }, [text]);
+
 
   const handleAnalyze = async () => {
     if (!text.trim()) return
@@ -41,29 +59,12 @@ export default function SMSScannerPage() {
 
     try {
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
-      
-      console.log("Response Status:", response.status);
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Server Error:", errorText);
-        alert(`Server Error (${response.status}): ${errorText}`);
-        return;
-      }
-      
-      const data = await response.json();
+      const data = await oracle.getScanResult(text, token);
       console.log("Scanner Data Received:", data);
       
       // Ensure we have valid data before setting result
-      if (data && typeof data.isScam !== 'undefined') {
-        setResult(data);
+      if (data && typeof (data as any).isScam !== 'undefined') {
+        setResult(data as any);
       } else {
         console.error("Malformed backend response", data);
         alert("Server error: Malformed response from AI engine.");

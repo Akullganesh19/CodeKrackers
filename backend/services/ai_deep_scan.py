@@ -3,9 +3,30 @@ from typing import Dict, Any
 from groq import Groq
 from backend.core.config import settings
 from backend.services.ollama_scan import ollama_deep_scan
+from backend.core.resilience import CircuitBreaker, with_retry_sync
 import requests
 
 logger = logging.getLogger("vas.ai_scan")
+
+ollama_circuit_breaker = CircuitBreaker(max_failures=3, reset_timeout=60)
+
+@ollama_circuit_breaker
+def check_ollama_status():
+    response = requests.get("http://localhost:11434", timeout=1)
+    response.raise_for_status()
+
+@with_retry_sync(max_retries=3, base_delay=0.5)
+def call_groq_api(prompt: str):
+    client = Groq(api_key=settings.GROQ_API_KEY)
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {"role": "system", "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection."},
+            {"role": "user", "content": prompt}
+        ],
+        model=settings.GROQ_MODEL,
+        response_format={"type": "json_object"}
+    )
+    return chat_completion
 
 def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     """
@@ -17,21 +38,22 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     # ── Attempt Local Ollama First ──
     try:
         # Quick check if Ollama is running
-        requests.get("http://localhost:11434", timeout=1)
+        check_ollama_status()
         logger.info("Using local Ollama for analysis...")
         local_result = ollama_deep_scan(content, source_type)
         if local_result["score_increase"] > 0:
             return local_result
-    except:
-        logger.info("Ollama not reachable, falling back to Groq Cloud...")
+    except Exception as e:
+        if "OPEN" in str(e):
+            logger.info("Ollama circuit is OPEN, skipping local check...")
+        else:
+            logger.info("Ollama not reachable, falling back to Groq Cloud...")
 
     # ── Fallback to Groq ──
     if not settings.GROQ_API_KEY:
         return {"score_increase": 0.0, "reason": "AI Scan disabled (No API Key)"}
 
     try:
-        client = Groq(api_key=settings.GROQ_API_KEY)
-        
         prompt = f"""
         Analyze this {source_type} for potential scam/phishing intent. 
         Content: "{content}"
@@ -43,14 +65,7 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
         4. "risk_factors": list of strings
         """
 
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection."},
-                {"role": "user", "content": prompt}
-            ],
-            model=settings.GROQ_MODEL,
-            response_format={"type": "json_object"}
-        )
+        chat_completion = call_groq_api(prompt)
 
         import json
         result = json.loads(chat_completion.choices[0].message.content)

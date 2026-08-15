@@ -16,6 +16,8 @@ import {
   Loader2
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { preComputeScan, getScanResult } from '@/lib/oracle'
+import { useRef } from 'react'
 
 export default function SMSScannerPage() {
   const [mounted, setMounted] = useState(false)
@@ -29,9 +31,25 @@ export default function SMSScannerPage() {
     tags: string[];
   }>(null)
 
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   React.useEffect(() => {
     setMounted(true)
   }, [])
+
+  const handleTextChange = (val: string) => {
+    setText(val)
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current)
+    }
+
+    if (val.trim()) {
+      typingTimeoutRef.current = setTimeout(() => {
+        const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+        preComputeScan('http://localhost:8000/api/analytics/scan', { text: val }, { 'Authorization': `Bearer ${token}` })
+      }, 500)
+    }
+  }
 
   const handleAnalyze = async () => {
     if (!text.trim()) return
@@ -41,29 +59,47 @@ export default function SMSScannerPage() {
 
     try {
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
+      const url = 'http://localhost:8000/api/analytics/scan';
+      const payload = { text };
       
-      console.log("Response Status:", response.status);
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Server Error:", errorText);
-        alert(`Server Error (${response.status}): ${errorText}`);
-        return;
+      let data = await getScanResult(url, payload);
+      let responseStatus = 200;
+      let isOk = true;
+
+      if (!data) {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        console.log("Response Status:", response.status);
+        responseStatus = response.status;
+        isOk = response.ok;
+
+        if (isOk) {
+          data = await response.json();
+        } else {
+          const errorText = await response.text();
+          console.error("Server Error:", errorText);
+          throw new Error(`Server returned ${response.status}`);
+        }
+      } else {
+        console.log("[Phantom] Cache hit: Instant result applied");
+      }
+
+      if (!isOk) {
+        throw new Error(`Server returned ${responseStatus}`);
       }
       
-      const data = await response.json();
       console.log("Scanner Data Received:", data);
       
       // Ensure we have valid data before setting result
-      if (data && typeof data.isScam !== 'undefined') {
-        setResult(data);
+      if (data && typeof (data as any).isScam !== 'undefined') {
+        setResult(data as any);
       } else {
         console.error("Malformed backend response", data);
         alert("Server error: Malformed response from AI engine.");
@@ -77,11 +113,15 @@ export default function SMSScannerPage() {
   }
 
   const loadSample = (type: 'scam' | 'safe') => {
+    let sampleText = '';
     if (type === 'scam') {
-      setText('URGENT: Your SBI account will be blocked in 24hrs. Update KYC now: http://sbi-kyc-update.xyz/verify')
+      sampleText = 'URGENT: Your SBI account will be blocked in 24hrs. Update KYC now: http://sbi-kyc-update.xyz/verify';
     } else {
-      setText('Your OTP for SBI NetBanking is 847291. Valid 10 min. Do not share with anyone. -SBI')
+      sampleText = 'Your OTP for SBI NetBanking is 847291. Valid 10 min. Do not share with anyone. -SBI';
     }
+    setText(sampleText);
+    const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+    preComputeScan('http://localhost:8000/api/analytics/scan', { text: sampleText }, { 'Authorization': `Bearer ${token}` });
   }
 
   const handleReportToCybercrime = async () => {
@@ -172,7 +212,7 @@ export default function SMSScannerPage() {
               <div className="relative group">
                 <textarea
                   value={text}
-                  onChange={(e) => setText(e.target.value)}
+                  onChange={(e) => handleTextChange(e.target.value)}
                   placeholder="Paste suspicious SMS here..."
                   className="w-full bg-surface/50 border border-white/10 rounded-lg p-5 font-mono text-sm min-height-[140px] focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder:text-white/10 resize-none h-40"
                 />

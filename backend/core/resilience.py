@@ -4,6 +4,7 @@ import logging
 import threading
 from functools import wraps
 from typing import Callable, Any, TypeVar, cast, Awaitable
+import requests
 
 logger = logging.getLogger("vas.resilience")
 
@@ -49,7 +50,7 @@ def with_retry_sync(max_attempts: int = 3, initial_backoff: float = 0.1, backoff
         return wrapper
     return decorator
 
-class CircuitBreakerOpenException(Exception):
+class CircuitBreakerOpenException(requests.RequestException):
     pass
 
 class CircuitBreaker:

@@ -9,6 +9,7 @@ logger = logging.getLogger("vas.ollama")
 OLLAMA_URL = "http://localhost:11434/api/generate"
 OLLAMA_MODEL = "llama3.1:8b" # Upgraded for tool-calling support
 
+
 @CircuitBreaker(failure_threshold=2, recovery_timeout=60)
 @with_retry_sync(max_attempts=3, initial_backoff=0.2)
 def _ollama_fetch(payload):

@@ -1,5 +1,5 @@
 import httpx
-from backend.core.resilience import with_retry, CircuitBreaker
+from backend.core.resilience import CircuitBreaker, with_retry
 import re
 from backend.core.config import settings
 

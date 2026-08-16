@@ -4,7 +4,7 @@ from groq import Groq
 from backend.core.config import settings
 from backend.services.ollama_scan import ollama_deep_scan
 import requests
-from backend.core.resilience import with_retry_sync, CircuitBreaker
+from backend.core.resilience import CircuitBreaker, with_retry_sync
 
 logger = logging.getLogger("vas.ai_scan")
 
@@ -30,6 +30,7 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     
     # ── Attempt Local Ollama First ──
     try:
+        # Quick check if Ollama is running
         logger.info("Using local Ollama for analysis...")
         local_result = ollama_deep_scan(content, source_type)
         if local_result["score_increase"] > 0:

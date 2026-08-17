@@ -7,9 +7,24 @@ import threading
 
 logger = logging.getLogger("vas.resilience")
 
+import httpx
+import requests
+
+def _is_transient_error(e: Exception) -> bool:
+    """Helper to determine if an HTTP error is deterministic/client error (like 4xx) and shouldn't be retried."""
+    if isinstance(e, requests.exceptions.HTTPError) and e.response is not None:
+        if 400 <= e.response.status_code < 500:
+            return False
+    if isinstance(e, httpx.HTTPStatusError):
+        if 400 <= e.response.status_code < 500:
+            return False
+    return True
+
+
 def with_retry_sync(max_retries: int = 3, base_delay: float = 0.5):
     """
     Synchronous decorator for retrying a function with exponential backoff.
+    Only retries on transient errors, skips deterministic 4xx client errors.
     """
     def decorator(func: Callable):
         @functools.wraps(func)
@@ -19,6 +34,9 @@ def with_retry_sync(max_retries: int = 3, base_delay: float = 0.5):
                 try:
                     return func(*args, **kwargs)
                 except Exception as e:
+                    if not _is_transient_error(e):
+                        logger.warning(f"Function {func.__name__} encountered deterministic error: {e}. Aborting retries.")
+                        raise
                     if attempt == max_retries:
                         logger.error(f"Function {func.__name__} failed after {max_retries} attempts: {e}")
                         raise
@@ -31,6 +49,7 @@ def with_retry_sync(max_retries: int = 3, base_delay: float = 0.5):
 def with_retry(max_retries: int = 3, base_delay: float = 0.5):
     """
     Asynchronous decorator for retrying a function with exponential backoff.
+    Only retries on transient errors, skips deterministic 4xx client errors.
     """
     def decorator(func: Callable):
         @functools.wraps(func)
@@ -40,6 +59,9 @@ def with_retry(max_retries: int = 3, base_delay: float = 0.5):
                 try:
                     return await func(*args, **kwargs)
                 except Exception as e:
+                    if not _is_transient_error(e):
+                        logger.warning(f"Async function {func.__name__} encountered deterministic error: {e}. Aborting retries.")
+                        raise
                     if attempt == max_retries:
                         logger.error(f"Async function {func.__name__} failed after {max_retries} attempts: {e}")
                         raise

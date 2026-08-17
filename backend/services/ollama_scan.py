@@ -2,11 +2,22 @@ import logging
 import requests
 import json
 from typing import Dict, Any
+from backend.core.resilience import CircuitBreaker, with_retry_sync
 
 logger = logging.getLogger("vas.ollama")
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
 OLLAMA_MODEL = "llama3.1:8b" # Upgraded for tool-calling support
+
+
+@CircuitBreaker(max_failures=3, reset_timeout=30.0)
+@with_retry_sync(max_retries=3, base_delay=0.5)
+def _do_ollama_request(payload: dict) -> dict:
+    """Helper function to execute request with resilience wrappers."""
+    response = requests.post(OLLAMA_URL, json=payload, timeout=30)
+    response.raise_for_status()
+    return response.json()
+
 
 def ollama_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     """
@@ -33,9 +44,9 @@ def ollama_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
             "format": "json"
         }
         
-        response = requests.post(OLLAMA_URL, json=payload, timeout=30)
-        if response.status_code == 200:
-            result = response.json().get("response", "{}")
+        try:
+            response_json = _do_ollama_request(payload)
+            result = response_json.get("response", "{}")
             data = json.loads(result)
             
             return {
@@ -43,8 +54,8 @@ def ollama_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
                 "reason": data.get("reason", "Local AI Analysis complete"),
                 "risk_factors": data.get("risk_factors", [])
             }
-        else:
-            logger.warning(f"Ollama returned status {response.status_code}")
+        except Exception as api_err:
+            logger.warning(f"Ollama service unavailable or failing: {api_err}")
             return {"score_increase": 0.0, "reason": "Ollama service unavailable"}
             
     except Exception as e:

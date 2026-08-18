@@ -1,0 +1,6 @@
+## 2024-03-24 — Unprotected Third-Party API Calls (AI & Agents)
+**Failure point found:** Calls to Ollama, Groq, and OpenClaw models lacked standard operational safeguards (retry policies, exponential backoffs, and circuit breakers).
+**Why it existed:** The backend architecture rapidly scaled up external integrations without centralizing resilient HTTP wrappers, relying entirely on basic python try-except blocks that fail fast on any transient network blip.
+**Recovery built:** Implemented `CircuitBreaker` and `with_retry_sync`/`with_retry` primitives utilizing threading locks for concurrency-safe state management in `backend/core/resilience.py`. Refactored `backend/services/ollama_scan.py`, `backend/services/ai_deep_scan.py`, and `backend/services/openclaw_agent.py` to leverage these decorators for all external outbound HTTP calls.
+**Blast radius before:** Any temporary API downtime, network lag, or brief container restart caused immediate systemic 500 errors or disabled advanced AI detection, cascading to users via missing or incomplete threat insights without degradation grace periods.
+**Watch for:** Other direct usages of `requests` or `httpx` in webhook listeners, external notification systems (e.g., Slack, Email providers), or internal microservice inter-communications.

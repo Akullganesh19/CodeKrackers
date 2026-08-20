@@ -16,6 +16,8 @@ from backend.core.limiter import limiter
 from backend.core import security
 from backend.core.security import get_lockout_time, MAX_LOGIN_ATTEMPTS
 from backend.core.config import settings
+from backend.core.events import event_bus
+
 from backend.models.orm import User, UserRole
 
 router = APIRouter()
@@ -98,8 +100,11 @@ async def send_otp(
 async def verify_otp(
     *,
     db: Session = Depends(deps.get_db_sync),
+    request: Request,
     otp_verify: OTPVerify,
 ) -> Any:
+    client_ip = request.client.host if request.client else "127.0.0.1"
+    user_agent = request.headers.get("user-agent", "")
     """
     Verifies the OTP and issues a signed JWT access token.
     """
@@ -108,6 +113,7 @@ async def verify_otp(
     ).first()
 
     if user and security.check_account_locked(user.locked_until):
+        event_bus.emit('auth.account_locked', db=db, ip_address=client_ip, user_id=user.id, user_email=user.email, user_agent=user_agent)
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"Account locked. Try again after {user.locked_until.isoformat()}"
@@ -121,7 +127,10 @@ async def verify_otp(
             user.failed_login_attempts += 1
             if user.failed_login_attempts >= security.MAX_LOGIN_ATTEMPTS:
                 user.locked_until = security.get_lockout_time()
+                event_bus.emit('auth.account_locked', db=db, ip_address=client_ip, user_id=user.id, user_email=user.email, user_agent=user_agent)
             db.commit()
+
+        event_bus.emit('auth.login_failed', db=db, ip_address=client_ip, user_email=otp_verify.identifier, user_agent=user_agent)
         logger.warning(f"Auth failure: Invalid OTP attempt for {otp_verify.identifier}")
         raise HTTPException(status_code=400, detail="Invalid or expired verification code")
 
@@ -141,6 +150,8 @@ async def verify_otp(
     db.commit()
     if redis_client:
         redis_client.delete(redis_key)
+
+    event_bus.emit('auth.login_success', db=db, ip_address=client_ip, user_id=user.id, user_email=user.email, user_agent=user_agent)
 
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return {
@@ -186,11 +197,14 @@ async def login_access_token_password(
     request: Request,
     form_data: LoginRequest,
 ) -> Any:
+    client_ip = request.client.host if request.client else "127.0.0.1"
+    user_agent = request.headers.get("user-agent", "")
     # Accept either 'email' or 'username' field
     email_input = form_data.email or form_data.username
     user = db.query(User).filter(User.email == email_input).first()
 
     if user and security.check_account_locked(getattr(user, "locked_until", None)):
+        event_bus.emit('auth.account_locked', db=db, ip_address=client_ip, user_id=user.id, user_email=user.email, user_agent=user_agent)
         raise HTTPException(
             status_code=status.HTTP_423_LOCKED,
             detail="Account temporarily locked. Try again in 15 minutes.",
@@ -201,8 +215,10 @@ async def login_access_token_password(
             user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
             if user.failed_login_attempts >= MAX_LOGIN_ATTEMPTS:
                 user.locked_until = get_lockout_time()
+                event_bus.emit('auth.account_locked', db=db, ip_address=client_ip, user_id=user.id, user_email=user.email, user_agent=user_agent)
             db.commit()
 
+        event_bus.emit('auth.login_failed', db=db, ip_address=client_ip, user_email=email_input, user_agent=user_agent)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials.",
@@ -211,6 +227,8 @@ async def login_access_token_password(
     user.failed_login_attempts = 0
     user.locked_until = None
     db.commit()
+
+    event_bus.emit('auth.login_success', db=db, ip_address=client_ip, user_id=user.id, user_email=user.email, user_agent=user_agent)
 
     role_val = user.role.value if hasattr(user.role, 'value') else str(user.role)
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)

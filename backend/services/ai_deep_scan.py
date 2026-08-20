@@ -4,8 +4,28 @@ from groq import Groq
 from backend.core.config import settings
 from backend.services.ollama_scan import ollama_deep_scan
 import requests
+from backend.core.resilience import with_retry_sync, CircuitBreaker
 
 logger = logging.getLogger("vas.ai_scan")
+
+@CircuitBreaker(failure_threshold=2, recovery_timeout=30.0)
+@with_retry_sync(max_attempts=3, backoff_factor=0.5)
+def _check_ollama_gateway():
+    response = requests.get("http://localhost:11434", timeout=1)
+    response.raise_for_status()
+    return response
+
+@CircuitBreaker(failure_threshold=3, recovery_timeout=60.0)
+@with_retry_sync(max_attempts=3, backoff_factor=1.0)
+def _do_groq_request(client, prompt: str, source_type: str):
+    return client.chat.completions.create(
+        messages=[
+            {"role": "system", "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection."},
+            {"role": "user", "content": prompt}
+        ],
+        model=settings.GROQ_MODEL,
+        response_format={"type": "json_object"}
+    )
 
 def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     """
@@ -17,7 +37,7 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     # ── Attempt Local Ollama First ──
     try:
         # Quick check if Ollama is running
-        requests.get("http://localhost:11434", timeout=1)
+        _check_ollama_gateway()
         logger.info("Using local Ollama for analysis...")
         local_result = ollama_deep_scan(content, source_type)
         if local_result["score_increase"] > 0:
@@ -43,14 +63,7 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
         4. "risk_factors": list of strings
         """
 
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection."},
-                {"role": "user", "content": prompt}
-            ],
-            model=settings.GROQ_MODEL,
-            response_format={"type": "json_object"}
-        )
+        chat_completion = _do_groq_request(client, prompt, source_type)
 
         import json
         result = json.loads(chat_completion.choices[0].message.content)

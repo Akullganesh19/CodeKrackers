@@ -4,6 +4,8 @@ from .core.database import engine, Base
 from .api import auth, analytics, call, fir, evidence, honeypot
 from .scheduler import setup_scheduler
 import uvicorn
+import backend.services.event_listeners  # Register event listeners
+
 import asyncio
 from sqlalchemy import select
 from .core.database import engine, Base, AsyncSessionLocal

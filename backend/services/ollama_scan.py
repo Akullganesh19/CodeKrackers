@@ -9,14 +9,12 @@ logger = logging.getLogger("vas.ollama")
 OLLAMA_URL = "http://localhost:11434/api/generate"
 OLLAMA_MODEL = "llama3.1:8b" # Upgraded for tool-calling support
 
-
 @CircuitBreaker(failure_threshold=3, recovery_timeout=60.0)
 @with_retry_sync(max_attempts=3, base_delay=0.1)
 def _do_ollama_request(url: str, payload: dict) -> requests.Response:
     response = requests.post(url, json=payload, timeout=30)
     response.raise_for_status()
     return response
-
 
 def ollama_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     """

@@ -3,7 +3,7 @@ import time
 import logging
 import threading
 from functools import wraps
-from typing import Callable, Any, Type, Union
+from typing import Callable, Any
 
 logger = logging.getLogger("vas.resilience")
 
@@ -72,7 +72,7 @@ class CircuitBreaker:
                     result = await func(*args, **kwargs)
                     self._on_success()
                     return result
-                except self.exceptions as e:
+                except self.exceptions:
                     self._on_failure()
                     raise
             return async_wrapper
@@ -84,7 +84,7 @@ class CircuitBreaker:
                     result = func(*args, **kwargs)
                     self._on_success()
                     return result
-                except self.exceptions as e:
+                except self.exceptions:
                     self._on_failure()
                     raise
             return sync_wrapper

@@ -43,9 +43,12 @@ def send_otp(phone_number: str) -> str:
     import random
     otp_code = str(random.randint(100000, 999999))
     
+    is_dev = settings.ENVIRONMENT == "development" or settings.DEBUG
+
     if not all([settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN, settings.TWILIO_PHONE_NUMBER]):
-        logger.warning(f"SIMULATED OTP SENT TO {phone_number}: {otp_code}")
-        print(f"\n[VAS AUTH] SMS OTP for {phone_number}: {otp_code}\n")
+        logger.warning(f"SIMULATED OTP SENT TO {phone_number}: [REDACTED]")
+        if is_dev:
+            print(f"\n[VAS AUTH DEV ONLY] SMS OTP for {phone_number}: {otp_code}\n")
         return otp_code
 
     try:
@@ -67,5 +70,7 @@ def send_otp(phone_number: str) -> str:
     except Exception as e:
         logger.error(f"Failed to send OTP: {e}")
         # Fallback to simulation in logs for dev convenience
-        logger.warning(f"FALLBACK SIMULATED OTP: {otp_code}")
+        logger.warning(f"FALLBACK SIMULATED OTP: [REDACTED]")
+        if is_dev:
+            print(f"\n[VAS AUTH DEV ONLY FALLBACK] SMS OTP for {phone_number}: {otp_code}\n")
         return otp_code

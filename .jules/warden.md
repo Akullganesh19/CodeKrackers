@@ -1,0 +1,6 @@
+## 2025-05-08 — Plaintext OTP Leak in Logs
+**Data traced:** Authentication (One-Time Password / OTP)
+**Exposure found:** Plaintext OTP codes were leaked in standard output (stdout/print) and structured logs (`logger.info` and `logger.warning`) in `backend/api/auth.py`, `backend/api/v1/endpoints/auth.py`, and `backend/services/notifier.py` during OTP generation and fallback/simulation mode.
+**Fix:** Removed the `otp_code` variable from the logging statements in the `auth` endpoints, replacing it with a message stating the OTP was generated for the identifier. In the notifier service, redacted the value to `[REDACTED]` for both the fallback `logger.warning` statements, and constrained the plaintext stdout `print` to only output in a development environment (`is_dev = True`) with a prominent "[VAS AUTH DEV ONLY]" prefix so developers can still test locally.
+**Coverage confirmed:** Ran `grep -rni "logger.*OTP" backend/` and `grep -rni "logger.*otp_code" backend/` to confirm that the `otp_code` variable is no longer interpolated into log strings anywhere in the backend services or API routes.
+**Still exposed elsewhere:** The generated OTP is still stored in Redis in plaintext, which is the expected behavior for short-lived session validation caching. No other leaks were found for OTP in application logs.

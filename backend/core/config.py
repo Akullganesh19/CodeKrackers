@@ -35,6 +35,10 @@ class Settings(BaseSettings):
     RATE_LIMIT_DEFAULT: str = "100/minute"
     RATE_LIMIT_AUTH: str = "5/minute"
     
+    # Environment
+    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "production")
+    DEBUG: bool = os.getenv("DEBUG", "false").lower() == "true"
+
     class Config:
         env_file = ".env"
 

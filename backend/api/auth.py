@@ -28,6 +28,9 @@ except Exception as e:
     logger.warning(f"REDIS_OFFLINE: {e}. Auth will use local fallback.")
     redis_client = None
 
+# Fallback in-memory dict for demo/dev if redis is down
+_mock_redis_store = {}
+
 class OTPSend(BaseModel):
     identifier: str
     role: str = "citizen"
@@ -65,6 +68,8 @@ async def send_otp(
     redis_key = f"otp:{otp_in.identifier}"
     if redis_client:
         redis_client.setex(redis_key, settings.OTP_EXPIRE_SECONDS, otp_code)
+    else:
+        _mock_redis_store[redis_key] = otp_code
 
     if "@" not in otp_in.identifier and settings.TWILIO_ACCOUNT_SID and settings.TWILIO_AUTH_TOKEN:
         try:
@@ -114,7 +119,7 @@ async def verify_otp(
         )
 
     redis_key = f"otp:{otp_verify.identifier}"
-    stored_code = redis_client.get(redis_key) if redis_client else "123456" # Mock pass if redis down for demo
+    stored_code = redis_client.get(redis_key) if redis_client else _mock_redis_store.get(redis_key)
 
     if not stored_code or otp_verify.code != stored_code:
         if user:
@@ -141,6 +146,8 @@ async def verify_otp(
     db.commit()
     if redis_client:
         redis_client.delete(redis_key)
+    elif redis_key in _mock_redis_store:
+        del _mock_redis_store[redis_key]
 
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return {

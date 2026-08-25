@@ -6,17 +6,12 @@ import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Any, Optional, Union
 
-from jose import jwt
-from passlib.context import CryptContext
+import bcrypt
+import jwt
 
 from backend.core.config import settings
 
-pwd_context = CryptContext(
-    schemes=["bcrypt"],
-    deprecated="auto",
-    bcrypt__rounds=12,  # Production-grade cost factor
-)
-
+BCRYPT_ROUNDS = 12  # Production-grade cost factor
 ALGORITHM = "HS256"
 
 # ─── Password Policy ───
@@ -85,11 +80,23 @@ def decode_token(token: str) -> dict:
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    if not isinstance(hashed_password, str):
+        # Handle cases where hashed_password might somehow not be a string
+        return False
+    # bcrypt.checkpw expects bytes
+    password_bytes = plain_password.encode("utf-8")
+    hash_bytes = hashed_password.encode("utf-8")
+    try:
+        return bcrypt.checkpw(password_bytes, hash_bytes)
+    except ValueError:
+        return False
 
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    password_bytes = password.encode("utf-8")
+    salt = bcrypt.gensalt(rounds=BCRYPT_ROUNDS)
+    hashed_bytes = bcrypt.hashpw(password_bytes, salt)
+    return hashed_bytes.decode("utf-8")
 
 
 # ─── Brute-force Protection ───

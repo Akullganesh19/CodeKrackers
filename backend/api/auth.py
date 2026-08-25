@@ -23,7 +23,7 @@ logger = logging.getLogger("vas.auth")
 
 try:
     redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True)
-    redis_client.ping()
+    # Don't call .ping() at module level to avoid blocking CI
 except Exception as e:
     logger.warning(f"REDIS_OFFLINE: {e}. Auth will use local fallback.")
     redis_client = None
@@ -67,7 +67,11 @@ async def send_otp(
     
     redis_key = f"otp:{otp_in.identifier}"
     if redis_client:
-        redis_client.setex(redis_key, settings.OTP_EXPIRE_SECONDS, otp_code)
+        try:
+            redis_client.setex(redis_key, settings.OTP_EXPIRE_SECONDS, otp_code)
+        except Exception as e:
+            logger.warning(f"REDIS_SET_ERROR: {e}. Falling back to memory.")
+            _mock_redis_store[redis_key] = otp_code
     else:
         _mock_redis_store[redis_key] = otp_code
 
@@ -119,7 +123,14 @@ async def verify_otp(
         )
 
     redis_key = f"otp:{otp_verify.identifier}"
-    stored_code = redis_client.get(redis_key) if redis_client else _mock_redis_store.get(redis_key)
+    stored_code = None
+    if redis_client:
+        try:
+            stored_code = redis_client.get(redis_key)
+        except Exception:
+            pass
+    if not stored_code:
+        stored_code = _mock_redis_store.get(redis_key)
 
     if not stored_code or otp_verify.code != stored_code:
         if user:
@@ -145,8 +156,11 @@ async def verify_otp(
     user.locked_until = None
     db.commit()
     if redis_client:
-        redis_client.delete(redis_key)
-    elif redis_key in _mock_redis_store:
+        try:
+            redis_client.delete(redis_key)
+        except Exception:
+            pass
+    if redis_key in _mock_redis_store:
         del _mock_redis_store[redis_key]
 
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
 import {
@@ -16,6 +16,7 @@ import {
   Loader2
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { oracle } from '@/lib/oracle'
 
 export default function SMSScannerPage() {
   const [mounted, setMounted] = useState(false)
@@ -33,22 +34,51 @@ export default function SMSScannerPage() {
     setMounted(true)
   }, [])
 
+  const prefetchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Predictive fetch using Oracle
+  useEffect(() => {
+    if (!text.trim() || text.length < 10) return;
+
+    if (prefetchTimeoutRef.current) {
+        clearTimeout(prefetchTimeoutRef.current);
+    }
+
+    prefetchTimeoutRef.current = setTimeout(() => {
+      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+      oracle.preComputeScan(
+        'http://localhost:8000/api/analytics/scan',
+        { text },
+        { 'Authorization': `Bearer ${token}` }
+      );
+    }, 800); // Trigger pre-compute if user stops typing for 800ms
+
+    return () => {
+        if (prefetchTimeoutRef.current) {
+            clearTimeout(prefetchTimeoutRef.current);
+        }
+    };
+  }, [text]);
+
+
+
   const handleAnalyze = async () => {
     if (!text.trim()) return
+
+    if (prefetchTimeoutRef.current) {
+        clearTimeout(prefetchTimeoutRef.current);
+    }
 
     setLoading(true)
     setResult(null)
 
     try {
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
+      const response = await oracle.getScanResult(
+        'http://localhost:8000/api/analytics/scan',
+        { text },
+        { 'Authorization': `Bearer ${token}` }
+      );
       
       console.log("Response Status:", response.status);
       if (!response.ok) {

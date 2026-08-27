@@ -15,7 +15,6 @@ import {
   BarChart3,
   Loader2
 } from 'lucide-react'
-import { oracle } from '@/lib/oracle'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function SMSScannerPage() {
@@ -34,44 +33,22 @@ export default function SMSScannerPage() {
     setMounted(true)
   }, [])
 
-  React.useEffect(() => {
-    // Debounced predictive pre-compute
-    const timer = setTimeout(() => {
-      if (text.trim().length > 10) {
-        const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-        oracle.preComputeScan('http://localhost:8000/api/analytics/scan', text, {
-          'Authorization': `Bearer ${token}`
-        });
-      }
-    }, 500); // 500ms debounce
-
-    return () => clearTimeout(timer);
-  }, [text]);
-
   const handleAnalyze = async () => {
     if (!text.trim()) return
 
     setLoading(true)
     setResult(null)
 
-    const endpoint = 'http://localhost:8000/api/analytics/scan';
-    const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-    const headers = {
-      'Authorization': `Bearer ${token}`
-    };
-
     try {
-      // Try to get pre-computed response
-      let response = await oracle.getScanResult(endpoint, text, headers);
-
-      if (!response) {
-        // Fallback to standard fetch if no cache or cache was invalid
-        response = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', ...headers },
-          body: JSON.stringify({ text })
-        });
-      }
+      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+      const response = await fetch('http://localhost:8000/api/analytics/scan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ text })
+      });
       
       console.log("Response Status:", response.status);
       if (!response.ok) {
@@ -85,7 +62,7 @@ export default function SMSScannerPage() {
       console.log("Scanner Data Received:", data);
       
       // Ensure we have valid data before setting result
-      if (data && typeof (data as any).isScam !== 'undefined') {
+      if (data && typeof data.isScam !== 'undefined') {
         setResult(data);
       } else {
         console.error("Malformed backend response", data);

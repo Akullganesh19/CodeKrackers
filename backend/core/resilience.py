@@ -1,13 +1,15 @@
-import time
 import asyncio
 import logging
 import threading
+import time
 from functools import wraps
 
 logger = logging.getLogger("vas.resilience")
 
+
 class CircuitBreakerOpenException(Exception):
     pass
+
 
 class CircuitBreaker:
     def __init__(self, failure_threshold: int = 3, recovery_timeout: int = 30):
@@ -70,9 +72,15 @@ class CircuitBreaker:
         with self.lock:
             self.failure_count += 1
             self.last_failure_time = time.time()
-            if self.state in ["CLOSED", "HALF_OPEN"] and self.failure_count >= self.failure_threshold:
-                logger.warning(f"Circuit breaker OPENED after {self.failure_count} failures")
+            if (
+                self.state in ["CLOSED", "HALF_OPEN"]
+                and self.failure_count >= self.failure_threshold
+            ):
+                logger.warning(
+                    f"Circuit breaker OPENED after {self.failure_count} failures"
+                )
                 self.state = "OPEN"
+
 
 def with_retry_sync(max_retries: int = 3, base_delay: float = 0.1):
     def decorator(func):
@@ -88,8 +96,11 @@ def with_retry_sync(max_retries: int = 3, base_delay: float = 0.1):
                         raise
                     delay = base_delay * (2 ** (attempt - 1))
                     time.sleep(delay)
+
         return wrapper
+
     return decorator
+
 
 def with_retry(max_retries: int = 3, base_delay: float = 0.1):
     def decorator(func):
@@ -105,5 +116,7 @@ def with_retry(max_retries: int = 3, base_delay: float = 0.1):
                         raise
                     delay = base_delay * (2 ** (attempt - 1))
                     await asyncio.sleep(delay)
+
         return wrapper
+
     return decorator

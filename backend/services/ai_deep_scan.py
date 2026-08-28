@@ -3,9 +3,17 @@ from typing import Dict, Any
 from groq import Groq
 from backend.core.config import settings
 from backend.services.ollama_scan import ollama_deep_scan
+from backend.core.resilience import CircuitBreaker, with_retry_sync, CircuitBreakerOpenException
 import requests
 
 logger = logging.getLogger("vas.ai_scan")
+
+@CircuitBreaker(failure_threshold=3, cooldown_period=30.0)
+@with_retry_sync(max_attempts=2, initial_backoff=0.2)
+def _check_ollama_running():
+    response = requests.get("http://localhost:11434", timeout=1)
+    response.raise_for_status()
+    return response
 
 def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     """
@@ -17,13 +25,15 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     # ── Attempt Local Ollama First ──
     try:
         # Quick check if Ollama is running
-        requests.get("http://localhost:11434", timeout=1)
+        _check_ollama_running()
         logger.info("Using local Ollama for analysis...")
         local_result = ollama_deep_scan(content, source_type)
         if local_result["score_increase"] > 0:
             return local_result
-    except:
-        logger.info("Ollama not reachable, falling back to Groq Cloud...")
+    except CircuitBreakerOpenException:
+        logger.info("Ollama Circuit Breaker is OPEN, falling back to Groq Cloud...")
+    except Exception as e:
+        logger.info(f"Ollama not reachable ({e}), falling back to Groq Cloud...")
 
     # ── Fallback to Groq ──
     if not settings.GROQ_API_KEY:

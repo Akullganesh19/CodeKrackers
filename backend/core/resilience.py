@@ -1,14 +1,16 @@
-import time
 import asyncio
 import logging
 import threading
+import time
 from functools import wraps
-from typing import Callable, Any
+from typing import Any, Callable
 
 logger = logging.getLogger("vas.resilience")
 
+
 class CircuitBreakerOpenException(Exception):
     pass
+
 
 class CircuitBreaker:
     def __init__(self, failure_threshold: int = 3, cooldown_period: float = 60.0):
@@ -21,6 +23,7 @@ class CircuitBreaker:
 
     def __call__(self, func: Callable) -> Callable:
         if asyncio.iscoroutinefunction(func):
+
             @wraps(func)
             async def async_wrapper(*args, **kwargs) -> Any:
                 self._check_state()
@@ -32,8 +35,10 @@ class CircuitBreaker:
                     if not isinstance(e, CircuitBreakerOpenException):
                         self._on_failure()
                     raise
+
             return async_wrapper
         else:
+
             @wraps(func)
             def sync_wrapper(*args, **kwargs) -> Any:
                 self._check_state()
@@ -45,6 +50,7 @@ class CircuitBreaker:
                     if not isinstance(e, CircuitBreakerOpenException):
                         self._on_failure()
                     raise
+
             return sync_wrapper
 
     def _check_state(self):
@@ -67,7 +73,13 @@ class CircuitBreaker:
             if self.failure_count >= self.failure_threshold:
                 self.state = "OPEN"
 
-def with_retry_sync(max_attempts: int = 3, initial_backoff: float = 0.1, backoff_factor: float = 2.0, exceptions: tuple = (Exception,)):
+
+def with_retry_sync(
+    max_attempts: int = 3,
+    initial_backoff: float = 0.1,
+    backoff_factor: float = 2.0,
+    exceptions: tuple = (Exception,),
+):
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         def wrapper(*args, **kwargs) -> Any:
@@ -79,15 +91,27 @@ def with_retry_sync(max_attempts: int = 3, initial_backoff: float = 0.1, backoff
                     return func(*args, **kwargs)
                 except exceptions as e:
                     if attempt == max_attempts:
-                        logger.error(f"Function {func.__name__} failed after {max_attempts} attempts: {e}")
+                        logger.error(
+                            f"Function {func.__name__} failed after {max_attempts} attempts: {e}"
+                        )
                         raise
-                    logger.warning(f"Attempt {attempt} for {func.__name__} failed, retrying in {backoff}s...")
+                    logger.warning(
+                        f"Attempt {attempt} for {func.__name__} failed, retrying in {backoff}s..."
+                    )
                     time.sleep(backoff)
                     backoff *= backoff_factor
+
         return wrapper
+
     return decorator
 
-def with_retry(max_attempts: int = 3, initial_backoff: float = 0.1, backoff_factor: float = 2.0, exceptions: tuple = (Exception,)):
+
+def with_retry(
+    max_attempts: int = 3,
+    initial_backoff: float = 0.1,
+    backoff_factor: float = 2.0,
+    exceptions: tuple = (Exception,),
+):
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         async def wrapper(*args, **kwargs) -> Any:
@@ -99,10 +123,16 @@ def with_retry(max_attempts: int = 3, initial_backoff: float = 0.1, backoff_fact
                     return await func(*args, **kwargs)
                 except exceptions as e:
                     if attempt == max_attempts:
-                        logger.error(f"Function {func.__name__} failed after {max_attempts} attempts: {e}")
+                        logger.error(
+                            f"Function {func.__name__} failed after {max_attempts} attempts: {e}"
+                        )
                         raise
-                    logger.warning(f"Attempt {attempt} for {func.__name__} failed, retrying in {backoff}s...")
+                    logger.warning(
+                        f"Attempt {attempt} for {func.__name__} failed, retrying in {backoff}s..."
+                    )
                     await asyncio.sleep(backoff)
                     backoff *= backoff_factor
+
         return wrapper
+
     return decorator

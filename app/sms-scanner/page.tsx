@@ -16,6 +16,7 @@ import {
   Loader2
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Oracle } from '@/lib/oracle'
 
 export default function SMSScannerPage() {
   const [mounted, setMounted] = useState(false)
@@ -33,6 +34,16 @@ export default function SMSScannerPage() {
     setMounted(true)
   }, [])
 
+  React.useEffect(() => {
+    if (text.trim().length > 10) {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('vsdp_token') : null;
+      const timeout = setTimeout(() => {
+        Oracle.preComputeScan(text, token ? { 'Authorization': `Bearer ${token}` } : {});
+      }, 300); // debounce 300ms
+      return () => clearTimeout(timeout);
+    }
+  }, [text])
+
   const handleAnalyze = async () => {
     if (!text.trim()) return
 
@@ -41,28 +52,38 @@ export default function SMSScannerPage() {
 
     try {
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
       
-      console.log("Response Status:", response.status);
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Server Error:", errorText);
-        alert(`Server Error (${response.status}): ${errorText}`);
-        return;
+      // Attempt to retrieve cached result from Oracle first
+      let data = await Oracle.getScanResult(text);
+
+      if (!data) {
+        console.log("Oracle miss, fetching from backend");
+        const response = await fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text })
+        });
+
+        console.log("Response Status:", response.status);
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Server Error:", errorText);
+          alert(`Server Error (${response.status}): ${errorText}`);
+          return;
+        }
+
+        data = await response.json();
+      } else {
+        console.log("Oracle hit, using pre-computed result");
       }
       
-      const data = await response.json();
       console.log("Scanner Data Received:", data);
       
       // Ensure we have valid data before setting result
-      if (data && typeof data.isScam !== 'undefined') {
+      if (data && typeof (data as any).isScam !== 'undefined') {
         setResult(data);
       } else {
         console.error("Malformed backend response", data);

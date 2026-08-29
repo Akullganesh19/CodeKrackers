@@ -1,11 +1,12 @@
-import logging
-import time
 import asyncio
 import functools
+import logging
 import threading
-from typing import Callable, Any
+import time
+from typing import Any, Callable
 
 logger = logging.getLogger("vas.resilience")
+
 
 class CircuitBreaker:
     def __init__(self, failure_threshold: int = 5, recovery_timeout: float = 30.0):
@@ -13,12 +14,13 @@ class CircuitBreaker:
         self.recovery_timeout = recovery_timeout
 
         self.failure_count = 0
-        self.state = "CLOSED" # CLOSED, OPEN, HALF_OPEN
+        self.state = "CLOSED"  # CLOSED, OPEN, HALF_OPEN
         self.last_failure_time = 0.0
         self._lock = threading.Lock()
 
     def __call__(self, func: Callable) -> Callable:
         if asyncio.iscoroutinefunction(func):
+
             @functools.wraps(func)
             async def async_wrapper(*args, **kwargs):
                 self._check_state()
@@ -32,8 +34,10 @@ class CircuitBreaker:
                 except Exception as e:
                     self._on_failure()
                     raise e
+
             return async_wrapper
         else:
+
             @functools.wraps(func)
             def sync_wrapper(*args, **kwargs):
                 self._check_state()
@@ -47,6 +51,7 @@ class CircuitBreaker:
                 except Exception as e:
                     self._on_failure()
                     raise e
+
             return sync_wrapper
 
     def _check_state(self):
@@ -67,7 +72,10 @@ class CircuitBreaker:
         with self._lock:
             self.failure_count += 1
             self.last_failure_time = time.time()
-            if self.state in ["CLOSED", "HALF_OPEN"] and self.failure_count >= self.failure_threshold:
+            if (
+                self.state in ["CLOSED", "HALF_OPEN"]
+                and self.failure_count >= self.failure_threshold
+            ):
                 self.state = "OPEN"
                 logger.warning("Circuit breaker transitioned to OPEN")
 
@@ -84,7 +92,9 @@ def with_retry_sync(max_attempts: int = 3, base_delay: float = 0.1):
                         raise e
                     delay = base_delay * (2 ** (attempt - 1))
                     time.sleep(delay)
+
         return wrapper
+
     return decorator
 
 
@@ -100,5 +110,7 @@ def with_retry(max_attempts: int = 3, base_delay: float = 0.1):
                         raise e
                     delay = base_delay * (2 ** (attempt - 1))
                     await asyncio.sleep(delay)
+
         return wrapper
+
     return decorator

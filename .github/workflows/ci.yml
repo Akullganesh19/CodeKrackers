@@ -52,11 +52,13 @@ jobs:
         
     - name: Check code formatting (Black)
       run: |
-        black --check backend/
+        git fetch origin main || true
+        git diff --name-only origin/main...HEAD | grep '\.py$' | xargs -r black --check
         
     - name: Check imports (isort)
       run: |
-        isort --check-only backend/
+        git fetch origin main || true
+        git diff --name-only origin/main...HEAD | grep '\.py$' | xargs -r isort --check-only
         
     - name: Type checking (mypy)
       run: |

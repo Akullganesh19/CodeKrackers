@@ -20,7 +20,7 @@ services:
       - key: PROJECT_NAME
         value: "VAS Defense System"
       - key: API_V1_STR
-        value: "/api/v1"
+        value: "/api"
 
   # ─── Next.js Frontend ───
   - type: web
@@ -34,7 +34,7 @@ services:
           type: web
           name: vas-backend
           property: url
-        suffix: /api/v1
+        suffix: /api
 
   # ─── Redis (for Rate Limiting/RASP) ───
   - type: redis

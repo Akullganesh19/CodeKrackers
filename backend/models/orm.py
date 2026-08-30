@@ -4,7 +4,9 @@ import enum
 from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime, Text, ForeignKey, JSON, func, Index, Enum
 from sqlalchemy.orm import relationship, declarative_base
 
-Base = declarative_base()
+from sqlalchemy.orm import declarative_base
+from typing import Any
+Base: Any = declarative_base()  # type: ignore
 
 class ThreatType(str, enum.Enum):
     vishing = "vishing"

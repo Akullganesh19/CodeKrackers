@@ -61,7 +61,7 @@ def honeypot_export_users(request: Request, format: str = Query("csv", pattern="
     risk_score = 50 + (20 if not is_authenticated else 0)
 
     log_honeypot_to_db(
-        endpoint="/api/v1/admin/export-users",
+        endpoint="/api/admin/export-users",
         ip_address=client_ip,
         user_agent=user_agent,
         method="GET",
@@ -72,7 +72,7 @@ def honeypot_export_users(request: Request, format: str = Query("csv", pattern="
         threat_indicators=["admin_probe"],
     )
 
-    logger.warning("HONEYPOT TRIGGERED ip=%s endpoint=/api/v1/admin/export-users risk=%d", client_ip, risk_score)
+    logger.warning("HONEYPOT TRIGGERED ip=%s endpoint=/api/admin/export-users risk=%d", client_ip, risk_score)
 
     return JSONResponse(
         content={"detail": "Access denied: Insufficient privileges", "required_role": "SUPER_ADMIN", "honeypot_triggered": True},
@@ -228,7 +228,7 @@ def honeypot_admin_login(request: Request):
     )
 
     return JSONResponse(
-        content={"error": "Invalid endpoint", "hint": "Use /api/v1/login/access-token", "honeypot_triggered": True},
+        content={"error": "Invalid endpoint", "hint": "Use /api/login/access-token", "honeypot_triggered": True},
         status_code=404,
     )
 

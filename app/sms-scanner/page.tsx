@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
+import { Oracle } from '@/lib/oracle'
 import {
   ShieldAlert,
   ShieldCheck,
@@ -33,6 +34,19 @@ export default function SMSScannerPage() {
     setMounted(true)
   }, [])
 
+  // Oracle Predictive Pre-computation
+  React.useEffect(() => {
+    if (!text.trim()) return;
+
+    // Debounce typing by 600ms
+    const timer = setTimeout(() => {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('vsdp_token') || 'dummy_token' : 'dummy_token';
+      Oracle.preComputeScan(text, { 'Authorization': `Bearer ${token}` });
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, [text]);
+
   const handleAnalyze = async () => {
     if (!text.trim()) return
 
@@ -41,14 +55,26 @@ export default function SMSScannerPage() {
 
     try {
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
+
+      // Try to get pre-computed response from Oracle
+      let response = await Oracle.getScanResult(text);
+
+      // Fallback if not pre-computed or pre-computation failed
+      if (!response) {
+        console.log("[Oracle] Cache miss, doing normal fetch");
+        response = await fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text })
+        });
+      } else {
+        console.log("[Oracle] Cache HIT! Zero latency fetch.");
+        // We must clone the response to allow multiple JSON reads if the user clicks Analyze again
+        response = response.clone();
+      }
       
       console.log("Response Status:", response.status);
       if (!response.ok) {

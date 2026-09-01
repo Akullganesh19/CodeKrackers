@@ -1,16 +1,19 @@
-import time
 import functools
 import threading
-from typing import Callable, Any, Optional
+import time
+from typing import Any, Callable, Optional
+
 
 class CircuitBreakerOpenException(Exception):
     pass
+
 
 class CircuitBreaker:
     """
     Stateful Circuit Breaker pattern.
     If `failure_threshold` sequential failures occur, the circuit opens for `recovery_timeout` seconds.
     """
+
     def __init__(self, failure_threshold: int = 3, recovery_timeout: int = 30):
         self.failure_threshold = failure_threshold
         self.recovery_timeout = recovery_timeout
@@ -27,7 +30,9 @@ class CircuitBreaker:
                     if time.time() - self.last_failure_time > self.recovery_timeout:
                         self.state = "HALF-OPEN"
                     else:
-                        raise CircuitBreakerOpenException(f"Circuit Breaker is OPEN for {func.__name__}")
+                        raise CircuitBreakerOpenException(
+                            f"Circuit Breaker is OPEN for {func.__name__}"
+                        )
 
             try:
                 result = func(*args, **kwargs)
@@ -36,6 +41,7 @@ class CircuitBreaker:
             except Exception as e:
                 self._on_failure()
                 raise e
+
         return wrapper
 
     def _on_success(self):
@@ -50,10 +56,17 @@ class CircuitBreaker:
                 self.state = "OPEN"
                 self.last_failure_time = time.time()
 
-def with_retry_sync(max_retries: int = 3, base_delay: float = 0.1, backoff_factor: float = 2.0, exception_types: tuple = (Exception,)):
+
+def with_retry_sync(
+    max_retries: int = 3,
+    base_delay: float = 0.1,
+    backoff_factor: float = 2.0,
+    exception_types: tuple = (Exception,),
+):
     """
     Synchronous retry decorator with exponential backoff.
     """
+
     def decorator(func: Callable) -> Callable:
 
         @functools.wraps(func)
@@ -67,12 +80,21 @@ def with_retry_sync(max_retries: int = 3, base_delay: float = 0.1, backoff_facto
                         raise e
                     time.sleep(delay)
                     delay *= backoff_factor
+
         return wrapper
+
     return decorator
 
+
 # Placeholder for async version if needed in the future
-def with_retry(max_retries: int = 3, base_delay: float = 0.1, backoff_factor: float = 2.0, exception_types: tuple = (Exception,)):
+def with_retry(
+    max_retries: int = 3,
+    base_delay: float = 0.1,
+    backoff_factor: float = 2.0,
+    exception_types: tuple = (Exception,),
+):
     import asyncio
+
     def decorator(func: Callable) -> Callable:
 
         @functools.wraps(func)
@@ -86,5 +108,7 @@ def with_retry(max_retries: int = 3, base_delay: float = 0.1, backoff_factor: fl
                         raise e
                     await asyncio.sleep(delay)
                     delay *= backoff_factor
+
         return wrapper
+
     return decorator

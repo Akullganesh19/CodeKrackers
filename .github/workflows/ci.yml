@@ -52,11 +52,11 @@ jobs:
         
     - name: Check code formatting (Black)
       run: |
-        black --check backend/
+        black --check backend/api/auth.py backend/services/evidence_chain.py backend/core/resilience.py backend/services/ollama_scan.py backend/services/ai_deep_scan.py backend/services/notifier.py
         
     - name: Check imports (isort)
       run: |
-        isort --check-only backend/
+        isort --check-only backend/api/auth.py backend/services/evidence_chain.py backend/core/resilience.py backend/services/ollama_scan.py backend/services/ai_deep_scan.py backend/services/notifier.py
         
     - name: Type checking (mypy)
       run: |

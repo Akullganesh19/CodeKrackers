@@ -1,12 +1,13 @@
 import hashlib
 import hmac
-import json
 import os
 import uuid
 from datetime import datetime
+from typing import Dict, List, Optional
 
-from sqlalchemy import desc, select
+from sqlalchemy import desc
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 
 from ..models.orm import FIR, Evidence, Threat, User
 
@@ -26,10 +27,9 @@ class EvidenceChain:
 
     def _generate_hash(self, previous_hash: str, payload: dict, timestamp: str) -> str:
         """
-        Computes SHA-256 hash of the block data (linkage + content + time).
+        Calculates a SHA-256 hash linking the new block to the previous block's hash.
         """
-        payload_str = json.dumps(payload, sort_keys=True)
-        block_string = f"{previous_hash}{payload_str}{timestamp}"
+        block_string = f"{previous_hash}{payload}{timestamp}"
         return hashlib.sha256(block_string.encode()).hexdigest()
 
     def _generate_signature(self, current_hash: str) -> str:
@@ -42,7 +42,7 @@ class EvidenceChain:
 
     async def create_genesis_block(self, threat_id: uuid.UUID) -> Evidence:
         """
-        Initializes the cryptographic chain for a newly detected threat.
+        Initializes the chain for a specific threat case.
         """
         timestamp = datetime.utcnow().isoformat()
         previous_hash = "0" * 64
@@ -145,13 +145,17 @@ class EvidenceChain:
 
     async def package_evidence(self, threat_id: uuid.UUID) -> dict:
         """
-        Compiles a comprehensive forensic report containing the threat details,
-        complainant info, FIR details, and the full blockchain audit trail.
+        Compiles the cryptographically verified evidence along with raw threat data
+        and FIR details into a single JSON package suitable for legal proceedings.
         """
-        # 1. Verify integrity of the chain before packaging
+        # 1. Verify the chain hasn't been tampered with
         verification = await self.verify_integrity(threat_id)
+        if not verification["valid"]:
+            raise ValueError(
+                f"Evidence integrity check failed for threat {threat_id}. Chain of custody broken."
+            )
 
-        # 2. Fetch threat and associated user details
+        # 2. Fetch the actual threat data
         threat_result = await self.db.execute(
             select(Threat, User)
             .join(User, Threat.user_id == User.id)

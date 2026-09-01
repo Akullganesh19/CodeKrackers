@@ -43,7 +43,7 @@ export default function SMSScannerPage() {
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
       const response = await fetch('http://localhost:8000/api/analytics/scan', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
@@ -57,7 +57,7 @@ export default function SMSScannerPage() {
         alert(`Server Error (${response.status}): ${errorText}`);
         return;
       }
-      
+
       const data = await response.json();
       console.log("Scanner Data Received:", data);
       

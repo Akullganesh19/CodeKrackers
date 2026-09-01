@@ -1,8 +1,20 @@
 import logging
 from twilio.rest import Client
 from backend.core.config import settings
+from backend.core.resilience import CircuitBreaker, with_retry_sync
 
 logger = logging.getLogger("vas.notifier")
+
+twilio_cb = CircuitBreaker(failure_threshold=3, recovery_timeout=30)
+
+@twilio_cb
+@with_retry_sync(max_retries=3, base_delay=0.1)
+def _do_twilio_request(client, body: str, from_: str, to: str):
+    return client.messages.create(
+        body=body,
+        from_=from_,
+        to=to
+    )
 
 def send_threat_alert(phone_number: str, threat_type: str, score: float, original_sender: str):
     """
@@ -23,11 +35,11 @@ def send_threat_alert(phone_number: str, threat_type: str, score: float, origina
             f"⚠️ DO NOT click any links or share OTPs. This message has been logged for evidence."
         )
 
-        message = client.messages.create(
-            body=alert_msg,
-            from_=settings.TWILIO_PHONE_NUMBER,
-            to=phone_number
-        )
+        try:
+            message = _do_twilio_request(client, alert_msg, settings.TWILIO_PHONE_NUMBER, phone_number)
+        except Exception as e:
+            logger.error(f"Failed to send notification (Circuit Breaker/Retry): {e}")
+            return False
         
         logger.info(f"Notification sent to {phone_number}. SID: {message.sid}")
         return True
@@ -56,11 +68,12 @@ def send_otp(phone_number: str) -> str:
             "Valid for 5 minutes. DO NOT share this with anyone."
         )
 
-        client.messages.create(
-            body=msg_body,
-            from_=settings.TWILIO_PHONE_NUMBER,
-            to=phone_number
-        )
+        try:
+            _do_twilio_request(client, msg_body, settings.TWILIO_PHONE_NUMBER, phone_number)
+        except Exception as e:
+            logger.error(f"Failed to send OTP (Circuit Breaker/Retry): {e}")
+            logger.warning(f"FALLBACK SIMULATED OTP: {otp_code}")
+            return otp_code
         
         logger.info(f"OTP sent to {phone_number}")
         return otp_code

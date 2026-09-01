@@ -16,7 +16,7 @@ export default function ScammerMap() {
 
     return (
         <MapContainer
-            center={[20.5937, 78.9629]} // Center of India
+            center={{ lat: 20.5937, lng: 78.9629 } as any} // Center of India
             zoom={4}
             style={{ height: '100%', width: '100%' }}
         >

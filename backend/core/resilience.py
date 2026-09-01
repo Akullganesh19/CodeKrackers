@@ -55,6 +55,7 @@ def with_retry_sync(max_retries: int = 3, base_delay: float = 0.1, backoff_facto
     Synchronous retry decorator with exponential backoff.
     """
     def decorator(func: Callable) -> Callable:
+
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             delay = base_delay
@@ -73,6 +74,7 @@ def with_retry_sync(max_retries: int = 3, base_delay: float = 0.1, backoff_facto
 def with_retry(max_retries: int = 3, base_delay: float = 0.1, backoff_factor: float = 2.0, exception_types: tuple = (Exception,)):
     import asyncio
     def decorator(func: Callable) -> Callable:
+
         @functools.wraps(func)
         async def wrapper(*args, **kwargs):
             delay = base_delay

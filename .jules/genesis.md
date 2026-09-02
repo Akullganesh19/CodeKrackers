@@ -1,0 +1,6 @@
+## 2024-05-19 — Added Resilience for External Services
+**Failure point found:** External API integrations (Groq, Twilio, Honeypot.is, and local Ollama) were called directly without retry or fallback protection. If they failed due to transient issues or timeouts, they would cause parts of the backend to fail (and raise unhandled HTTP exceptions).
+**Why it existed:** The code prioritized the "happy path" without built-in fault tolerance.
+**Recovery built:** Created `backend/core/resilience.py` with `@with_retry`, `@with_retry_sync`, and `@CircuitBreaker` decorators. Applied these decorators to external calls in `backend/services/ai_deep_scan.py`, `backend/services/notifier.py`, and `backend/utils/crypto.py`. Also wrapped the results in a try/except block for external calls to match the expected return structure.
+**Blast radius before:** High - Users attempting to use features relying on these external services would experience unhandled exceptions or failed operations during API unreliability or local service downtime.
+**Watch for:** Ensure we do not swallow exceptions completely but instead log the error when a circuit breaker triggers, falling back cleanly. Watch out for database transactions that do not get rolled back on similar exceptions.

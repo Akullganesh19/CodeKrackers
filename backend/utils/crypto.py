@@ -1,6 +1,19 @@
 import httpx
 import re
 from backend.core.config import settings
+from backend.core.resilience import CircuitBreaker, with_retry
+
+# Use circuit breaker and retry for Honeypot API
+honeypot_cb = CircuitBreaker(failure_threshold=4, recovery_timeout=60.0)
+
+@honeypot_cb
+@with_retry(max_retries=3, base_delay=0.5, max_delay=3.0, exceptions=(httpx.RequestError,))
+async def _call_honeypot_api(url: str, headers: dict, params: dict) -> dict:
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers, params=params)
+        response.raise_for_status()
+        return response.json()
+
 
 def extract_crypto_addresses(text: str) -> list[str]:
     """
@@ -21,11 +34,10 @@ async def check_crypto_honeypot(address: str) -> dict:
     headers = {"X-API-KEY": api_key}
     params = {"address": address}
 
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.get(url, headers=headers, params=params)
-            if response.status_code == 200:
-                return response.json()
-            return {"error": f"API returned status {response.status_code}"}
-        except Exception as e:
-            return {"error": str(e)}
+    try:
+        result = await _call_honeypot_api(url, headers, params)
+        return result
+    except httpx.HTTPStatusError as e:
+        return {"error": f"API returned status {e.response.status_code}"}
+    except Exception as e:
+        return {"error": str(e)}

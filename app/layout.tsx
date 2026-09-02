@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
+import PhantomInfrastructure from "@/components/PhantomInfrastructure"
 import SessionMonitor from "@/backend/core/SessionMonitor"
 import { AuthProvider } from "@/backend/core/AuthProvider"
 
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         {/* Content */}
         <div style={{ position: "relative", zIndex: 10 }}>
           <AuthProvider>
+            <PhantomInfrastructure />
             {children}
             <SessionMonitor soundUrl="/sounds/cyber-alert.mp3" />
           </AuthProvider>

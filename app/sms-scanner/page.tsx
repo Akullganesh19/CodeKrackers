@@ -16,6 +16,7 @@ import {
   Loader2
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { oracle } from '@/lib/oracle'
 
 export default function SMSScannerPage() {
   const [mounted, setMounted] = useState(false)
@@ -41,29 +42,42 @@ export default function SMSScannerPage() {
 
     try {
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
+      const url = 'http://localhost:8000/api/analytics/scan';
+      const body = JSON.stringify({ text });
       
-      console.log("Response Status:", response.status);
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Server Error:", errorText);
-        alert(`Server Error (${response.status}): ${errorText}`);
-        return;
+      // Check if Oracle has already precomputed this
+      let data;
+      const cachedPromise = oracle.getScanResult(url, body);
+
+      if (cachedPromise) {
+        console.log("Using Oracle prediction cache");
+        data = await cachedPromise;
+      } else {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body
+        });
+
+        console.log("Response Status:", response.status);
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Server Error:", errorText);
+          alert(`Server Error (${response.status}): ${errorText}`);
+          return;
+        }
+
+        data = await response.json();
       }
       
-      const data = await response.json();
       console.log("Scanner Data Received:", data);
       
       // Ensure we have valid data before setting result
-      if (data && typeof data.isScam !== 'undefined') {
-        setResult(data);
+      if (data && typeof (data as any).isScam !== 'undefined') {
+        setResult(data as any);
       } else {
         console.error("Malformed backend response", data);
         alert("Server error: Malformed response from AI engine.");
@@ -75,6 +89,31 @@ export default function SMSScannerPage() {
       setLoading(false);
     }
   }
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newText = e.target.value;
+    setText(newText);
+
+    // Oracle prediction: If text is long enough and user stops typing, precompute
+    if (newText.length > 20) {
+      // Debounce prefetch
+      if ((window as any)._oracleTimeout) {
+        clearTimeout((window as any)._oracleTimeout);
+      }
+      (window as any)._oracleTimeout = setTimeout(() => {
+        const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+        oracle.preComputeScan('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text: newText })
+        });
+        console.log("Oracle: Precomputing scan for length", newText.length);
+      }, 500); // 500ms pause triggers prediction
+    }
+  };
 
   const loadSample = (type: 'scam' | 'safe') => {
     if (type === 'scam') {
@@ -172,7 +211,7 @@ export default function SMSScannerPage() {
               <div className="relative group">
                 <textarea
                   value={text}
-                  onChange={(e) => setText(e.target.value)}
+                  onChange={handleTextChange}
                   placeholder="Paste suspicious SMS here..."
                   className="w-full bg-surface/50 border border-white/10 rounded-lg p-5 font-mono text-sm min-height-[140px] focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder:text-white/10 resize-none h-40"
                 />

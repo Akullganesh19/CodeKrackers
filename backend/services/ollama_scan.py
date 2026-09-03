@@ -1,8 +1,10 @@
-import logging
-import requests
 import json
+import logging
+from typing import Any, Dict
+
+import requests
+
 from backend.core.resilience import CircuitBreaker, with_retry_sync
-from typing import Dict, Any
 
 logger = logging.getLogger("vas.ollama")
 

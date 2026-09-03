@@ -1,10 +1,12 @@
 import logging
-from typing import Dict, Any
-from groq import Groq
-from backend.core.config import settings
-from backend.services.ollama_scan import ollama_deep_scan
+from typing import Any, Dict
+
 import requests
+from groq import Groq
+
+from backend.core.config import settings
 from backend.core.resilience import CircuitBreaker, with_retry_sync
+from backend.services.ollama_scan import ollama_deep_scan
 
 logger = logging.getLogger("vas.ai_scan")
 

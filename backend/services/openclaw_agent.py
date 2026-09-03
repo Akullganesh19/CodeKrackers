@@ -1,5 +1,7 @@
 import logging
+
 import requests
+
 from backend.core.config import settings
 from backend.core.resilience import CircuitBreaker, with_retry_sync
 

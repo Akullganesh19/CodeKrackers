@@ -1,6 +1,7 @@
 import logging
 import requests
 import json
+from backend.core.resilience import CircuitBreaker, with_retry_sync
 from typing import Dict, Any
 
 logger = logging.getLogger("vas.ollama")
@@ -8,7 +9,15 @@ logger = logging.getLogger("vas.ollama")
 OLLAMA_URL = "http://localhost:11434/api/generate"
 OLLAMA_MODEL = "llama3.1:8b" # Upgraded for tool-calling support
 
+
+def ollama_fallback(*args, **kwargs):
+    logger.warning("Ollama circuit open, using fallback")
+    return {"score_increase": 0.0, "reason": "Ollama service unavailable (Circuit Open)"}
+
+@CircuitBreaker(failure_threshold=3, recovery_timeout=60.0, fallback=ollama_fallback)
+@with_retry_sync(max_retries=2, base_delay=0.5)
 def ollama_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
+
     """
     Uses local Ollama instance for on-device/private threat analysis.
     """
@@ -34,6 +43,7 @@ def ollama_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
         }
         
         response = requests.post(OLLAMA_URL, json=payload, timeout=30)
+        response.raise_for_status()
         if response.status_code == 200:
             result = response.json().get("response", "{}")
             data = json.loads(result)

@@ -16,6 +16,7 @@ import {
   Loader2
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Oracle } from '@/lib/oracle'
 
 export default function SMSScannerPage() {
   const [mounted, setMounted] = useState(false)
@@ -33,6 +34,7 @@ export default function SMSScannerPage() {
     setMounted(true)
   }, [])
 
+
   const handleAnalyze = async () => {
     if (!text.trim()) return
 
@@ -40,15 +42,14 @@ export default function SMSScannerPage() {
     setResult(null)
 
     try {
-      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
+      const { url, options } = getPreComputeOptions(text);
+
+      // Try to get the pre-computed result first
+      let response = await Oracle.getScanResult(url, options);
+
+      if (!response) {
+        response = await fetch(url, options);
+      }
       
       console.log("Response Status:", response.status);
       if (!response.ok) {
@@ -76,12 +77,42 @@ export default function SMSScannerPage() {
     }
   }
 
+  const getPreComputeOptions = (targetText: string) => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('vsdp_token') || 'dummy_token' : 'dummy_token';
+    return {
+      url: 'http://localhost:8000/api/analytics/scan',
+      options: {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ text: targetText })
+      }
+    };
+  };
+
   const loadSample = (type: 'scam' | 'safe') => {
+    let sampleText = '';
     if (type === 'scam') {
-      setText('URGENT: Your SBI account will be blocked in 24hrs. Update KYC now: http://sbi-kyc-update.xyz/verify')
+      sampleText = 'URGENT: Your SBI account will be blocked in 24hrs. Update KYC now: http://sbi-kyc-update.xyz/verify';
     } else {
-      setText('Your OTP for SBI NetBanking is 847291. Valid 10 min. Do not share with anyone. -SBI')
+      sampleText = 'Your OTP for SBI NetBanking is 847291. Valid 10 min. Do not share with anyone. -SBI';
     }
+    setText(sampleText);
+
+    // Predictive Intelligence: Pre-compute immediately for sample text
+    const { url, options } = getPreComputeOptions(sampleText);
+    Oracle.preComputeScan(url, options);
+  }
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const pastedText = e.clipboardData.getData('text');
+    if (!pastedText.trim()) return;
+
+    // Predictive Intelligence: Pre-compute immediately when user pastes text
+    const { url, options } = getPreComputeOptions(pastedText);
+    Oracle.preComputeScan(url, options);
   }
 
   const handleReportToCybercrime = async () => {
@@ -173,6 +204,7 @@ export default function SMSScannerPage() {
                 <textarea
                   value={text}
                   onChange={(e) => setText(e.target.value)}
+                  onPaste={handlePaste}
                   placeholder="Paste suspicious SMS here..."
                   className="w-full bg-surface/50 border border-white/10 rounded-lg p-5 font-mono text-sm min-height-[140px] focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder:text-white/10 resize-none h-40"
                 />

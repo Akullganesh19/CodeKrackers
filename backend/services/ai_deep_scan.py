@@ -1,11 +1,35 @@
 import logging
+import json
 from typing import Dict, Any
 from groq import Groq
 from backend.core.config import settings
 from backend.services.ollama_scan import ollama_deep_scan
+from backend.core.resilience import CircuitBreaker, with_retry_sync
 import requests
 
 logger = logging.getLogger("vas.ai_scan")
+
+groq_cb = CircuitBreaker(failure_threshold=3, recovery_timeout=60.0)
+
+@groq_cb
+@with_retry_sync(max_attempts=3, initial_backoff=0.2)
+def _do_groq_request(client, prompt: str) -> Dict[str, Any]:
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {"role": "system", "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection."},
+            {"role": "user", "content": prompt}
+        ],
+        model=settings.GROQ_MODEL,
+        response_format={"type": "json_object"}
+    )
+    result = json.loads(chat_completion.choices[0].message.content)
+
+    return {
+        "score_increase": round(result.get("confidence", 0.0), 2) if result.get("is_scam") else 0.0,
+        "reason": f"Cloud AI: {result.get('reason', 'Analysis complete')}",
+        "risk_factors": result.get("risk_factors", [])
+    }
+
 
 def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     """
@@ -42,24 +66,9 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
         3. "reason": string summary
         4. "risk_factors": list of strings
         """
-
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection."},
-                {"role": "user", "content": prompt}
-            ],
-            model=settings.GROQ_MODEL,
-            response_format={"type": "json_object"}
-        )
-
-        import json
-        result = json.loads(chat_completion.choices[0].message.content)
         
-        return {
-            "score_increase": round(result.get("confidence", 0.0), 2) if result.get("is_scam") else 0.0,
-            "reason": f"Cloud AI: {result.get('reason', 'Analysis complete')}",
-            "risk_factors": result.get("risk_factors", [])
-        }
+        return _do_groq_request(client, prompt)
+
     except Exception as e:
         logger.error(f"Cloud AI Scan Error: {e}")
         return {"score_increase": 0.0, "reason": f"AI Scan failed: {e}"}

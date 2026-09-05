@@ -1,17 +1,20 @@
-import time
 import logging
-from functools import wraps
+import time
 from enum import Enum
+from functools import wraps
 
 logger = logging.getLogger("vas.resilience")
+
 
 class CircuitState(Enum):
     CLOSED = "CLOSED"
     OPEN = "OPEN"
     HALF_OPEN = "HALF_OPEN"
 
+
 class CircuitBreakerOpenException(Exception):
     pass
+
 
 class CircuitBreaker:
     def __init__(self, failure_threshold: int = 3, recovery_timeout: float = 30.0):
@@ -26,10 +29,14 @@ class CircuitBreaker:
         def wrapper(*args, **kwargs):
             if self.state == CircuitState.OPEN:
                 if time.time() - self.last_failure_time > self.recovery_timeout:
-                    logger.info(f"CircuitBreaker for {func.__name__} entering HALF_OPEN state.")
+                    logger.info(
+                        f"CircuitBreaker for {func.__name__} entering HALF_OPEN state."
+                    )
                     self.state = CircuitState.HALF_OPEN
                 else:
-                    raise CircuitBreakerOpenException(f"Circuit breaker is OPEN for {func.__name__}")
+                    raise CircuitBreakerOpenException(
+                        f"Circuit breaker is OPEN for {func.__name__}"
+                    )
 
             try:
                 result = func(*args, **kwargs)
@@ -52,13 +59,18 @@ class CircuitBreaker:
         if self.state == CircuitState.HALF_OPEN:
             self.state = CircuitState.OPEN
             self.last_failure_time = time.time()
-            logger.warning(f"CircuitBreaker for {func_name} failed in HALF_OPEN state. Returning to OPEN.")
+            logger.warning(
+                f"CircuitBreaker for {func_name} failed in HALF_OPEN state. Returning to OPEN."
+            )
         else:
             self.failure_count += 1
             if self.failure_count >= self.failure_threshold:
                 self.state = CircuitState.OPEN
                 self.last_failure_time = time.time()
-                logger.error(f"CircuitBreaker for {func_name} tripped to OPEN state after {self.failure_count} failures.")
+                logger.error(
+                    f"CircuitBreaker for {func_name} tripped to OPEN state after {self.failure_count} failures."
+                )
+
 
 def with_retry_sync(max_attempts: int = 3, initial_backoff: float = 0.1):
     def decorator(func):
@@ -72,8 +84,12 @@ def with_retry_sync(max_attempts: int = 3, initial_backoff: float = 0.1):
                     if attempt == max_attempts:
                         raise e
                     backoff = initial_backoff * (2 ** (attempt - 1))
-                    logger.warning(f"Retry {attempt}/{max_attempts} for {func.__name__} after failure: {e}. Waiting {backoff}s.")
+                    logger.warning(
+                        f"Retry {attempt}/{max_attempts} for {func.__name__} after failure: {e}. Waiting {backoff}s."
+                    )
                     time.sleep(backoff)
                     attempt += 1
+
         return wrapper
+
     return decorator

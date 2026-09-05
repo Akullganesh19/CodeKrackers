@@ -48,3 +48,6 @@ __pycache__/
 # databases
 *.db
 *.sqlite3
+.mypy_cache/
+htmlcov/
+.coverage

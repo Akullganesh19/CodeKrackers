@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .core.database import engine, Base
-from .api import auth, analytics, call, fir, evidence, honeypot
+from .api import auth, analytics, health, call, fir, evidence, honeypot
 from .scheduler import setup_scheduler
 import uvicorn
 import asyncio
@@ -38,6 +38,7 @@ app.include_router(call.router, prefix="/api/call", tags=["call"])
 app.include_router(fir.router, prefix="/api/fir", tags=["fir"])
 app.include_router(evidence.router, prefix="/api/evidence", tags=["evidence"])
 app.include_router(honeypot.router, prefix="/api/honeypot", tags=["honeypot"])
+app.include_router(health.router, prefix="/api/health", tags=["health"])
 
 # New Original Routers
 from .api import blacklist, canary, childlock, enclave, export, intel, legal, model_guard, openclaw, spam, threats, users, zk_privacy

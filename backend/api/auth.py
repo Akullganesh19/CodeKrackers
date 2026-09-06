@@ -113,8 +113,12 @@ async def verify_otp(
             detail=f"Account locked. Try again after {user.locked_until.isoformat()}"
         )
 
+    if not redis_client:
+        logger.error(f"Auth failure: Redis is unavailable for OTP verification")
+        raise HTTPException(status_code=503, detail="Service Unavailable: Authentication service is offline")
+
     redis_key = f"otp:{otp_verify.identifier}"
-    stored_code = redis_client.get(redis_key) if redis_client else otp_code # Mock pass if redis down for demo
+    stored_code = redis_client.get(redis_key)
 
     if not stored_code or otp_verify.code != stored_code:
         if user:
@@ -130,7 +134,7 @@ async def verify_otp(
             email=otp_verify.identifier if "@" in otp_verify.identifier else None,
             phone_number=otp_verify.identifier if "@" not in otp_verify.identifier else None,
             is_active=True,
-            role=UserRole(otp_verify.role)
+            role=UserRole("citizen")
         )
         db.add(user)
         db.commit()

@@ -1,7 +1,9 @@
 from fastapi import APIRouter
+
 from backend.core.config import settings
 
 router = APIRouter()
+
 
 @router.get("/")
 def health_check():
@@ -19,7 +21,4 @@ def health_check():
 
     status = "operational"
 
-    return {
-        "status": status,
-        "dependencies": dependencies
-    }
+    return {"status": status, "dependencies": dependencies}

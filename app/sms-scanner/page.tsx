@@ -16,6 +16,7 @@ import {
   Loader2
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Oracle } from '@/lib/oracle'
 
 export default function SMSScannerPage() {
   const [mounted, setMounted] = useState(false)
@@ -41,24 +42,32 @@ export default function SMSScannerPage() {
 
     try {
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
+      const cachedResult = await Oracle.getScanResult('http://localhost:8000/api/analytics/scan', text);
       
-      console.log("Response Status:", response.status);
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Server Error:", errorText);
-        alert(`Server Error (${response.status}): ${errorText}`);
-        return;
+      let data;
+      if (cachedResult) {
+        data = cachedResult;
+      } else {
+        const response = await fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text })
+        });
+
+        console.log("Response Status:", response.status);
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Server Error:", errorText);
+          alert(`Server Error (${response.status}): ${errorText}`);
+          return;
+        }
+
+        data = await response.json();
       }
       
-      const data = await response.json();
       console.log("Scanner Data Received:", data);
       
       // Ensure we have valid data before setting result
@@ -172,7 +181,22 @@ export default function SMSScannerPage() {
               <div className="relative group">
                 <textarea
                   value={text}
-                  onChange={(e) => setText(e.target.value)}
+                  onChange={(e) => {
+                    const newText = e.target.value;
+                    setText(newText);
+                    if (newText.trim()) {
+                      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+                      Oracle.preComputeScan('http://localhost:8000/api/analytics/scan', {
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'Authorization': `Bearer ${token}`
+                        },
+                        body: { text: newText },
+                        keyOverride: newText,
+                        debounceMs: 500
+                      });
+                    }
+                  }}
                   placeholder="Paste suspicious SMS here..."
                   className="w-full bg-surface/50 border border-white/10 rounded-lg p-5 font-mono text-sm min-height-[140px] focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder:text-white/10 resize-none h-40"
                 />

@@ -15,7 +15,7 @@ class CircuitBreakerOpenException(Exception):
     pass
 
 class CircuitBreaker:
-    def __init__(self, failure_threshold: int = 3, recovery_timeout: int = 60, expected_exception: type = Exception):
+    def __init__(self, failure_threshold: int = 3, recovery_timeout: int = 60, expected_exception: type[BaseException] = Exception):
         """
         State machine that trips on successive failures, allowing fast failure when dependencies are down,
         and periodically retrying after a cooldown.
@@ -67,7 +67,7 @@ class CircuitBreaker:
 
         return wrapper
 
-def with_retry_sync(max_attempts: int = 3, base_delay: float = 0.1, max_delay: float = 2.0, expected_exception: type = Exception):
+def with_retry_sync(max_attempts: int = 3, base_delay: float = 0.1, max_delay: float = 2.0, expected_exception: type[BaseException] = Exception):
     """
     Retry decorator with exponential backoff for synchronous functions.
     """

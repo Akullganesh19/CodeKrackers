@@ -1,4 +1,5 @@
 import logging
+from backend.core.resilience import CircuitBreaker, with_retry_sync
 import requests
 from backend.core.config import settings
 
@@ -8,6 +9,8 @@ logger = logging.getLogger("vas.openclaw")
 OPENCLAW_URL = "http://127.0.0.1:18789"
 OPENCLAW_TOKEN = "22b3d0f8bbe1f335aab557204ab619d5260b91ab8533d3c4"
 
+@CircuitBreaker(failure_threshold=3)
+@with_retry_sync(max_retries=2)
 def openclaw_analysis(content: str):
     """
     Sends suspicious content to the OpenClaw autonomous agent for deep forensic investigation.

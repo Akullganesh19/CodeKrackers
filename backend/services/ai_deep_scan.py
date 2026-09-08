@@ -1,4 +1,5 @@
 import logging
+from backend.core.resilience import CircuitBreaker, with_retry_sync
 from typing import Dict, Any
 from groq import Groq
 from backend.core.config import settings
@@ -7,6 +8,8 @@ import requests
 
 logger = logging.getLogger("vas.ai_scan")
 
+@CircuitBreaker(failure_threshold=3)
+@with_retry_sync(max_retries=2)
 def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     """
     Hybrid AI Analysis:

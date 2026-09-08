@@ -1,4 +1,5 @@
 import logging
+from backend.core.resilience import CircuitBreaker, with_retry_sync
 import requests
 import json
 from typing import Dict, Any
@@ -8,6 +9,8 @@ logger = logging.getLogger("vas.ollama")
 OLLAMA_URL = "http://localhost:11434/api/generate"
 OLLAMA_MODEL = "llama3.1:8b" # Upgraded for tool-calling support
 
+@CircuitBreaker(failure_threshold=3)
+@with_retry_sync(max_retries=2)
 def ollama_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     """
     Uses local Ollama instance for on-device/private threat analysis.

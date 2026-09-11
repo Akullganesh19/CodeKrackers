@@ -1,11 +1,26 @@
 import logging
-from typing import Dict, Any
+from typing import Dict, Any, List
 from groq import Groq
 from backend.core.config import settings
 from backend.services.ollama_scan import ollama_deep_scan
 import requests
+from backend.core.resilience import CircuitBreaker, with_retry_sync
 
 logger = logging.getLogger("vas.ai_scan")
+
+@CircuitBreaker(failure_threshold=3, recovery_timeout=30)
+@with_retry_sync(max_attempts=3, initial_backoff=0.2)
+def _ping_ollama():
+    return requests.get("http://localhost:11434", timeout=1)
+
+@CircuitBreaker(failure_threshold=3, recovery_timeout=60)
+@with_retry_sync(max_attempts=3, initial_backoff=0.5)
+def _call_groq_api(client: Groq, messages: List[Dict[str, str]], model: str) -> Any:
+    return client.chat.completions.create(
+        messages=messages,
+        model=model,
+        response_format={"type": "json_object"}
+    )
 
 def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     """
@@ -17,7 +32,7 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     # ── Attempt Local Ollama First ──
     try:
         # Quick check if Ollama is running
-        requests.get("http://localhost:11434", timeout=1)
+        _ping_ollama()
         logger.info("Using local Ollama for analysis...")
         local_result = ollama_deep_scan(content, source_type)
         if local_result["score_increase"] > 0:
@@ -43,14 +58,12 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
         4. "risk_factors": list of strings
         """
 
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection."},
-                {"role": "user", "content": prompt}
-            ],
-            model=settings.GROQ_MODEL,
-            response_format={"type": "json_object"}
-        )
+        messages = [
+            {"role": "system", "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection."},
+            {"role": "user", "content": prompt}
+        ]
+
+        chat_completion = _call_groq_api(client, messages, settings.GROQ_MODEL)
 
         import json
         result = json.loads(chat_completion.choices[0].message.content)

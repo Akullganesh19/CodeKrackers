@@ -133,7 +133,7 @@ async def verify_otp(
         )
 
     redis_key = f"otp:{otp_verify.identifier}"
-    stored_code = (
+    stored_code: Any = (
         redis_client.get(redis_key) if redis_client else otp_verify.code
     )  # Mock pass if redis down for demo
 
@@ -222,7 +222,7 @@ async def login_access_token_password(
         )
 
     if not user or not security.verify_password(
-        form_data.password, user.hashed_password
+        form_data.password, str(user.hashed_password)
     ):
         if user:
             user.failed_login_attempts = (user.failed_login_attempts or 0) + 1

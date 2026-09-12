@@ -83,7 +83,7 @@ class EvidenceChain:
         if not last_block:
             last_block = await self.create_genesis_block(threat_id)
 
-        previous_hash = last_block.current_hash
+        previous_hash = str(last_block.current_hash)
         timestamp = datetime.utcnow().isoformat()
 
         current_hash = self._generate_hash(previous_hash, payload, timestamp)
@@ -121,12 +121,12 @@ class EvidenceChain:
 
         for i, block in enumerate(blocks):
             expected_hash = self._generate_hash(
-                block.previous_hash, block.payload, block.timestamp.isoformat()
+                str(block.previous_hash), dict(block.payload) if block.payload else {}, block.timestamp.isoformat()
             )
             if block.current_hash != expected_hash:
                 return {"valid": False, "reason": "Hash mismatch", "block_index": i}
 
-            expected_sig = self._generate_signature(block.current_hash)
+            expected_sig = self._generate_signature(str(block.current_hash))
             if block.digital_signature != expected_sig:
                 return {"valid": False, "reason": "Signature invalid", "block_index": i}
 

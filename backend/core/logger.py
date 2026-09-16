@@ -1,6 +1,6 @@
 import logging
-import sys
 import re
+import sys
 
 import structlog
 
@@ -12,29 +12,37 @@ phone_regex_e164 = re.compile(r"\B\+[1-9]\d{6,14}\b")
 # Also redact specific keys known to contain sensitive data in structured logs
 sensitive_keys = {"phone", "phone_number", "email", "address", "ssn"}
 
+
 def mask_email(match):
     email = match.group(0) if hasattr(match, "group") else str(match)
-    parts = email.split('@')
-    if len(parts) != 2: return email
+    parts = email.split("@")
+    if len(parts) != 2:
+        return email
     user, domain = parts
     return f"{user[0]}***@{domain}" if len(user) > 0 else f"***@{domain}"
 
+
 def mask_phone(match_or_str):
-    phone = match_or_str.group(0) if hasattr(match_or_str, "group") else str(match_or_str)
+    phone = (
+        match_or_str.group(0) if hasattr(match_or_str, "group") else str(match_or_str)
+    )
     if len(phone) > 4:
         return phone[:-4] + "****"
     return phone
+
 
 def mask_ssn(val):
     if len(val) > 4:
         return "***-**-" + val[-4:]
     return val
 
+
 class RedactingFilter(logging.Filter):
     """
     Standard library filter to redact from msg and args before formatting.
     This avoids corrupting JSON output later.
     """
+
     def filter(self, record):
         if isinstance(record.msg, str):
             record.msg = email_regex.sub(mask_email, record.msg)
@@ -79,6 +87,7 @@ def redact_nested_dict(data, key=None):
         return mask_phone(str(data))
     return data
 
+
 def redact_structlog_processor(logger, log_method, event_dict):
     """
     Structlog processor to redact PII (emails, phones) from structured logs.
@@ -86,6 +95,7 @@ def redact_structlog_processor(logger, log_method, event_dict):
     for key, value in event_dict.items():
         event_dict[key] = redact_nested_dict(value, key=key)
     return event_dict
+
 
 def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
     """
@@ -108,7 +118,7 @@ def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
         structlog.stdlib.add_logger_name,
         structlog.stdlib.add_log_level,
         structlog.stdlib.PositionalArgumentsFormatter(),
-        redact_structlog_processor, # Add redaction processor for structlog
+        redact_structlog_processor,  # Add redaction processor for structlog
         structlog.processors.TimeStamper(fmt="iso"),
         structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
@@ -125,6 +135,7 @@ def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
         wrapper_class=structlog.stdlib.BoundLogger,
         cache_logger_on_first_use=True,
     )
+
 
 def get_logger(name: str):
     """

@@ -25,23 +25,23 @@ redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True)
 
 class OTPSend(BaseModel):
     identifier: str
-    role: str = "citizen"
+
 
 class OTPVerify(BaseModel):
     identifier: str
     code: str
-    role: str = "citizen"
+
 
 class LoginRequest(BaseModel):
     username: str
     password: str
-    role: str
+
 
 class UserRegister(BaseModel):
     email: str
     password: str
     phone_number: Optional[str] = None
-    role: str = "citizen"
+
     captcha_token: Optional[str] = None
 
 @router.post("/send")
@@ -124,7 +124,7 @@ async def verify_otp(
             email=otp_verify.identifier if "@" in otp_verify.identifier else None,
             phone_number=otp_verify.identifier if "@" not in otp_verify.identifier else None,
             is_active=True,
-            role=otp_verify.role
+            role="citizen"
         )
         db.add(user)
         db.commit()
@@ -234,7 +234,7 @@ async def register_user(
         email=user_in.email,
         phone_number=user_in.phone_number,
         hashed_password=security.get_password_hash(user_in.password),
-        role=user_in.role,
+        role="citizen",
         is_active=True
     )
     db.add(new_user)

@@ -1,20 +1,21 @@
 import logging
-import sys
 import re
+import sys
 
 import structlog
 
-EMAIL_RE = re.compile(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+')
-PHONE_RE = re.compile(r'\B\+[1-9]\d{6,14}\b')
+EMAIL_RE = re.compile(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+")
+PHONE_RE = re.compile(r"\B\+[1-9]\d{6,14}\b")
 # Ensure we don't redact just any random string. Code/OTP might look like numbers.
-OTP_RE = re.compile(r'(?i)(otp|password|code|token)(.*?:\s*|.*?->\s*)([a-zA-Z0-9_.-]+)')
+OTP_RE = re.compile(r"(?i)(otp|password|code|token)(.*?:\s*|.*?->\s*)([a-zA-Z0-9_.-]+)")
 # Key pattern for dictionary kwargs redaction
-SENSITIVE_KEY_RE = re.compile(r'(?i)(otp|password|code|token)')
+SENSITIVE_KEY_RE = re.compile(r"(?i)(otp|password|code|token)")
+
 
 def redact_email(match):
     email = match.group(0)
-    if '@' in email:
-        local, domain = email.split('@', 1)
+    if "@" in email:
+        local, domain = email.split("@", 1)
         if len(local) > 1:
             local = local[0] + "***"
         else:
@@ -22,11 +23,13 @@ def redact_email(match):
         return f"{local}@{domain}"
     return "***"
 
+
 def redact_phone(match):
     phone = match.group(0)
     if len(phone) > 5:
         return phone[:3] + "***" + phone[-2:]
     return "***"
+
 
 def redact_string(text):
     if not isinstance(text, str):
@@ -34,8 +37,9 @@ def redact_string(text):
 
     text = EMAIL_RE.sub(redact_email, text)
     text = PHONE_RE.sub(redact_phone, text)
-    text = OTP_RE.sub(r'\1\2***', text)
+    text = OTP_RE.sub(r"\1\2***", text)
     return text
+
 
 class RedactingFilter(logging.Filter):
     def filter(self, record):
@@ -68,6 +72,7 @@ class RedactingFilter(logging.Filter):
 
         return True
 
+
 def redact_sensitive_data(logger, log_method, event_dict):
     if "event" in event_dict:
         event_dict["event"] = redact_string(str(event_dict["event"]))
@@ -79,7 +84,14 @@ def redact_sensitive_data(logger, log_method, event_dict):
         event_dict["positional_args"] = tuple(args)
 
     for key, value in list(event_dict.items()):
-        if key not in ("event", "positional_args", "timestamp", "level", "logger", "exc_info"):
+        if key not in (
+            "event",
+            "positional_args",
+            "timestamp",
+            "level",
+            "logger",
+            "exc_info",
+        ):
             if SENSITIVE_KEY_RE.search(key):
                 event_dict[key] = "***"
             else:
@@ -88,6 +100,7 @@ def redact_sensitive_data(logger, log_method, event_dict):
                     event_dict[key] = redacted_val
 
     return event_dict
+
 
 def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
     """
@@ -127,6 +140,7 @@ def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
         wrapper_class=structlog.stdlib.BoundLogger,
         cache_logger_on_first_use=True,
     )
+
 
 def get_logger(name: str):
     """

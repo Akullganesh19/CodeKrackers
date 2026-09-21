@@ -2,14 +2,16 @@ import logging
 import sys
 
 import structlog
+
 from backend.core.pii_redactor import redact_string
+
 
 class PiiRedactingFilter(logging.Filter):
     def filter(self, record):
-        if hasattr(record, 'msg') and isinstance(record.msg, str):
+        if hasattr(record, "msg") and isinstance(record.msg, str):
             record.msg = redact_string(record.msg)
 
-        if hasattr(record, 'args') and record.args:
+        if hasattr(record, "args") and record.args:
             # We must handle formatting properly. We can deepcopy the args
             # to avoid modifying application state, and stringify them to redact.
             # But the simplest and safest way for standard library args
@@ -29,6 +31,7 @@ class PiiRedactingFilter(logging.Filter):
                 record.args = {k: _safely_redact_arg(v) for k, v in record.args.items()}
         return True
 
+
 def pii_redacting_processor(logger, log_method, event_dict):
     def _redact_dict(d):
         # We must create a new dictionary to avoid in-place mutation of application state
@@ -39,7 +42,18 @@ def pii_redacting_processor(logger, log_method, event_dict):
             elif isinstance(v, dict):
                 new_d[k] = _redact_dict(v)
             elif isinstance(v, list):
-                new_d[k] = [_redact_dict(i) if isinstance(i, dict) else (redact_string(str(i)) if not isinstance(i, (int, float, bool, type(None))) else i) for i in v]
+                new_d[k] = [
+                    (
+                        _redact_dict(i)
+                        if isinstance(i, dict)
+                        else (
+                            redact_string(str(i))
+                            if not isinstance(i, (int, float, bool, type(None)))
+                            else i
+                        )
+                    )
+                    for i in v
+                ]
             else:
                 if isinstance(v, (int, float, bool, type(None))):
                     new_d[k] = v
@@ -49,6 +63,7 @@ def pii_redacting_processor(logger, log_method, event_dict):
         return new_d
 
     return _redact_dict(event_dict)
+
 
 def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
     """
@@ -87,6 +102,7 @@ def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
         wrapper_class=structlog.stdlib.BoundLogger,
         cache_logger_on_first_use=True,
     )
+
 
 def get_logger(name: str):
     """

@@ -6,6 +6,7 @@ import io
 import logging
 from datetime import datetime, timezone
 from typing import Any
+from backend.core.logger import _redact_text
 
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import StreamingResponse
@@ -35,12 +36,12 @@ def export_threats_csv(
         writer.writerow([
             t.id,
             t.type.value if hasattr(t.type, "value") else t.type,
-            t.source_number,
+            _redact_text(t.source_number) if t.source_number else None,
             t.severity.value if hasattr(t.severity, "value") else t.severity,
             t.confidence_score,
             t.status.value if hasattr(t.status, "value") else getattr(t, "status", "detected"),
             t.timestamp.isoformat() if t.timestamp else "",
-            (t.content or "")[:200],
+            _redact_text((t.content or ""))[:200],
         ])
 
     output.seek(0)
@@ -69,11 +70,11 @@ def export_threats_json(
         {
             "id": t.id,
             "type": t.type.value if hasattr(t.type, "value") else t.type,
-            "source_number": t.source_number,
+            "source_number": _redact_text(t.source_number) if t.source_number else None,
             "severity": t.severity.value if hasattr(t.severity, "value") else t.severity,
             "confidence_score": t.confidence_score,
             "timestamp": t.timestamp.isoformat() if t.timestamp else None,
-            "content": t.content,
+            "content": _redact_text(t.content) if t.content else None,
             "metadata": t.metadata_json,
         }
         for t in threats

@@ -15,6 +15,7 @@ import {
   BarChart3,
   Loader2
 } from 'lucide-react'
+import { Oracle } from '@/lib/oracle'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function SMSScannerPage() {
@@ -41,14 +42,23 @@ export default function SMSScannerPage() {
 
     try {
       const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
+      const url = 'http://localhost:8000/api/analytics/scan';
+      const bodyStr = JSON.stringify({ text });
+
+      let response: Response;
+      const cachedPromise = Oracle.getScanResult(url, { body: bodyStr });
+      if (!cachedPromise) {
+        response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: bodyStr
+        });
+      } else {
+        response = await cachedPromise; // Await the pre-computed promise
+      }
       
       console.log("Response Status:", response.status);
       if (!response.ok) {
@@ -172,7 +182,20 @@ export default function SMSScannerPage() {
               <div className="relative group">
                 <textarea
                   value={text}
-                  onChange={(e) => setText(e.target.value)}
+                  onChange={(e) => {
+                    const newText = e.target.value;
+                    setText(newText);
+                    if (newText.trim().length > 10) {
+                      const token = typeof window !== 'undefined' ? localStorage.getItem('vsdp_token') || 'dummy_token' : 'dummy_token';
+                      Oracle.preComputeScan('http://localhost:8000/api/analytics/scan', {
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ text: newText })
+                      });
+                    }
+                  }}
                   placeholder="Paste suspicious SMS here..."
                   className="w-full bg-surface/50 border border-white/10 rounded-lg p-5 font-mono text-sm min-height-[140px] focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder:text-white/10 resize-none h-40"
                 />

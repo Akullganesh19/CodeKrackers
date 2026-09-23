@@ -1,18 +1,20 @@
 import logging
+import re
 import sys
 
 import structlog
-import re
 
 email_regex = re.compile(r"([a-zA-Z0-9_.+-]+)@([a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)")
 phone_regex = re.compile(r"(\B\+[1-9]\d{6,14}\b)")
 otp_regex = re.compile(r"(?i)(OTP.*?[\s:>-]+)(\d{6})\b")
+
 
 def redact_str(text: str) -> str:
     text = email_regex.sub(r"***@\2", text)
     text = phone_regex.sub(r"[REDACTED_PHONE]", text)
     text = otp_regex.sub(r"\1[REDACTED_OTP]", text)
     return text
+
 
 def redact_sensitive_data(logger, method_name, event_dict):
     def process_item(item):
@@ -26,6 +28,7 @@ def redact_sensitive_data(logger, method_name, event_dict):
             return item
 
     return {k: process_item(v) for k, v in event_dict.items()}
+
 
 class RedactingFilter(logging.Filter):
     def filter(self, record):
@@ -48,6 +51,7 @@ class RedactingFilter(logging.Filter):
                     new_args.append(arg)
                 record.args = tuple(new_args)
         return True
+
 
 def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
     """
@@ -84,6 +88,7 @@ def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
         wrapper_class=structlog.stdlib.BoundLogger,
         cache_logger_on_first_use=True,
     )
+
 
 def get_logger(name: str):
     """

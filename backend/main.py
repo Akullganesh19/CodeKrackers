@@ -40,7 +40,8 @@ app.include_router(evidence.router, prefix="/api/evidence", tags=["evidence"])
 app.include_router(honeypot.router, prefix="/api/honeypot", tags=["honeypot"])
 
 # New Original Routers
-from .api import blacklist, canary, childlock, enclave, export, intel, legal, model_guard, openclaw, spam, threats, users, zk_privacy
+from .api import blacklist, canary, childlock, enclave, export, health, intel, legal, model_guard, openclaw, spam, threats, users, zk_privacy
+app.include_router(health.router, prefix="/api/health", tags=["health"])
 app.include_router(blacklist.router, prefix="/api/blacklist", tags=["blacklist"])
 app.include_router(canary.router, prefix="/api/canary", tags=["canary"])
 app.include_router(childlock.router, prefix="/api/childlock", tags=["childlock"])

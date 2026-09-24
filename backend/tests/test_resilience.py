@@ -1,6 +1,13 @@
-import pytest
 import time
-from backend.core.resilience import CircuitBreaker, with_retry_sync, CircuitBreakerOpenException
+
+import pytest
+
+from backend.core.resilience import (
+    CircuitBreaker,
+    CircuitBreakerOpenException,
+    with_retry_sync,
+)
+
 
 def test_retry_sync_success_on_second_try():
     attempts = 0
@@ -17,6 +24,7 @@ def test_retry_sync_success_on_second_try():
     assert result == "Success"
     assert attempts == 2
 
+
 def test_retry_sync_failure():
     attempts = 0
 
@@ -30,6 +38,7 @@ def test_retry_sync_failure():
         failing_call()
 
     assert attempts == 2
+
 
 def test_circuit_breaker():
     breaker = CircuitBreaker(failure_threshold=2, recovery_timeout=0.2)
@@ -56,7 +65,7 @@ def test_circuit_breaker():
     # Attempt 3 -> Immediately fails with CircuitBreakerOpenException without invoking function
     with pytest.raises(CircuitBreakerOpenException):
         failing_call()
-    assert attempts == 2 # Still 2
+    assert attempts == 2  # Still 2
 
     # Wait for recovery timeout
     time.sleep(0.3)
@@ -66,6 +75,7 @@ def test_circuit_breaker():
         failing_call()
     assert attempts == 3
     assert breaker.state == "OPEN"
+
 
 def test_circuit_breaker_recovery():
     breaker = CircuitBreaker(failure_threshold=1, recovery_timeout=0.1)

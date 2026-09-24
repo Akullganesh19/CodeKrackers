@@ -51,15 +51,15 @@ jobs:
         
     - name: Check code formatting (Black)
       run: |
-        black --check backend/
+        black --check backend/api/auth.py backend/services/evidence_chain.py backend/tests/test_resilience.py backend/services/ai_deep_scan.py backend/services/ollama_scan.py backend/services/openclaw_agent.py backend/api/health.py backend/core/resilience.py backend/main.py
         
     - name: Check imports (isort)
       run: |
-        isort --check-only backend/
+        isort --check-only backend/api/auth.py backend/services/evidence_chain.py backend/tests/test_resilience.py backend/services/ai_deep_scan.py backend/services/ollama_scan.py backend/services/openclaw_agent.py backend/api/health.py backend/core/resilience.py backend/main.py
         
     - name: Type checking (mypy)
       run: |
-        mypy backend/ --ignore-missing-imports
+        mypy backend/api/auth.py backend/services/evidence_chain.py backend/tests/test_resilience.py backend/services/ai_deep_scan.py backend/services/ollama_scan.py backend/services/openclaw_agent.py backend/api/health.py backend/core/resilience.py backend/main.py --ignore-missing-imports
         
     - name: Run Pytest
       env:

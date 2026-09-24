@@ -26,7 +26,7 @@ try:
     redis_client.ping()
 except Exception as e:
     logger.warning(f"REDIS_OFFLINE: {e}. Auth will use local fallback.")
-    redis_client = None
+    redis_client: Any = None  # type: ignore
 
 
 class OTPSend(BaseModel):
@@ -216,7 +216,7 @@ async def login_access_token_password(
         )
 
     if not user or not security.verify_password(
-        form_data.password, user.hashed_password
+        form_data.password, user.hashed_password  # type: ignore
     ):
         if user:
             user.failed_login_attempts = (user.failed_login_attempts or 0) + 1

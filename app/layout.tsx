@@ -24,6 +24,8 @@ export const metadata: Metadata = {
   },
 }
 
+import FetchInterceptor from "@/app/components/FetchInterceptor"
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className="dark">
@@ -35,10 +37,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
 
         {/* Content */}
         <div style={{ position: "relative", zIndex: 10 }}>
-          <AuthProvider>
+          <FetchInterceptor>
+            <AuthProvider>
             {children}
             <SessionMonitor soundUrl="/sounds/cyber-alert.mp3" />
           </AuthProvider>
+            </FetchInterceptor>
         </div>
       </body>
     </html>

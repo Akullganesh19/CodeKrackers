@@ -121,11 +121,13 @@ export default function Sidebar() {
   // Auto-clear notifications when the user visits the route
   useEffect(() => {
     if (notifications[pathname] > 0) {
-      setNotifications(prev => ({
-        ...prev,
-        [pathname]: 0
-      }))
-      // Optional: Add a fetch() call here to notify the backend to persist the "read" state
+      const timer = setTimeout(() => {
+        setNotifications(prev => ({
+          ...prev,
+          [pathname]: 0
+        }));
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [pathname, notifications])
 

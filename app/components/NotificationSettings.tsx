@@ -13,11 +13,14 @@ export default function NotificationSettings({ isOpen, onClose }: { isOpen: bool
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setSettings({
-        globalMuted: localStorage.getItem('vsdp_session_muted') === 'true',
-        sessionExpiry: localStorage.getItem('vsdp_sound_session_expiry') !== 'false',
-        newNotification: localStorage.getItem('vsdp_sound_new_notification') !== 'false',
-      })
+      const timer = setTimeout(() => {
+        setSettings({
+          globalMuted: localStorage.getItem('vsdp_session_muted') === 'true',
+          sessionExpiry: localStorage.getItem('vsdp_sound_session_expiry') !== 'false',
+          newNotification: localStorage.getItem('vsdp_sound_new_notification') !== 'false',
+        });
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [isOpen])
 

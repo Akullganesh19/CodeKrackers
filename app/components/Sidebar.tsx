@@ -15,10 +15,12 @@ import {
   Search,
   Lock,
   LogOut,
-  Bell
+  Bell,
+  Activity,
 } from 'lucide-react'
 
 const navItems = [
+  { name: 'Safety Score', href: '/safety-score', icon: Activity, roles: ['citizen', 'bank', 'officer', 'admin', 'superadmin'] },
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard, roles: ['citizen', 'bank', 'officer', 'admin', 'superadmin'] },
   { name: 'Report Threat', href: '/dashboard/report', icon: ShieldAlert, roles: ['citizen', 'bank', 'officer', 'admin', 'superadmin'] },
   { name: 'Fraud Verification', href: '/dashboard/verification', icon: Search, roles: ['bank', 'officer', 'admin', 'superadmin'] },

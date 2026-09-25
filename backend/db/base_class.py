@@ -4,11 +4,12 @@ SQLAlchemy declarative base with auto-generating tablename and audit mixins.
 from datetime import datetime, timezone
 
 from sqlalchemy import Column, DateTime, Integer
-from sqlalchemy.orm import DeclarativeBase, declared_attr
+from sqlalchemy.orm import as_declarative, declared_attr
 from sqlalchemy.sql import func
 
 
-class Base(DeclarativeBase):
+@as_declarative()
+class Base:
     """Base class for all SQLAlchemy ORM models."""
 
     __name__: str

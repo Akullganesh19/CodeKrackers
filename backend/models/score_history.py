@@ -2,7 +2,7 @@ import uuid
 from sqlalchemy import Column, Float, DateTime, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
-from core.database import Base
+from backend.db.base_class import Base
 
 class ScoreHistory(Base):
     __tablename__ = "score_history"

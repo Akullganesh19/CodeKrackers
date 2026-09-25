@@ -1,18 +1,21 @@
 """
 User management endpoints with password policy and RBAC.
 """
+
 import logging
 from typing import Any, List
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from backend.api import deps
 from backend.core import security
 from backend.models import User, UserRole
-from backend.schemas.user import UserCreate, User as UserSchema
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from backend.models.orm import ScoreHistory
+from backend.schemas.user import User as UserSchema
+from backend.schemas.user import UserCreate
 
 logger = logging.getLogger("vas.users")
 router = APIRouter()
@@ -105,3 +108,26 @@ async def change_password(
 
     logger.info("PASSWORD_CHANGED user=%d", current_user.id)
     return {"message": "Password updated successfully"}
+
+
+@router.get("/me/score-history")
+async def get_score_history(
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user),
+) -> Any:
+    """Get current user's safety score history."""
+    result = await db.execute(
+        select(ScoreHistory)
+        .where(ScoreHistory.user_id == current_user.id)
+        .order_by(ScoreHistory.recorded_at.desc())
+    )
+    history = result.scalars().all()
+
+    return [
+        {
+            "id": str(h.id),
+            "score": h.score,
+            "recorded_at": h.recorded_at.isoformat() if h.recorded_at else None,
+        }
+        for h in history
+    ]

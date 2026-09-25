@@ -6,7 +6,7 @@ from pydantic import BaseModel, EmailStr, Field
 
 class UserRole(str, Enum):
     CITIZEN = "citizen"
-    USER = "user"
+    USER = "citizen"
     OFFICER = "officer"
     ADMIN = "admin"
     SUPER_ADMIN = "super_admin"

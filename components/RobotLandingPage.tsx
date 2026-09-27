@@ -143,7 +143,7 @@ export default function RobotLandingPage() {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setMounted(true)
+    setTimeout(() => setMounted(true), 0)
     const handleMove = (e: MouseEvent) => {
       cursorRef.current.x = (e.clientX / window.innerWidth - 0.5) * 2
       cursorRef.current.y = (e.clientY / window.innerHeight - 0.5) * 2

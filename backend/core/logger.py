@@ -3,6 +3,9 @@ import sys
 
 import structlog
 
+from backend.core.redact import RedactingFilter, structlog_redactor
+
+
 def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
     """
     Configure standard logging and structlog.
@@ -13,11 +16,14 @@ def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
         stream=sys.stdout,
         level=log_level,
     )
+    for handler in logging.root.handlers:
+        handler.addFilter(RedactingFilter())
 
     processors = [
         structlog.contextvars.merge_contextvars,
         structlog.stdlib.add_logger_name,
         structlog.stdlib.add_log_level,
+        structlog_redactor,
         structlog.stdlib.PositionalArgumentsFormatter(),
         structlog.processors.TimeStamper(fmt="iso"),
         structlog.processors.StackInfoRenderer(),

@@ -2,7 +2,9 @@ import logging
 import sys
 
 import structlog
-from backend.core.redact import structlog_redactor, RedactingFilter
+
+from backend.core.redact import RedactingFilter, structlog_redactor
+
 
 def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
     """

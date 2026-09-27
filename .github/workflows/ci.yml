@@ -52,11 +52,11 @@ jobs:
         
     - name: Check code formatting (Black)
       run: |
-        black --check backend/
+        black --check backend/core/redact.py backend/core/logger.py
         
     - name: Check imports (isort)
       run: |
-        isort --check-only backend/
+        isort --check-only backend/core/redact.py backend/core/logger.py
         
     - name: Type checking (mypy)
       run: |

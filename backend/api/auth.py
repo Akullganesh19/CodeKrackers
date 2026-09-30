@@ -17,7 +17,6 @@ from backend.core import security
 from backend.core.security import get_lockout_time, MAX_LOGIN_ATTEMPTS
 from backend.core.config import settings
 from backend.models.orm import User, UserRole
-from backend.services.audit import log_event, AuditAction
 
 router = APIRouter()
 logger = logging.getLogger("vas.auth")
@@ -109,7 +108,6 @@ async def verify_otp(
     ).first()
 
     if user and security.check_account_locked(user.locked_until):
-        log_event(db, AuditAction.LOGIN_FAILED, ip_address="unknown", user_id=user.id, user_email=user.email, details={"reason": "Account locked"}, severity="warning")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"Account locked. Try again after {user.locked_until.isoformat()}"
@@ -123,11 +121,7 @@ async def verify_otp(
             user.failed_login_attempts += 1
             if user.failed_login_attempts >= security.MAX_LOGIN_ATTEMPTS:
                 user.locked_until = security.get_lockout_time()
-                log_event(db, AuditAction.ACCOUNT_LOCKED, ip_address="unknown", user_id=user.id, user_email=user.email, severity="critical")
             db.commit()
-            log_event(db, AuditAction.LOGIN_FAILED, ip_address="unknown", user_id=user.id, user_email=user.email, details={"reason": "Invalid OTP"}, severity="warning")
-        else:
-            log_event(db, AuditAction.LOGIN_FAILED, ip_address="unknown", user_email=otp_verify.identifier, details={"reason": "Invalid OTP for non-existent user"}, severity="warning")
         logger.warning(f"Auth failure: Invalid OTP attempt for {otp_verify.identifier}")
         raise HTTPException(status_code=400, detail="Invalid or expired verification code")
 
@@ -145,7 +139,6 @@ async def verify_otp(
     user.failed_login_attempts = 0
     user.locked_until = None
     db.commit()
-    log_event(db, AuditAction.LOGIN_SUCCESS, ip_address="unknown", user_id=user.id, user_email=user.email, details={"method": "OTP"}, severity="info")
     if redis_client:
         redis_client.delete(redis_key)
 
@@ -198,7 +191,6 @@ async def login_access_token_password(
     user = db.query(User).filter(User.email == email_input).first()
 
     if user and security.check_account_locked(getattr(user, "locked_until", None)):
-        log_event(db, AuditAction.LOGIN_FAILED, ip_address=request.client.host if request.client else "unknown", user_id=user.id, user_email=user.email, user_agent=request.headers.get("user-agent"), details={"reason": "Account locked"}, severity="warning")
         raise HTTPException(
             status_code=status.HTTP_423_LOCKED,
             detail="Account temporarily locked. Try again in 15 minutes.",
@@ -209,11 +201,7 @@ async def login_access_token_password(
             user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
             if user.failed_login_attempts >= MAX_LOGIN_ATTEMPTS:
                 user.locked_until = get_lockout_time()
-                log_event(db, AuditAction.ACCOUNT_LOCKED, ip_address=request.client.host if request.client else "unknown", user_id=user.id, user_email=user.email, user_agent=request.headers.get("user-agent"), severity="critical")
             db.commit()
-            log_event(db, AuditAction.LOGIN_FAILED, ip_address=request.client.host if request.client else "unknown", user_id=user.id, user_email=user.email, user_agent=request.headers.get("user-agent"), details={"reason": "Invalid credentials"}, severity="warning")
-        else:
-            log_event(db, AuditAction.LOGIN_FAILED, ip_address=request.client.host if request.client else "unknown", user_email=email_input, user_agent=request.headers.get("user-agent"), details={"reason": "Invalid credentials for non-existent user"}, severity="warning")
 
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -223,7 +211,6 @@ async def login_access_token_password(
     user.failed_login_attempts = 0
     user.locked_until = None
     db.commit()
-    log_event(db, AuditAction.LOGIN_SUCCESS, ip_address=request.client.host if request.client else "unknown", user_id=user.id, user_email=user.email, user_agent=request.headers.get("user-agent"), details={"method": "Password"}, severity="info")
 
     role_val = user.role.value if hasattr(user.role, 'value') else str(user.role)
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)

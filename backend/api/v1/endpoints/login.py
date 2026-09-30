@@ -13,7 +13,8 @@ from backend.api import deps
 from backend.core import security
 from backend.core.config import settings
 from backend.core.limiter import limiter
-from backend.models.user import User
+from backend.models import User
+from backend.services.audit import log_event, AuditAction
 from backend.schemas.token import Token
 
 logger = logging.getLogger("vas.auth")
@@ -37,6 +38,7 @@ def login_access_token(
 
     # Check if account is locked
     if user and security.check_account_locked(getattr(user, "locked_until", None)):
+        log_event(db, AuditAction.LOGIN_FAILED, ip_address=request.client.host if request.client else "unknown", user_id=user.id, user_email=user.email, user_agent=request.headers.get("user-agent"), details={"reason": "Account locked"}, severity="warning")
         logger.warning(
             "LOGIN_BLOCKED account locked email=%s ip=%s",
             form_data.username,
@@ -54,6 +56,7 @@ def login_access_token(
             user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
             if user.failed_login_attempts >= security.MAX_LOGIN_ATTEMPTS:
                 user.locked_until = security.get_lockout_time()
+                log_event(db, AuditAction.ACCOUNT_LOCKED, ip_address=request.client.host if request.client else "unknown", user_id=user.id, user_email=user.email, user_agent=request.headers.get("user-agent"), severity="critical")
                 logger.critical(
                     "ACCOUNT_LOCKED email=%s attempts=%d ip=%s",
                     form_data.username,
@@ -61,6 +64,9 @@ def login_access_token(
                     request.client.host if request.client else "unknown",
                 )
             db.commit()
+            log_event(db, AuditAction.LOGIN_FAILED, ip_address=request.client.host if request.client else "unknown", user_id=user.id, user_email=user.email, user_agent=request.headers.get("user-agent"), details={"reason": "Invalid credentials"}, severity="warning")
+        else:
+            log_event(db, AuditAction.LOGIN_FAILED, ip_address=request.client.host if request.client else "unknown", user_email=form_data.username, user_agent=request.headers.get("user-agent"), details={"reason": "Invalid credentials for non-existent user"}, severity="warning")
 
         logger.warning(
             "LOGIN_FAILED email=%s ip=%s",
@@ -80,6 +86,7 @@ def login_access_token(
     user.locked_until = None
     user.last_login_at = datetime.now(timezone.utc)
     db.commit()
+    log_event(db, AuditAction.LOGIN_SUCCESS, ip_address=request.client.host if request.client else "unknown", user_id=user.id, user_email=user.email, user_agent=request.headers.get("user-agent"), details={"method": "Password"}, severity="info")
 
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     token = security.create_access_token(

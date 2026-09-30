@@ -1,0 +1,6 @@
+## 2025-05-08 — [Auth-Audit Connection]
+**Systems connected:** [Auth ↔ Audit]
+**Intelligence emerged:** [The app now maintains a forensic trail of login failures and lockouts, enriching the security audit capabilities.]
+**Data flows:** [Auth failure details flow from auth.py to audit service]
+**Coupling approach:** [Event emission through an isolated audit log function, keeping Auth unconcerned with Audit specifics]
+**Next connection:** [Analytics ↔ Threats]

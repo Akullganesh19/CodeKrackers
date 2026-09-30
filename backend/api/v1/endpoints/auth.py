@@ -16,7 +16,8 @@ from backend.core.limiter import limiter
 from backend.core import security
 from backend.core.security import get_lockout_time, MAX_LOGIN_ATTEMPTS
 from backend.core.config import settings
-from backend.models.user import User
+from backend.models import User, UserRole
+from backend.services.audit import log_event, AuditAction
 
 router = APIRouter()
 logger = logging.getLogger("vas.auth")
@@ -102,6 +103,7 @@ async def verify_otp(
     ).first()
 
     if user and security.check_account_locked(user.locked_until):
+        log_event(db, AuditAction.LOGIN_FAILED, ip_address="unknown", user_id=user.id, user_email=user.email, details={"reason": "Account locked"}, severity="warning")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"Account locked. Try again after {user.locked_until.isoformat()}"
@@ -115,7 +117,11 @@ async def verify_otp(
             user.failed_login_attempts += 1
             if user.failed_login_attempts >= security.MAX_LOGIN_ATTEMPTS:
                 user.locked_until = security.get_lockout_time()
+                log_event(db, AuditAction.ACCOUNT_LOCKED, ip_address="unknown", user_id=user.id, user_email=user.email, severity="critical")
             db.commit()
+            log_event(db, AuditAction.LOGIN_FAILED, ip_address="unknown", user_id=user.id, user_email=user.email, details={"reason": "Invalid OTP"}, severity="warning")
+        else:
+            log_event(db, AuditAction.LOGIN_FAILED, ip_address="unknown", user_email=otp_verify.identifier, details={"reason": "Invalid OTP for non-existent user"}, severity="warning")
         logger.warning(f"Auth failure: Invalid OTP attempt for {otp_verify.identifier}")
         raise HTTPException(status_code=400, detail="Invalid or expired verification code")
 
@@ -133,6 +139,7 @@ async def verify_otp(
     user.failed_login_attempts = 0
     user.locked_until = None
     db.commit()
+    log_event(db, AuditAction.LOGIN_SUCCESS, ip_address="unknown", user_id=user.id, user_email=user.email, details={"method": "OTP"}, severity="info")
     redis_client.delete(redis_key)
 
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -182,6 +189,7 @@ async def login_access_token_password(
     user = db.query(User).filter(User.email == form_data.username).first()
 
     if user and security.check_account_locked(getattr(user, "locked_until", None)):
+        log_event(db, AuditAction.LOGIN_FAILED, ip_address=request.client.host if request.client else "unknown", user_id=user.id, user_email=user.email, user_agent=request.headers.get("user-agent"), details={"reason": "Account locked"}, severity="warning")
         raise HTTPException(
             status_code=status.HTTP_423_LOCKED,
             detail="Account temporarily locked. Try again in 15 minutes.",
@@ -192,7 +200,11 @@ async def login_access_token_password(
             user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
             if user.failed_login_attempts >= MAX_LOGIN_ATTEMPTS:
                 user.locked_until = get_lockout_time()
+                log_event(db, AuditAction.ACCOUNT_LOCKED, ip_address=request.client.host if request.client else "unknown", user_id=user.id, user_email=user.email, user_agent=request.headers.get("user-agent"), severity="critical")
             db.commit()
+            log_event(db, AuditAction.LOGIN_FAILED, ip_address=request.client.host if request.client else "unknown", user_id=user.id, user_email=user.email, user_agent=request.headers.get("user-agent"), details={"reason": "Invalid credentials or unauthorized role"}, severity="warning")
+        else:
+            log_event(db, AuditAction.LOGIN_FAILED, ip_address=request.client.host if request.client else "unknown", user_email=form_data.username, user_agent=request.headers.get("user-agent"), details={"reason": "Invalid credentials for non-existent user"}, severity="warning")
 
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -203,6 +215,7 @@ async def login_access_token_password(
     user.locked_until = None
     user.last_login_at = datetime.now(timezone.utc)
     db.commit()
+    log_event(db, AuditAction.LOGIN_SUCCESS, ip_address=request.client.host if request.client else "unknown", user_id=user.id, user_email=user.email, user_agent=request.headers.get("user-agent"), details={"method": "Password"}, severity="info")
 
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     token = security.create_access_token(subject=user.id, role=user.role.value, expires_delta=access_token_expires)

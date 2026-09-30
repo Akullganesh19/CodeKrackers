@@ -14,6 +14,7 @@ from backend.core import security
 from backend.core.config import settings
 from backend.core.limiter import limiter
 from backend.models.user import User
+from backend.services.audit import log_event, AuditAction
 from backend.schemas.token import Token
 
 logger = logging.getLogger("vas.auth")

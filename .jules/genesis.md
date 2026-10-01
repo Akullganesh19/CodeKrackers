@@ -1,0 +1,6 @@
+## YYYY-MM-DD — External AI Dependencies Resilience
+**Failure point found:** External third-party API integrations (e.g., Groq, Ollama, OpenClaw) in backend services (`ai_deep_scan.py`, `ollama_scan.py`, `openclaw_agent.py`) were unprotected. Network failures or API downtime would cause synchronous calls to fail instantly or hang, propagating 500 errors to users and breaking the core spam detection flow.
+**Why it existed:** The code used simple `requests.post()` and `Groq()` calls with no retry logic or circuit breakers, favoring simplicity during initial development.
+**Recovery built:** Implemented a new `backend/core/resilience.py` module containing `@CircuitBreaker` and `@with_retry_sync` decorators. Applied these to the AI analysis functions (`ai_deep_scan`, `ollama_scan`, `openclaw_analysis`) to automatically retry on transient failures and trip the circuit (failing fast) when the dependency is genuinely down, preventing cascading failures and resource exhaustion.
+**Blast radius before:** High. Any network blip or third-party outage would cause spam detection to fail entirely for all users actively receiving calls/messages.
+**Watch for:** Other outbound API calls (e.g., Twilio/SendGrid) that might need similar protection, though those should only use retries if the operations are idempotent.

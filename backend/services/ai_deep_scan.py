@@ -1,12 +1,15 @@
 import logging
 from typing import Dict, Any
-from groq import Groq
+from groq import Groq, GroqError
+from backend.core.resilience import CircuitBreaker, with_retry_sync
 from backend.core.config import settings
 from backend.services.ollama_scan import ollama_deep_scan
 import requests
 
 logger = logging.getLogger("vas.ai_scan")
 
+@CircuitBreaker(failure_threshold=3, recovery_timeout=60)
+@with_retry_sync(max_attempts=3, base_delay=0.5, exceptions=(requests.RequestException, GroqError, Exception))
 def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     """
     Hybrid AI Analysis:
@@ -22,8 +25,8 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
         local_result = ollama_deep_scan(content, source_type)
         if local_result["score_increase"] > 0:
             return local_result
-    except:
-        logger.info("Ollama not reachable, falling back to Groq Cloud...")
+    except Exception as e:
+        logger.info(f"Ollama failed, falling back to Groq Cloud... ({e})")
 
     # ── Fallback to Groq ──
     if not settings.GROQ_API_KEY:
@@ -60,6 +63,6 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
             "reason": f"Cloud AI: {result.get('reason', 'Analysis complete')}",
             "risk_factors": result.get("risk_factors", [])
         }
-    except Exception as e:
+    except (requests.RequestException, GroqError, Exception) as e:
         logger.error(f"Cloud AI Scan Error: {e}")
-        return {"score_increase": 0.0, "reason": f"AI Scan failed: {e}"}
+        raise

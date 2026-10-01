@@ -1,5 +1,6 @@
 'use client';
 
+import { initializeFetchInterceptor } from '@/backend/core/fetch-interceptor';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { getDecodedToken, isTokenExpired, logout as logoutUtil } from '@/backend/core/auth-utils';
 
@@ -14,6 +15,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  initializeFetchInterceptor();
   const [user, setUser] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 

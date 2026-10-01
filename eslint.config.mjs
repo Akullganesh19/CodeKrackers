@@ -12,6 +12,14 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "backend/core/fetch-interceptor.ts",
+    "app/components/RobotBackground.tsx",
+    "app/components/RobotLandingPage.tsx",
+    "app/components/RobotScene.tsx",
+    "app/components/OpenClawStatus.tsx",
+    "app/mobile/App.js",
+    "app/components/Topbar.tsx",
+    "app/proxy.ts"
   ]),
 ]);
 

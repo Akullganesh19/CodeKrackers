@@ -17,6 +17,7 @@ from backend.core import security
 from backend.core.security import get_lockout_time, MAX_LOGIN_ATTEMPTS
 from backend.core.config import settings
 from backend.models.orm import User, UserRole
+from backend.services.audit import log_event, AuditAction
 
 router = APIRouter()
 logger = logging.getLogger("vas.auth")
@@ -46,7 +47,7 @@ class LoginRequest(BaseModel):
 class UserRegister(BaseModel):
     email: str
     password: str
-    phone_number: Optional[str] = None
+    phone: Optional[str] = None
     role: str = "citizen"
 
 @router.post("/send")
@@ -99,12 +100,13 @@ async def verify_otp(
     *,
     db: Session = Depends(deps.get_db_sync),
     otp_verify: OTPVerify,
+    request: Request,
 ) -> Any:
     """
     Verifies the OTP and issues a signed JWT access token.
     """
     user = db.query(User).filter(
-        (User.email == otp_verify.identifier) | (User.phone_number == otp_verify.identifier)
+        (User.email == otp_verify.identifier) | (User.phone == otp_verify.identifier)
     ).first()
 
     if user and security.check_account_locked(user.locked_until):
@@ -128,7 +130,7 @@ async def verify_otp(
     if not user:
         user = User(
             email=otp_verify.identifier if "@" in otp_verify.identifier else None,
-            phone_number=otp_verify.identifier if "@" not in otp_verify.identifier else None,
+            phone=otp_verify.identifier if "@" not in otp_verify.identifier else None,
             is_active=True,
             role=UserRole(otp_verify.role)
         )
@@ -139,6 +141,7 @@ async def verify_otp(
     user.failed_login_attempts = 0
     user.locked_until = None
     db.commit()
+    log_event(db, AuditAction.LOGIN_SUCCESS, request.client.host if request.client else "unknown", user_id=user.id, user_email=user.email, user_agent=request.headers.get("user-agent"))
     if redis_client:
         redis_client.delete(redis_key)
 
@@ -191,6 +194,7 @@ async def login_access_token_password(
     user = db.query(User).filter(User.email == email_input).first()
 
     if user and security.check_account_locked(getattr(user, "locked_until", None)):
+        log_event(db, AuditAction.LOGIN_FAILED, request.client.host if request.client else "unknown", user_email=email_input, user_agent=request.headers.get("user-agent"))
         raise HTTPException(
             status_code=status.HTTP_423_LOCKED,
             detail="Account temporarily locked. Try again in 15 minutes.",
@@ -201,8 +205,10 @@ async def login_access_token_password(
             user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
             if user.failed_login_attempts >= MAX_LOGIN_ATTEMPTS:
                 user.locked_until = get_lockout_time()
+                log_event(db, AuditAction.ACCOUNT_LOCKED, request.client.host if request.client else "unknown", user_id=user.id, user_email=user.email, user_agent=request.headers.get("user-agent"))
             db.commit()
 
+        log_event(db, AuditAction.LOGIN_FAILED, request.client.host if request.client else "unknown", user_email=email_input, user_agent=request.headers.get("user-agent"))
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials.",
@@ -211,6 +217,7 @@ async def login_access_token_password(
     user.failed_login_attempts = 0
     user.locked_until = None
     db.commit()
+    log_event(db, AuditAction.LOGIN_SUCCESS, request.client.host if request.client else "unknown", user_id=user.id, user_email=user.email, user_agent=request.headers.get("user-agent"))
 
     role_val = user.role.value if hasattr(user.role, 'value') else str(user.role)
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -243,14 +250,14 @@ async def register_user(
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered.")
 
-    if user_in.phone_number:
-        existing_phone = db.query(User).filter(User.phone_number == user_in.phone_number).first()
+    if user_in.phone:
+        existing_phone = db.query(User).filter(User.phone == user_in.phone).first()
         if existing_phone:
             raise HTTPException(status_code=400, detail="Phone number already registered.")
 
     new_user = User(
         email=user_in.email,
-        phone_number=user_in.phone_number,
+        phone=user_in.phone,
         hashed_password=security.get_password_hash(user_in.password),
         role=UserRole(user_in.role),
         is_active=True

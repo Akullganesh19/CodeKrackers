@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .core.database import engine, Base
 from .api import auth, analytics, call, fir, evidence, honeypot
 from .scheduler import setup_scheduler
+from .core.synapse import setup_synapse_connections
 import uvicorn
 import asyncio
 from sqlalchemy import select
@@ -57,6 +58,7 @@ app.include_router(zk_privacy.router, prefix="/api/zk", tags=["zk_privacy"])
 
 @app.on_event("startup")
 async def startup_event():
+    setup_synapse_connections()
     """
     Actions to perform when the server starts:
     1. Create database tables (if they don't exist).

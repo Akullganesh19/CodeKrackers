@@ -14,6 +14,7 @@ from backend.models import SpamReport, SpamFilter, SpamLog, SpamAction, SpamType
 from backend.services.phone_intel import analyze_phone_number
 from backend.services.ai_deep_scan import ai_deep_scan
 from backend.services.notifier import send_threat_alert
+from backend.core.events import event_bus
 from backend.core.config import settings
 
 logger = logging.getLogger("vas.spam")
@@ -252,6 +253,7 @@ def _result(
                 score=score,
                 original_sender=phone
             )
+            event_bus.emit("threat.blocked", {"user_id": user.id, "phone": phone})
     else:
         logger.info("SPAM_CHECK phone=%s action=%s score=%.2f", phone, action.value, score)
 

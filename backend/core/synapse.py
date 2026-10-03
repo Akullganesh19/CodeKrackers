@@ -10,9 +10,21 @@ logger = logging.getLogger("vas.synapse")
 def run_async_in_background(coro):
     try:
         loop = asyncio.get_running_loop()
-        loop.create_task(coro)
+        task = loop.create_task(coro)
+
+        # Attach a simple fire-and-forget exception handler
+        def _handle_exception(t):
+            try:
+                t.result()
+            except Exception as e:
+                logger.error(f"Background task failed: {e}", exc_info=True)
+
+        task.add_done_callback(_handle_exception)
     except RuntimeError:
-        asyncio.run(coro)
+        try:
+            asyncio.run(coro)
+        except Exception as e:
+            logger.error(f"Background task failed: {e}", exc_info=True)
 
 async def _increment_scams_avoided(user_id):
     async with AsyncSessionLocal() as db:

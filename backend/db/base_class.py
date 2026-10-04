@@ -1,6 +1,7 @@
 """
 SQLAlchemy declarative base with auto-generating tablename and audit mixins.
 """
+
 from datetime import datetime, timezone
 
 from sqlalchemy import Column, DateTime, Integer

@@ -1,4 +1,5 @@
 """Threat schemas with validation."""
+
 from datetime import datetime
 from typing import Any, Dict, Optional
 

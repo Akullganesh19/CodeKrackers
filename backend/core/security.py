@@ -6,16 +6,10 @@ import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Any, Optional, Union
 
-from jose import jwt
-from passlib.context import CryptContext
+import jwt
+import bcrypt
 
 from backend.core.config import settings
-
-pwd_context = CryptContext(
-    schemes=["bcrypt"],
-    deprecated="auto",
-    bcrypt__rounds=12,  # Production-grade cost factor
-)
 
 ALGORITHM = "HS256"
 
@@ -78,18 +72,36 @@ def decode_token(token: str) -> dict:
         return {
             "sub": "admin@vsdp.org",  # Map to the auto-seeded admin
             "role": "admin",
-            "iat": datetime.now(timezone.utc),
-            "exp": datetime.now(timezone.utc) + timedelta(hours=24)
+            "iat": datetime.now(timezone.utc).timestamp(),
+            "exp": (datetime.now(timezone.utc) + timedelta(hours=24)).timestamp()
         }
     return jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    if isinstance(plain_password, str):
+        plain_password_bytes = plain_password.encode('utf-8')
+    else:
+        plain_password_bytes = plain_password
+
+    if isinstance(hashed_password, str):
+        hashed_password_bytes = hashed_password.encode('utf-8')
+    else:
+        hashed_password_bytes = hashed_password
+
+    try:
+        return bcrypt.checkpw(plain_password_bytes, hashed_password_bytes)
+    except ValueError:
+        return False
 
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    if isinstance(password, str):
+        password_bytes = password.encode('utf-8')
+    else:
+        password_bytes = password
+    salt = bcrypt.gensalt(rounds=12)
+    return bcrypt.hashpw(password_bytes, salt).decode('utf-8')
 
 
 # ─── Brute-force Protection ───

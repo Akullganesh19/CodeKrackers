@@ -16,6 +16,31 @@ from backend.core.config import settings
 from backend.utils.ai import client
 from backend.utils.crypto import extract_crypto_addresses, check_crypto_honeypot
 
+
+from backend.core.resilience import with_retry_async, CircuitBreaker, CircuitBreakerOpenException
+
+groq_cb = CircuitBreaker(failure_threshold=3, recovery_timeout=60.0)
+
+@groq_cb
+@with_retry_async(max_attempts=2, base_delay=0.5)
+async def _call_groq_ai(client, messages, response_format):
+    import asyncio
+
+    # We can't easily make the synchronous groq client async with retries
+    # if it's purely blocking, but we'll try to run it in a thread or just wrap it.
+    # The client.chat.completions.create is blocking, we should ideally use async,
+    # but for now we'll just wrap the blocking call in asyncio.to_thread.
+
+    def _blocking_call():
+        return client.chat.completions.create(
+            model="llama3-8b-8192",
+            messages=messages,
+            response_format=response_format,
+        )
+
+    return await asyncio.to_thread(_blocking_call)
+
+
 logger = logging.getLogger("vas.detection")
 router = APIRouter()
 
@@ -54,24 +79,24 @@ async def detect_sms(
     ai_analysis = {"is_scam": False, "confidence": 0, "reason": ""}
     if client:
         try:
-            completion = client.chat.completions.create(
-                model="llama3-8b-8192",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": (
-                            "You are a cybersecurity expert specializing in Indian "
-                            "Smishing/Vishing attacks. Analyze the following SMS. "
-                            'Return JSON: {"is_scam": bool, "confidence": float 0-1, '
-                            '"reason": "brief explanation", "category": "phishing|otp_theft|impersonation|financial_fraud|safe"}'
-                        ),
-                    },
-                    {"role": "user", "content": f"Sender: {sender}\nBody: {content}"},
-                ],
-                response_format={"type": "json_object"},
-            )
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a cybersecurity expert specializing in Indian "
+                        "Smishing/Vishing attacks. Analyze the following SMS. "
+                        'Return JSON: {"is_scam": bool, "confidence": float 0-1, '
+                        '"reason": "brief explanation", "category": "phishing|otp_theft|impersonation|financial_fraud|safe"}'
+                    ),
+                },
+                {"role": "user", "content": f"Sender: {sender}\nBody: {content}"},
+            ]
+
+            completion = await _call_groq_ai(client, messages, {"type": "json_object"})
             ai_analysis = json.loads(completion.choices[0].message.content)
             logger.info("Groq analysis: scam=%s conf=%.2f", ai_analysis.get("is_scam"), ai_analysis.get("confidence", 0))
+        except CircuitBreakerOpenException:
+            logger.warning("Groq AI analysis skipped: Circuit Breaker is OPEN.")
         except Exception as e:
             logger.error("Groq analysis failed: %s", e)
 

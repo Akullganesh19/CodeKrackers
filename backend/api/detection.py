@@ -79,7 +79,7 @@ async def detect_sms(
     ai_analysis = {"is_scam": False, "confidence": 0, "reason": ""}
     if client:
         try:
-            messages=[
+            messages = [
                 {
                     "role": "system",
                     "content": (
@@ -166,7 +166,7 @@ async def detect_voice_intent(
     try:
         completion = client.chat.completions.create(
             model="llama3-8b-8192",
-            messages=[
+            messages = [
                 {
                     "role": "system",
                     "content": (

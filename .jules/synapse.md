@@ -1,0 +1,6 @@
+## 2024-05-08 — [Dynamic Spam Thresholds]
+**Systems connected:** [Users/Auth ↔ Spam Shield]
+**Intelligence emerged:** [Vulnerable users automatically receive stricter spam filtering thresholds, utilizing their `safety_score` to provide an extra layer of protection without requiring manual configuration.]
+**Data flows:** [User system -> Spam shield: User `safety_score` influences the spam blocking threshold dynamically]
+**Coupling approach:** [Loosely coupled. The Spam Shield retrieves the existing `User` model within its normal execution path to read the `safety_score`, and gracefully falls back to the default threshold if the user doesn't have a score.]
+**Next connection:** [Errors ↔ Users]

@@ -203,6 +203,13 @@ def check_spam(
     spam_score = min(spam_score, 1.0)
     threshold: float = user_filter.min_spam_score_to_block if user_filter else 0.7
 
+    # ── Synapse: Cross-System Intelligence ──
+    # If the user has a low safety score, dynamically lower the block threshold
+    user_record = db.query(User).filter(User.id == user_id).first()
+    if user_record and hasattr(user_record, "safety_score") and user_record.safety_score < 70.0:
+        threshold = max(0.4, threshold - 0.15)
+        breakdown.append({"factor": f"User safety score low ({user_record.safety_score:.0f}/100) — stricter blocking applied", "points": "-0.15 threshold", "type": "negative"})
+
     if spam_score >= threshold:
         action = SpamAction.BLOCK
     elif spam_score >= 0.4:
@@ -235,7 +242,7 @@ def _result(
         spam_score=round(score, 4),
         action_taken=action,
         reason=reason_str,
-        content_snippet=(content or "")[:200],
+
     )
     db.add(log)
     db.commit()

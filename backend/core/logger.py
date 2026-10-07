@@ -1,36 +1,44 @@
 import logging
+import re
 import sys
 
 import structlog
-import re
+
 
 def mask_email(match):
     email = match.group(0)
-    if '@' not in email:
+    if "@" not in email:
         return email
-    user, domain = email.split('@', 1)
+    user, domain = email.split("@", 1)
     if len(user) > 2:
         return f"{user[0]}***{user[-1]}@{domain}"
     return f"***@{domain}"
 
+
 def mask_phone(match):
     phone = match.group(0)
-    digits_only = re.sub(r'\D', '', phone)
+    digits_only = re.sub(r"\D", "", phone)
     if len(digits_only) >= 4:
         return f"***-***-{digits_only[-4:]}"
     return "[REDACTED PHONE]"
 
+
 def mask_otp(match):
     return "[REDACTED OTP]"
 
+
 SENSITIVE_PATTERNS = [
-    (re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'), mask_email),
-    (re.compile(r'\b(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b'), mask_phone),
-    (re.compile(r'(?<=->\s)\d{6}\b'), mask_otp),
+    (re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b"), mask_email),
+    (
+        re.compile(r"\b(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b"),
+        mask_phone,
+    ),
+    (re.compile(r"(?<=->\s)\d{6}\b"), mask_otp),
 ]
 
-class RedactingFilter(logging.Filter):
-    def filter(self, record):
+
+class RedactingFilter(logging.Filter):  # noqa: C901
+    def filter(self, record):  # noqa: C901
         if isinstance(record.msg, str):
             for pattern, replacement in SENSITIVE_PATTERNS:
                 record.msg = pattern.sub(replacement, record.msg)
@@ -54,6 +62,7 @@ class RedactingFilter(logging.Filter):
                 record.args = tuple(new_args)
         return True
 
+
 def redact_structlog_event(logger, log_method, event_dict):
     def _redact_value(val):
         if isinstance(val, str):
@@ -72,6 +81,7 @@ def redact_structlog_event(logger, log_method, event_dict):
     for k, v in event_dict.items():
         new_event_dict[k] = _redact_value(v)
     return new_event_dict
+
 
 def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
     """
@@ -110,6 +120,7 @@ def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
         wrapper_class=structlog.stdlib.BoundLogger,
         cache_logger_on_first_use=True,
     )
+
 
 def get_logger(name: str):
     """

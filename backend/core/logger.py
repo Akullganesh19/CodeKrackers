@@ -2,11 +2,7 @@ import logging
 import sys
 
 import structlog
-
 import re
-
-
-
 
 def mask_email(match):
     email = match.group(0)
@@ -97,8 +93,8 @@ def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
         structlog.stdlib.add_logger_name,
         structlog.stdlib.add_log_level,
         structlog.stdlib.PositionalArgumentsFormatter(),
-        redact_structlog_event,
         structlog.processors.TimeStamper(fmt="iso"),
+        redact_structlog_event,
         structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
     ]

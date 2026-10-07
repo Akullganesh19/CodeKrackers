@@ -9,7 +9,9 @@ from sqlalchemy.orm import Session
 
 from backend.api import deps
 from backend.core.ws import manager
-from backend.models.threat import Threat, ThreatStatus
+from backend.models.threat import Threat, ThreatStatus, ThreatSeverity
+from backend.services.threat_intel import auto_blacklist
+from backend.models.orm import BlacklistType
 from backend.models.user import User, UserRole
 from backend.schemas.threat import Threat as ThreatSchema, ThreatCreate
 
@@ -56,6 +58,19 @@ async def create_threat(
     db.add(threat)
     db.commit()
     db.refresh(threat)
+
+    if threat.severity in {ThreatSeverity.HIGH, ThreatSeverity.CRITICAL} and getattr(threat, "source_number", None):
+        try:
+            auto_blacklist(
+                db=db,
+                identifier=threat.source_number,
+                identifier_type=BlacklistType.PHONE,
+                reason=f"Detected as {threat.type.value} with {threat.severity.value} severity",
+                reported_by=current_user.id,
+                confidence=getattr(threat, "confidence", 0.8)
+            )
+        except Exception as e:
+            logger.error(f"Synapse: Failed to auto-blacklist threat source: {e}")
 
     logger.warning(
         "THREAT_CREATED id=%d type=%s severity=%s source=%s user=%d",

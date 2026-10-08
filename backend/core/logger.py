@@ -1,6 +1,7 @@
 import logging
-import sys
 import re
+import sys
+
 
 def mask_email_phone(text):
     if not isinstance(text, str):
@@ -12,19 +13,28 @@ def mask_email_phone(text):
         domain = m.group(2)
         return f"{first}***@{domain}"
 
-    text = re.sub(r'\b([a-zA-Z0-9])[a-zA-Z0-9._%+-]*@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\b', repl_email, text)
+    text = re.sub(
+        r"\b([a-zA-Z0-9])[a-zA-Z0-9._%+-]*@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\b",
+        repl_email,
+        text,
+    )
 
     # Redact phone
     def repl_phone(m):
         s = m.group(0)
-        digits = re.sub(r'\D', '', s)
+        digits = re.sub(r"\D", "", s)
         if len(digits) >= 10:
             return "***-***-" + digits[-4:]
         return s
 
-    text = re.sub(r'\b(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b', repl_phone, text)
+    text = re.sub(
+        r"\b(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b",
+        repl_phone,
+        text,
+    )
 
     return text
+
 
 def redact_nested_pii(data):
     if isinstance(data, str):
@@ -38,8 +48,10 @@ def redact_nested_pii(data):
     else:
         return data
 
+
 def redact_pii_processor(logger, log_method, event_dict):
     return redact_nested_pii(event_dict)
+
 
 class PIIFilter(logging.Filter):
     def filter(self, record):
@@ -53,6 +65,8 @@ class PIIFilter(logging.Filter):
 
 
 import structlog
+from typing import Any
+
 
 def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
     """
@@ -68,7 +82,7 @@ def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
     for handler in logging.root.handlers:
         handler.addFilter(PIIFilter())
 
-    processors = [
+    processors: list[Any] = [
         structlog.contextvars.merge_contextvars,
         structlog.stdlib.add_logger_name,
         structlog.stdlib.add_log_level,
@@ -90,6 +104,7 @@ def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
         wrapper_class=structlog.stdlib.BoundLogger,
         cache_logger_on_first_use=True,
     )
+
 
 def get_logger(name: str):
     """

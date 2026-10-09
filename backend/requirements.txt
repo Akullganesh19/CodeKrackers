@@ -5,8 +5,6 @@ pydantic-settings
 sqlalchemy[asyncio]
 aiomysql
 python-multipart
-python-jose[cryptography]
-passlib[bcrypt]
 httpx
 reportlab
 apscheduler
@@ -19,3 +17,5 @@ librosa
 scipy
 aiosqlite
 python-dotenv
+pyjwt>=2.8.0
+bcrypt

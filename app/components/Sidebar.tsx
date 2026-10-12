@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/backend/core/AuthProvider'
 import { motion } from 'framer-motion'
 import NotificationSettings from '@/app/components/NotificationSettings'
@@ -30,6 +30,7 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname()
+  const router = useRouter()
   const { user, logout } = useAuth()
   const [notifications, setNotifications] = useState<Record<string, number>>({
     '/dashboard/report': 0,
@@ -154,6 +155,11 @@ export default function Sidebar() {
             <Link
               key={item.name}
               href={item.href}
+              // 🔮 Oracle: Anticipatory Route Prefetching
+              // Next.js Link prefetches when visible, but we add an explicit router.prefetch
+              // on hover to guarantee high-priority data fetching just milliseconds
+              // before the user clicks, cutting perceived latency to zero.
+              onMouseEnter={() => router.prefetch(item.href)}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg font-mono text-[0.6rem] uppercase tracking-[0.2em] transition-all ${
                 isActive 
                   ? 'bg-[#7c3aed]/10 border border-[#7c3aed]/30 text-[#a78bfa]' 

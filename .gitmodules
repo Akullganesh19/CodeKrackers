@@ -1,0 +1,3 @@
+[submodule "OpenMythos"]
+	path = OpenMythos
+	url = https://github.com/Akullganesh19/OpenMythos.git

@@ -80,7 +80,7 @@ def check_call_allowed(
         now_time = datetime.now(timezone.utc).strftime("%H:%M")
         if not (profile.allowed_call_start <= now_time <= profile.allowed_call_end):
             _log_activity(db, profile.id, "call_blocked", phone_number,
-                         f"Outside allowed hours ({profile.allowed_call_start}-{profile.allowed_call_end})")
+                          f"Outside allowed hours ({profile.allowed_call_start}-{profile.allowed_call_end})")
             return {
                 "allowed": False,
                 "reason": f"Calls not allowed at this time. Allowed: {profile.allowed_call_start} - {profile.allowed_call_end}",

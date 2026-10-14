@@ -26,6 +26,8 @@ export const metadata: Metadata = {
 
 import OraclePredictor from "@/app/components/OraclePredictor"
 
+import OraclePredictor from "@/app/components/OraclePredictor"
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className="dark">
@@ -40,6 +42,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <AuthProvider>
             {children}
             <SessionMonitor soundUrl="/sounds/cyber-alert.mp3" />
+            <OraclePredictor />
             <OraclePredictor />
           </AuthProvider>
         </div>

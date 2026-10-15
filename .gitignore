@@ -48,3 +48,6 @@ __pycache__/
 # databases
 *.db
 *.sqlite3
+test_env/
+flake8_env/
+flake8_env/

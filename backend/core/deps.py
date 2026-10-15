@@ -1,7 +1,7 @@
 from typing import List, Dict, Any
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError
+import jwt
 
 from backend.core import security
 from backend.core.config import settings
@@ -22,7 +22,7 @@ async def get_current_token_payload(
     try:
         payload = security.decode_token(token)
         return payload
-    except JWTError:
+    except jwt.InvalidTokenError:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Invalid session or expired token",

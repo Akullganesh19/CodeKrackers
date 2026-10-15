@@ -50,3 +50,4 @@ __pycache__/
 *.sqlite3
 test_env/
 flake8_env/
+flake8_env/

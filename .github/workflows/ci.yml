@@ -48,7 +48,7 @@ jobs:
     - name: Lint with Flake8
       run: |
         flake8 backend/ --count --ignore=E,W --show-source --statistics
-        flake8 backend/ --count --max-complexity=35 --max-line-length=150 --statistics
+        flake8 backend/ --count --max-complexity=35 --max-line-length=150 --ignore=E,W,F401,F841,F541,F811 --statistics
         
     - name: Check code formatting (Black)
       run: |

@@ -1,12 +1,13 @@
 import asyncio
-import time
 import logging
+import time
 from functools import wraps
-from typing import Callable, Any, TypeVar, Tuple, Type
+from typing import Any, Callable, Tuple, Type, TypeVar
 
 logger = logging.getLogger("vas.resilience")
 
-T = TypeVar('T')
+T = TypeVar("T")
+
 
 def with_retry_sync(
     max_attempts: int = 3,
@@ -16,9 +17,10 @@ def with_retry_sync(
     """
     Synchronous auto-retry decorator with exponential backoff.
     """
+
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         @wraps(func)
-        def wrapper(*args, **kwargs) -> T:
+        def wrapper(*args: Any, **kwargs: Any) -> T:
             for attempt in range(1, max_attempts + 1):
                 try:
                     return func(*args, **kwargs)
@@ -32,8 +34,12 @@ def with_retry_sync(
                         f"Retrying in {delay_ms}ms. Error: {e}"
                     )
                     time.sleep(delay_ms / 1000.0)
+            raise RuntimeError("Exhausted retries without returning")
+
         return wrapper
+
     return decorator
+
 
 def with_retry_async(
     max_attempts: int = 3,
@@ -43,9 +49,10 @@ def with_retry_async(
     """
     Asynchronous auto-retry decorator with exponential backoff.
     """
+
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
-        async def wrapper(*args, **kwargs) -> Any:
+        async def wrapper(*args: Any, **kwargs: Any) -> Any:
             for attempt in range(1, max_attempts + 1):
                 try:
                     return await func(*args, **kwargs)
@@ -59,7 +66,10 @@ def with_retry_async(
                         f"Retrying in {delay_ms}ms. Error: {e}"
                     )
                     await asyncio.sleep(delay_ms / 1000.0)
+            raise RuntimeError("Exhausted retries without returning")
+
         return wrapper
+
     return decorator
 
 
@@ -67,6 +77,7 @@ class CircuitBreaker:
     """
     A simple state-based Circuit Breaker.
     """
+
     def __init__(self, failure_threshold: int = 5, recovery_timeout: float = 30.0):
         self.failure_threshold = failure_threshold
         self.recovery_timeout = recovery_timeout
@@ -89,21 +100,28 @@ class CircuitBreaker:
     def record_failure(self):
         self.failure_count += 1
         self.last_failure_time = time.time()
-        if self.state in ["CLOSED", "HALF_OPEN"] and self.failure_count >= self.failure_threshold:
+        if (
+            self.state in ["CLOSED", "HALF_OPEN"]
+            and self.failure_count >= self.failure_threshold
+        ):
             self.state = "OPEN"
-            logger.error(f"CircuitBreaker tripped! State is now OPEN. Too many failures ({self.failure_count}).")
-
+            logger.error(
+                f"CircuitBreaker tripped! State is now OPEN. Too many failures ({self.failure_count})."
+            )
 
     def __call__(self, fallback_value: Any = None, use_fallback: bool = True):
         """
         Decorator to apply the circuit breaker to a synchronous function.
         """
+
         def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
             @wraps(func)
             def wrapper(*args, **kwargs) -> Any:
                 self._check_state()
                 if self.state == "OPEN":
-                    logger.warning(f"CircuitBreaker is OPEN. Executing fallback for {func.__name__}.")
+                    logger.warning(
+                        f"CircuitBreaker is OPEN. Executing fallback for {func.__name__}."
+                    )
                     if use_fallback:
                         return fallback_value
                     raise Exception(f"CircuitBreaker is OPEN for {func.__name__}")
@@ -114,21 +132,28 @@ class CircuitBreaker:
                     return result
                 except Exception as e:
                     self.record_failure()
-                    logger.warning(f"CircuitBreaker recorded failure for {func.__name__}: {e}")
+                    logger.warning(
+                        f"CircuitBreaker recorded failure for {func.__name__}: {e}"
+                    )
                     raise
+
             return wrapper
+
         return decorator
 
     def async_call(self, fallback_value: Any = None, use_fallback: bool = True):
         """
         Decorator to apply the circuit breaker to an asynchronous function.
         """
+
         def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
             @wraps(func)
             async def wrapper(*args, **kwargs) -> Any:
                 self._check_state()
                 if self.state == "OPEN":
-                    logger.warning(f"CircuitBreaker is OPEN. Executing fallback for {func.__name__}.")
+                    logger.warning(
+                        f"CircuitBreaker is OPEN. Executing fallback for {func.__name__}."
+                    )
                     if use_fallback:
                         return fallback_value
                     raise Exception(f"CircuitBreaker is OPEN for {func.__name__}")
@@ -139,7 +164,11 @@ class CircuitBreaker:
                     return result
                 except Exception as e:
                     self.record_failure()
-                    logger.warning(f"CircuitBreaker recorded failure for {func.__name__}: {e}")
+                    logger.warning(
+                        f"CircuitBreaker recorded failure for {func.__name__}: {e}"
+                    )
                     raise
+
             return wrapper
+
         return decorator

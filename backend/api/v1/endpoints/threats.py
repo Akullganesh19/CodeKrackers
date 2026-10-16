@@ -4,7 +4,7 @@ Threat management endpoints with RBAC, pagination, and status workflow.
 import logging
 from typing import Any, List
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status, Request
 from sqlalchemy.orm import Session
 
 from backend.api import deps
@@ -12,6 +12,7 @@ from backend.core.ws import manager
 from backend.models.threat import Threat, ThreatStatus
 from backend.models.user import User, UserRole
 from backend.schemas.threat import Threat as ThreatSchema, ThreatCreate
+from backend.core.events import event_bus
 
 logger = logging.getLogger("vas.threats")
 router = APIRouter()
@@ -58,7 +59,7 @@ async def create_threat(
     db.refresh(threat)
 
     logger.warning(
-        "THREAT_CREATED id=%d type=%s severity=%s source=%s user=%d",
+        "THREAT_CREATED id=%s type=%s severity=%s source=%s user=%s",
         threat.id, threat.type, threat.severity, threat.source_number, current_user.id,
     )
 
@@ -70,8 +71,8 @@ async def create_threat(
             "type": threat.type,
             "source": threat.source_number,
             "severity": threat.severity,
-            "confidence": threat.confidence_score,
-            "timestamp": threat.timestamp.isoformat() if threat.timestamp else None,
+            "confidence": getattr(threat, "confidence_score", getattr(threat, "confidence", None)),
+            "timestamp": threat.timestamp.isoformat() if hasattr(threat, "timestamp") and threat.timestamp else None,
         },
     })
 
@@ -79,9 +80,10 @@ async def create_threat(
 
 
 @router.patch("/{threat_id}/status")
-def update_threat_status(
-    threat_id: int,
+async def update_threat_status(
+    threat_id: str,
     body: dict,
+    request: Request,
     db: Session = Depends(deps.get_db),
     current_user: User = Depends(deps.get_current_officer_or_admin),
 ) -> Any:
@@ -100,7 +102,12 @@ def update_threat_status(
         )
 
     db.commit()
-    logger.info("THREAT_STATUS_UPDATED id=%d status=%s by=%d", threat_id, new_status, current_user.id)
+    logger.info("THREAT_STATUS_UPDATED id=%s status=%s by=%s", threat_id, new_status, current_user.id)
+
+    # Emit event to the synapse intelligence layer
+    client_ip = request.client.host if request.client else "unknown"
+    await event_bus.emit("threat.status_changed", threat_id, new_status, str(current_user.id), client_ip, db)
+
     return {"id": threat_id, "status": threat.status}
 
 

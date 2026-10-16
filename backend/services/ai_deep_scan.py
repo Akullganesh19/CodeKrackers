@@ -4,8 +4,24 @@ from groq import Groq
 from backend.core.config import settings
 from backend.services.ollama_scan import ollama_deep_scan
 import requests
+from backend.core.resilience import with_retry_sync, CircuitBreaker
 
 logger = logging.getLogger("vas.ai_scan")
+
+groq_circuit = CircuitBreaker(failure_threshold=3, recovery_timeout=60.0)
+
+@groq_circuit(fallback_value=None, use_fallback=True)
+@with_retry_sync(max_attempts=3, base_delay_ms=200)
+def _call_groq_api(client: Groq, prompt: str) -> str:
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {"role": "system", "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection."},
+            {"role": "user", "content": prompt}
+        ],
+        model=settings.GROQ_MODEL,
+        response_format={"type": "json_object"}
+    )
+    return chat_completion.choices[0].message.content
 
 def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     """
@@ -43,17 +59,14 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
         4. "risk_factors": list of strings
         """
 
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection."},
-                {"role": "user", "content": prompt}
-            ],
-            model=settings.GROQ_MODEL,
-            response_format={"type": "json_object"}
-        )
+        content_response = _call_groq_api(client, prompt)
+
+        if content_response is None:
+             # Circuit breaker is open
+             return {"score_increase": 0.0, "reason": "Cloud AI Scan disabled (Circuit Breaker OPEN)"}
 
         import json
-        result = json.loads(chat_completion.choices[0].message.content)
+        result = json.loads(content_response)
         
         return {
             "score_increase": round(result.get("confidence", 0.0), 2) if result.get("is_scam") else 0.0,

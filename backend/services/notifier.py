@@ -1,3 +1,4 @@
+from backend.core.resilience import with_retry_sync
 import logging
 from twilio.rest import Client
 from backend.core.config import settings
@@ -12,7 +13,8 @@ def send_threat_alert(phone_number: str, threat_type: str, score: float, origina
         logger.warning("Twilio credentials missing. Notification skipped.")
         return False
 
-    try:
+    @with_retry_sync(max_retries=3, base_delay=1.0)
+    def _send():
         client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
         
         alert_msg = (
@@ -31,6 +33,9 @@ def send_threat_alert(phone_number: str, threat_type: str, score: float, origina
         
         logger.info(f"Notification sent to {phone_number}. SID: {message.sid}")
         return True
+
+    try:
+        return _send()
     except Exception as e:
         logger.error(f"Failed to send notification: {e}")
         return False
@@ -48,7 +53,8 @@ def send_otp(phone_number: str) -> str:
         print(f"\n[VAS AUTH] SMS OTP for {phone_number}: {otp_code}\n")
         return otp_code
 
-    try:
+    @with_retry_sync(max_retries=3, base_delay=1.0)
+    def _send():
         client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
         
         msg_body = (
@@ -64,8 +70,10 @@ def send_otp(phone_number: str) -> str:
         
         logger.info(f"OTP sent to {phone_number}")
         return otp_code
+
+    try:
+        return _send()
     except Exception as e:
         logger.error(f"Failed to send OTP: {e}")
-        # Fallback to simulation in logs for dev convenience
         logger.warning(f"FALLBACK SIMULATED OTP: {otp_code}")
         return otp_code

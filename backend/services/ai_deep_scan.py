@@ -1,3 +1,4 @@
+from backend.core.resilience import with_retry_sync
 import logging
 from typing import Dict, Any
 from groq import Groq
@@ -43,14 +44,18 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
         4. "risk_factors": list of strings
         """
 
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection."},
-                {"role": "user", "content": prompt}
-            ],
-            model=settings.GROQ_MODEL,
-            response_format={"type": "json_object"}
-        )
+        @with_retry_sync(max_retries=3, base_delay=1.0)
+        def call_groq():
+            return client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection."},
+                    {"role": "user", "content": prompt}
+                ],
+                model=settings.GROQ_MODEL,
+                response_format={"type": "json_object"}
+            )
+
+        chat_completion = call_groq()
 
         import json
         result = json.loads(chat_completion.choices[0].message.content)

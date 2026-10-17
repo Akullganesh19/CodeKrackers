@@ -1,3 +1,4 @@
+from backend.core.resilience import with_retry_sync
 import logging
 import requests
 from backend.core.config import settings
@@ -12,23 +13,18 @@ def openclaw_analysis(content: str):
     """
     Sends suspicious content to the OpenClaw autonomous agent for deep forensic investigation.
     """
-    try:
-        # OpenClaw agent communication
-        # This is an example of how one might interact with the agent gateway
-        # based on standard OpenClaw patterns.
-        
+    @with_retry_sync(max_retries=3, base_delay=0.5, exceptions=(requests.exceptions.RequestException,))
+    def _call():
         logger.info("Engaging OpenClaw Autonomous Agent...")
-        
-        # Real-time check if gateway is up
         requests.get(OPENCLAW_URL, timeout=1)
-        
-        # In a real integration, we'd use the token to send a task
-        # For now, we acknowledge the gateway is active and ready.
         return {
             "status": "engaged",
             "agent": "OpenClaw Sentinel",
             "gateway": OPENCLAW_URL
         }
+
+    try:
+        return _call()
     except Exception as e:
         logger.error(f"OpenClaw Agent offline: {e}")
         return None

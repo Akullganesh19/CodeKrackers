@@ -1,7 +1,6 @@
 from backend.core.resilience import with_retry_sync
 import logging
 import requests
-from backend.core.config import settings
 
 logger = logging.getLogger("vas.openclaw")
 

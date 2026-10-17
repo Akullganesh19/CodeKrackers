@@ -1,10 +1,10 @@
-from backend.core.resilience import with_retry_sync, CircuitBreaker
-
-ollama_cb = CircuitBreaker(failure_threshold=3, recovery_timeout=30)
 import logging
 import requests
 import json
 from typing import Dict, Any
+from backend.core.resilience import with_retry_sync, CircuitBreaker
+
+ollama_cb = CircuitBreaker(failure_threshold=3, recovery_timeout=30)
 
 logger = logging.getLogger("vas.ollama")
 

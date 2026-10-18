@@ -8,22 +8,31 @@ from backend.core.resilience import CircuitBreaker, with_retry_sync
 
 logger = logging.getLogger("vas.ai_scan")
 
+
 def ai_scan_fallback(*args, **kwargs):
     logger.warning("Groq AI Scan circuit is OPEN. Using fallback.")
     return {"score_increase": 0.0, "reason": "Cloud AI Scan unavailable (Circuit Open)"}
 
-groq_circuit_breaker = CircuitBreaker(failure_threshold=3, recovery_timeout=60, fallback=ai_scan_fallback)
+
+groq_circuit_breaker = CircuitBreaker(
+    failure_threshold=3, recovery_timeout=60, fallback=ai_scan_fallback
+)
+
 
 @with_retry_sync(max_retries=2, base_delay=0.5)
 def _groq_request(client, prompt: str, source_type: str):
     return client.chat.completions.create(
         messages=[
-            {"role": "system", "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection."},
-            {"role": "user", "content": prompt}
+            {
+                "role": "system",
+                "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection.",
+            },
+            {"role": "user", "content": prompt},
         ],
         model=settings.GROQ_MODEL,
-        response_format={"type": "json_object"}
+        response_format={"type": "json_object"},
     )
+
 
 @groq_circuit_breaker
 def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
@@ -32,7 +41,7 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     1. Tries local Ollama (OpenClaw) first for privacy/cost.
     2. Falls back to Groq Cloud (Llama 3.1) if local is unavailable.
     """
-    
+
     # ── Attempt Local Ollama First ──
     try:
         # Quick check if Ollama is running
@@ -50,7 +59,7 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
 
     try:
         client = Groq(api_key=settings.GROQ_API_KEY)
-        
+
         prompt = f"""
         Analyze this {source_type} for potential scam/phishing intent. 
         Content: "{content}"
@@ -65,12 +74,17 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
         chat_completion = _groq_request(client, prompt, source_type)
 
         import json
+
         result = json.loads(chat_completion.choices[0].message.content)
-        
+
         return {
-            "score_increase": round(result.get("confidence", 0.0), 2) if result.get("is_scam") else 0.0,
+            "score_increase": (
+                round(result.get("confidence", 0.0), 2)
+                if result.get("is_scam")
+                else 0.0
+            ),
             "reason": f"Cloud AI: {result.get('reason', 'Analysis complete')}",
-            "risk_factors": result.get("risk_factors", [])
+            "risk_factors": result.get("risk_factors", []),
         }
     except Exception as e:
         logger.error(f"Cloud AI Scan Error: {e}")

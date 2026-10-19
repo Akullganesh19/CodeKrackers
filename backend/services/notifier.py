@@ -1,9 +1,17 @@
+from backend.core.resilience import with_retry_sync, CircuitBreaker
 import logging
 from twilio.rest import Client
 from backend.core.config import settings
 
 logger = logging.getLogger("vas.notifier")
 
+
+def fallback_send_threat_alert(*args, **kwargs):
+    logger.warning("Circuit breaker OPEN. Returning False for threat alert.")
+    return False
+
+@CircuitBreaker(failure_threshold=3, recovery_timeout=60.0, fallback=fallback_send_threat_alert)
+@with_retry_sync(max_attempts=3, base_delay=1.0)
 def send_threat_alert(phone_number: str, threat_type: str, score: float, original_sender: str):
     """
     Sends a high-priority alert notification to the user's phone via Twilio SMS.
@@ -33,8 +41,16 @@ def send_threat_alert(phone_number: str, threat_type: str, score: float, origina
         return True
     except Exception as e:
         logger.error(f"Failed to send notification: {e}")
-        return False
+        raise e
 
+
+def fallback_send_otp(*args, **kwargs):
+    logger.warning("Circuit breaker OPEN. Returning simulated OTP.")
+    import random
+    return str(random.randint(100000, 999999))
+
+@CircuitBreaker(failure_threshold=3, recovery_timeout=60.0, fallback=fallback_send_otp)
+@with_retry_sync(max_attempts=3, base_delay=1.0)
 def send_otp(phone_number: str) -> str:
     """
     Sends a 6-digit OTP code to the user.

@@ -1,3 +1,4 @@
+from backend.core.resilience import with_retry_sync, CircuitBreaker
 import logging
 from typing import Dict, Any
 from groq import Groq
@@ -7,6 +8,13 @@ import requests
 
 logger = logging.getLogger("vas.ai_scan")
 
+
+def fallback_ai_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
+    logger.warning("Circuit breaker OPEN. Returning default AI scan response.")
+    return {"score_increase": 0.0, "reason": "Cloud AI Scan temporarily unavailable (Circuit Breaker OPEN)", "risk_factors": []}
+
+@CircuitBreaker(failure_threshold=3, recovery_timeout=60.0, fallback=fallback_ai_scan)
+@with_retry_sync(max_attempts=3, base_delay=1.0)
 def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     """
     Hybrid AI Analysis:
@@ -62,4 +70,4 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
         }
     except Exception as e:
         logger.error(f"Cloud AI Scan Error: {e}")
-        return {"score_increase": 0.0, "reason": f"AI Scan failed: {e}"}
+        raise

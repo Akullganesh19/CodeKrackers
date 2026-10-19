@@ -1,3 +1,4 @@
+from backend.core.resilience import with_retry_sync, CircuitBreaker
 import logging
 import requests
 import json
@@ -8,6 +9,13 @@ logger = logging.getLogger("vas.ollama")
 OLLAMA_URL = "http://localhost:11434/api/generate"
 OLLAMA_MODEL = "llama3.1:8b" # Upgraded for tool-calling support
 
+
+def fallback_ollama_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
+    logger.warning("Circuit breaker OPEN for Ollama. Returning default response.")
+    return {"score_increase": 0.0, "reason": "Local AI service temporarily down (Circuit Breaker OPEN)", "risk_factors": []}
+
+@CircuitBreaker(failure_threshold=3, recovery_timeout=60.0, fallback=fallback_ollama_scan)
+@with_retry_sync(max_attempts=3, base_delay=1.0)
 def ollama_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     """
     Uses local Ollama instance for on-device/private threat analysis.
@@ -45,8 +53,8 @@ def ollama_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
             }
         else:
             logger.warning(f"Ollama returned status {response.status_code}")
-            return {"score_increase": 0.0, "reason": "Ollama service unavailable"}
+            raise Exception(f"Ollama returned status {response.status_code}")
             
     except Exception as e:
         logger.error(f"Ollama Scan Error: {e}")
-        return {"score_increase": 0.0, "reason": "Local AI Scan failed"}
+        raise

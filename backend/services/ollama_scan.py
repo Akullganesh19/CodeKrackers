@@ -7,11 +7,13 @@ from backend.core.resilience import CircuitBreaker, with_retry_sync
 logger = logging.getLogger("vas.ollama")
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
-OLLAMA_MODEL = "llama3.1:8b" # Upgraded for tool-calling support
+OLLAMA_MODEL = "llama3.1:8b"  # Upgraded for tool-calling support
+
 
 def ollama_fallback(content: str, source_type: str = "sms") -> Dict[str, Any]:
     logger.warning("Ollama fallback executed.")
     return {"score_increase": 0.0, "reason": "Local AI Scan failed or unavailable"}
+
 
 @CircuitBreaker(fallback=ollama_fallback)
 @with_retry_sync(max_attempts=3)
@@ -36,7 +38,7 @@ def ollama_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
         "model": OLLAMA_MODEL,
         "prompt": prompt,
         "stream": False,
-        "format": "json"
+        "format": "json",
     }
 
     response = requests.post(OLLAMA_URL, json=payload, timeout=30)
@@ -46,7 +48,9 @@ def ollama_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     data = json.loads(result)
 
     return {
-        "score_increase": round(data.get("confidence", 0.0), 2) if data.get("is_scam") else 0.0,
+        "score_increase": (
+            round(data.get("confidence", 0.0), 2) if data.get("is_scam") else 0.0
+        ),
         "reason": data.get("reason", "Local AI Analysis complete"),
-        "risk_factors": data.get("risk_factors", [])
+        "risk_factors": data.get("risk_factors", []),
     }

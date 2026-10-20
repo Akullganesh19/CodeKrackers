@@ -9,9 +9,11 @@ logger = logging.getLogger("vas.openclaw")
 OPENCLAW_URL = "http://127.0.0.1:18789"
 OPENCLAW_TOKEN = "22b3d0f8bbe1f335aab557204ab619d5260b91ab8533d3c4"
 
+
 def openclaw_fallback(content: str):
     logger.warning("OpenClaw fallback executed")
     return None
+
 
 @CircuitBreaker(fallback=openclaw_fallback)
 @with_retry_sync(max_attempts=3)
@@ -27,8 +29,4 @@ def openclaw_analysis(content: str):
 
     # In a real integration, we'd use the token to send a task
     # For now, we acknowledge the gateway is active and ready.
-    return {
-        "status": "engaged",
-        "agent": "OpenClaw Sentinel",
-        "gateway": OPENCLAW_URL
-    }
+    return {"status": "engaged", "agent": "OpenClaw Sentinel", "gateway": OPENCLAW_URL}

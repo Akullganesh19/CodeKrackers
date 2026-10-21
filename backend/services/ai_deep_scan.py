@@ -4,10 +4,18 @@ from groq import Groq
 from backend.core.config import settings
 from backend.services.ollama_scan import ollama_deep_scan
 import requests
+from backend.core.resilience import with_retry_sync, CircuitBreaker
 
 logger = logging.getLogger("vas.ai_scan")
 
+
+def ai_scan_fallback(content: str, source_type: str = "sms") -> Dict[str, Any]:
+    return {"score_increase": 0.0, "reason": "AI Scan failed (Circuit Open/Fallback)"}
+
+@CircuitBreaker(fallback=ai_scan_fallback, max_failures=3, cooldown=30)
+@with_retry_sync(max_attempts=3)
 def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
+
     """
     Hybrid AI Analysis:
     1. Tries local Ollama (OpenClaw) first for privacy/cost.
@@ -62,4 +70,4 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
         }
     except Exception as e:
         logger.error(f"Cloud AI Scan Error: {e}")
-        return {"score_increase": 0.0, "reason": f"AI Scan failed: {e}"}
+        raise e

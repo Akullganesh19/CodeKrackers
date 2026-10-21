@@ -1,10 +1,18 @@
 import logging
 from twilio.rest import Client
 from backend.core.config import settings
+from backend.core.resilience import CircuitBreaker
 
 logger = logging.getLogger("vas.notifier")
 
+
+def send_threat_alert_fallback(*args, **kwargs):
+    logger.warning("Threat alert fallback activated (Circuit Open/Error)")
+    return False
+
+@CircuitBreaker(fallback=send_threat_alert_fallback, max_failures=3, cooldown=30)
 def send_threat_alert(phone_number: str, threat_type: str, score: float, original_sender: str):
+
     """
     Sends a high-priority alert notification to the user's phone via Twilio SMS.
     """
@@ -33,9 +41,18 @@ def send_threat_alert(phone_number: str, threat_type: str, score: float, origina
         return True
     except Exception as e:
         logger.error(f"Failed to send notification: {e}")
-        return False
+        raise e
 
+
+def send_otp_fallback(phone_number: str, *args, **kwargs) -> str:
+    import random
+    otp_code = str(random.randint(100000, 999999))
+    logger.warning(f"FALLBACK SIMULATED OTP: {otp_code}")
+    return otp_code
+
+@CircuitBreaker(fallback=send_otp_fallback, max_failures=3, cooldown=30)
 def send_otp(phone_number: str) -> str:
+
     """
     Sends a 6-digit OTP code to the user.
     Returns the generated code for validation.
@@ -66,6 +83,4 @@ def send_otp(phone_number: str) -> str:
         return otp_code
     except Exception as e:
         logger.error(f"Failed to send OTP: {e}")
-        # Fallback to simulation in logs for dev convenience
-        logger.warning(f"FALLBACK SIMULATED OTP: {otp_code}")
-        return otp_code
+        raise e

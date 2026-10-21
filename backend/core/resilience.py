@@ -1,9 +1,10 @@
-import time
 import functools
 import logging
-from typing import Callable, Any
+import time
+from typing import Any, Callable
 
 logger = logging.getLogger("vas.resilience")
+
 
 def with_retry_sync(max_attempts: int = 3, base_delay: float = 0.5) -> Callable:
     def decorator(func: Callable) -> Callable:
@@ -17,17 +18,25 @@ def with_retry_sync(max_attempts: int = 3, base_delay: float = 0.5) -> Callable:
                         logger.error(f"Retry max attempts reached for {func.__name__}")
                         raise e
                     delay = base_delay * (2 ** (attempt - 1))
-                    logger.warning(f"Retry {attempt} for {func.__name__} after {delay}s due to {e}")
+                    logger.warning(
+                        f"Retry {attempt} for {func.__name__} after {delay}s due to {e}"
+                    )
                     time.sleep(delay)
             return None
+
         return wrapper
+
     return decorator
+
 
 class CircuitBreakerOpenException(Exception):
     pass
 
+
 class CircuitBreaker:
-    def __init__(self, fallback: Callable = None, max_failures: int = 5, cooldown: float = 60.0):
+    def __init__(
+        self, fallback: Callable = None, max_failures: int = 5, cooldown: float = 60.0
+    ):
         self.fallback = fallback
         self.max_failures = max_failures
         self.cooldown = cooldown
@@ -45,9 +54,13 @@ class CircuitBreaker:
                     logger.info(f"Circuit for {func.__name__} is HALF_OPEN")
                 else:
                     if self.fallback:
-                        logger.warning(f"Circuit for {func.__name__} is OPEN, returning fallback")
+                        logger.warning(
+                            f"Circuit for {func.__name__} is OPEN, returning fallback"
+                        )
                         return self.fallback(*args, **kwargs)
-                    raise CircuitBreakerOpenException(f"Circuit OPEN for {func.__name__}")
+                    raise CircuitBreakerOpenException(
+                        f"Circuit OPEN for {func.__name__}"
+                    )
 
             try:
                 result = func(*args, **kwargs)
@@ -64,4 +77,5 @@ class CircuitBreaker:
                 if self.fallback:
                     return self.fallback(*args, **kwargs)
                 raise e
+
         return wrapper

@@ -1,12 +1,11 @@
 """
-Enclave Client — runs on the HOST OS (FastAPI app side).
+Enclave Client / Vsock interface.
+This module is imported by the main FastAPI app running on the parent EC2 instance.
+It communicates with the Nitro Enclave over virtio-vsock.
 
-This module provides the communication layer between the FastAPI application
-(running on the EC2 host) and the Nitro Enclave (running in hardware isolation).
-
-Communication flow:
-  1. FastAPI receives a detection request from the user
-  2. This client encrypts the payload with AES-256-GCM using the enclave's shared key
+The transport process:
+  1. FastAPI endpoint calls detect_sms_in_enclave()
+  2. This client encrypts the payload using AES-256-GCM and a shared key
   3. Sends the ciphertext over vsock (Virtual Socket) to CID=16, port=5000
   4. Enclave decrypts, runs inference, encrypts response, sends it back
   5. This client decrypts the response and returns it to FastAPI
@@ -20,6 +19,7 @@ import json
 import socket
 import logging
 from typing import Dict, Any, Optional, Union
+from backend.core.resilience import with_retry_sync, CircuitBreaker
 
 logger = logging.getLogger("vas.enclave_client")
 
@@ -112,6 +112,12 @@ def _mock_decrypt(data: bytes) -> Dict[str, Any]:
 
 # ─── vsock Communication ──────────────────────────────────────────
 
+def fallback_call_enclave_vsock(payload: Dict[str, Any]) -> Dict[str, Any]:
+    logger.warning("Enclave Circuit Breaker OPEN. Returning default fallback.")
+    return {"error": "Secure enclave is currently unavailable. Circuit breaker open."}
+
+@CircuitBreaker(failure_threshold=3, recovery_timeout_sec=30.0, fallback=fallback_call_enclave_vsock)
+@with_retry_sync(max_attempts=3, initial_backoff_ms=200)
 def call_enclave_vsock(payload: Dict[str, Any]) -> Dict[str, Any]:
     """
     Send encrypted payload to the Nitro Enclave over vsock and receive response.

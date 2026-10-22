@@ -125,7 +125,7 @@ async def is_score_protected(db: AsyncSession, user_id: str) -> bool:
             Threat.user_id == user_id,
             HoneypotSession.status == 'completed',
             HoneypotSession.session_end >= protection_window
-        )
+    )
     
     result = await db.execute(stmt)
     return (result.scalar() or 0) > 0

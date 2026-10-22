@@ -48,7 +48,7 @@ def generate_fir_pdf(fir_id: int, officer_name: str, threat_details: dict) -> tu
         ["Investigating Officer:", officer_name],
         ["Threat Type:", str(threat_details.get("type", "N/A"))],
         ["Source Number:", str(threat_details.get("source_number", "N/A"))],
-        ["Confidence Score:", f"{threat_details.get('confidence_score', 0)*100:.1f}%"],
+        ["Confidence Score:", f"{threat_details.get('confidence_score', 0) * 100:.1f}%"],
         ["Digital Signature:", f"{digital_signature[:32]}..."]
     ]
     

@@ -125,7 +125,7 @@ class EvidenceChain:
             if block.digital_signature != expected_sig:
                 return {"valid": False, "reason": "Signature invalid", "block_index": i}
                 
-            if i > 0 and block.previous_hash != blocks[i-1].current_hash:
+            if i > 0 and block.previous_hash != blocks[i - 1].current_hash:
                 return {"valid": False, "reason": "Chain linkage broken", "block_index": i}
                     
         return {"valid": True, "blocks_checked": len(blocks), "last_hash": blocks[-1].current_hash}

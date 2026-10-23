@@ -121,7 +121,7 @@ async def verify_otp(
         db.query(User)
         .filter(
             (User.email == otp_verify.identifier)
-            | (User.phone_number == otp_verify.identifier)
+            | (User.phone == otp_verify.identifier)
         )
         .first()
     )
@@ -275,7 +275,7 @@ async def register_user(
 
     if user_in.phone_number:
         existing_phone = (
-            db.query(User).filter(User.phone_number == user_in.phone_number).first()
+            db.query(User).filter(User.phone == user_in.phone_number).first()
         )
         if existing_phone:
             raise HTTPException(
@@ -284,7 +284,7 @@ async def register_user(
 
     new_user = User(
         email=user_in.email,
-        phone_number=user_in.phone_number,
+        phone=user_in.phone_number,
         hashed_password=security.get_password_hash(user_in.password),
         role=UserRole.CITIZEN,
         is_active=True,

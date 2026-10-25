@@ -1,4 +1,7 @@
 from fastapi import FastAPI
+from backend.core.logger import setup_logging
+setup_logging(json_logs=False) # Or True for prod
+
 from fastapi.middleware.cors import CORSMiddleware
 from .core.database import engine, Base
 from .api import auth, analytics, call, fir, evidence, honeypot

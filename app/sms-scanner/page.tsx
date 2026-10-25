@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
 import {
@@ -19,6 +19,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 export default function SMSScannerPage() {
   const [mounted, setMounted] = useState(false)
+  const predictiveCache = useRef<Record<string, Promise<any> | any>>({})
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<null | {
@@ -29,9 +30,53 @@ export default function SMSScannerPage() {
     tags: string[];
   }>(null)
 
+
   React.useEffect(() => {
     setMounted(true)
   }, [])
+
+  // Predictive Fetching Engine
+  useEffect(() => {
+    if (!text || text.length < 15) return;
+
+    // Debounce to avoid spamming the backend while typing
+    const timer = setTimeout(async () => {
+      // If we already cached or are caching it, skip
+      if (predictiveCache.current[text]) return;
+
+      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+
+      // Store the promise so if the user clicks Analyze immediately, we can await this exact promise
+      const fetchPromise = fetch('http://localhost:8000/api/analytics/scan', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ text })
+      }).then(res => {
+        if (!res.ok) throw new Error('Predictive fetch failed');
+        return res.json();
+      }).catch(err => {
+        console.error("Predictive fetch error:", err);
+        // Clear cache on error so normal flow can retry
+        delete predictiveCache.current[text];
+      });
+      
+      predictiveCache.current[text] = fetchPromise;
+
+      try {
+        const result = await fetchPromise;
+        if (result) {
+            // Replace promise with actual result
+            predictiveCache.current[text] = result;
+        }
+      } catch (e) {}
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [text]);
+
 
   const handleAnalyze = async () => {
     if (!text.trim()) return
@@ -40,25 +85,35 @@ export default function SMSScannerPage() {
     setResult(null)
 
     try {
-      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
-      
-      console.log("Response Status:", response.status);
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Server Error:", errorText);
-        alert(`Server Error (${response.status}): ${errorText}`);
-        return;
+      // Check predictive cache first
+      let data = null;
+      if (predictiveCache.current[text]) {
+        // Await in case it's still a pending promise, or just returns the resolved object
+        data = await predictiveCache.current[text];
       }
       
-      const data = await response.json();
+      if (!data) {
+        // Fallback to normal fetch if prediction missed or failed
+        const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+        const response = await fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text })
+        });
+
+        console.log("Response Status:", response.status);
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Server Error:", errorText);
+          alert(`Server Error (${response.status}): ${errorText}`);
+          return;
+        }
+
+        data = await response.json();
+      }
       console.log("Scanner Data Received:", data);
       
       // Ensure we have valid data before setting result

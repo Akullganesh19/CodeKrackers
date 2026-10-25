@@ -1,0 +1,9 @@
+## 🛸 Predictive Intelligence Added
+
+**What:** Implemented a debounced predictive background fetch in the SMS scanner.
+**Why:** To eliminate the multi-second latency users experience while waiting for the multi-vector risk scoring and DistilBERT processing to complete after they click "ANALYZE SMS".
+**Signal used:** The textarea input. If the user types or pastes text exceeding 15 characters, it triggers an early background fetch of the threat analysis.
+**How users feel it:** When they eventually click "ANALYZE SMS", the result is immediately resolved from the in-memory cache, reducing the perceived latency down to ~0ms.
+**Accuracy:** Near 100% since it uses the exact same data payload to prime the cache that would have been used by the manual button click.
+**Failure mode:** Gracefully degrades. If the prediction fetch fails or errors out, the cache is cleared and a normal fetch is executed when the user clicks the button. If the prediction is still pending, the button click simply `await`s the existing promise instead of making a duplicate request.
+**Next:** Prefetch threat details on hover in the main threat flow table, or pre-compute analytics for the dashboard based on recent events.

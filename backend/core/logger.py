@@ -2,6 +2,7 @@ import logging
 import sys
 
 import structlog
+from backend.core.log_filters import redact_sensitive_data
 
 def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
     """
@@ -19,7 +20,9 @@ def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
         structlog.stdlib.add_logger_name,
         structlog.stdlib.add_log_level,
         structlog.stdlib.PositionalArgumentsFormatter(),
+        redact_sensitive_data,
         structlog.processors.TimeStamper(fmt="iso"),
+
         structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
     ]

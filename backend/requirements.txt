@@ -19,3 +19,5 @@ librosa
 scipy
 aiosqlite
 python-dotenv
+
+structlog==24.1.0

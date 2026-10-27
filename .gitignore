@@ -48,3 +48,4 @@ __pycache__/
 # databases
 *.db
 *.sqlite3
+.coverage

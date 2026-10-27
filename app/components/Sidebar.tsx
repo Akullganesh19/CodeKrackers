@@ -1,12 +1,15 @@
 'use client'
 
+
 import { useState, useEffect, useRef } from 'react'
+import { smartFetch } from "@/utils/api"
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/backend/core/AuthProvider'
 import { motion } from 'framer-motion'
 import NotificationSettings from '@/app/components/NotificationSettings'
 import { 
+
   LayoutDashboard, 
   ShieldAlert, 
   FileText, 
@@ -125,7 +128,7 @@ export default function Sidebar() {
         ...prev,
         [pathname]: 0
       }))
-      // Optional: Add a fetch() call here to notify the backend to persist the "read" state
+      // Optional: Add a smartFetch() call here to notify the backend to persist the "read" state
     }
   }, [pathname, notifications])
 

@@ -114,6 +114,7 @@ function GridMap() {
 }
 
 import Link from 'next/link'
+import { smartFetch } from '@/utils/api'
 
 function CommandMetric({ label, val, sub, trend, href, colorClass = "text-accent" }: any) {
   const content = (
@@ -176,7 +177,7 @@ export default function Dashboard() {
     async function fetchSummary() {
       try {
         const token = typeof window !== 'undefined' ? localStorage.getItem('vsdp_token') : null
-        const res = await fetch('http://localhost:8000/api/analytics/dashboard-summary', {
+        const res = await smartFetch('http://localhost:8000/api/analytics/dashboard-summary', {
           headers: { 'Authorization': `Bearer ${token || 'dummy_token'}` }
         })
         if (res.ok) {

@@ -7,6 +7,7 @@ import {
 import dynamic from 'next/dynamic';
 
 // Dynamically import Map to avoid SSR issues with Leaflet
+import { smartFetch } from '@/utils/api'
 const ScammerMap = dynamic(() => import('./ScammerMap'), { ssr: false });
 
 export default function AdminDashboard() {
@@ -18,7 +19,7 @@ export default function AdminDashboard() {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const response = await fetch('/api/analytics/admin/dashboard');
+                const response = await smartFetch('/api/analytics/admin/dashboard');
                 const data = await response.json();
                 setStats(data.stats);
                 setTrend(data.visualization.threat_trend_7d);
@@ -38,7 +39,7 @@ export default function AdminDashboard() {
         if (!points || isNaN(parseFloat(points))) return;
 
         try {
-            const response = await fetch('/api/analytics/admin/reward-user', {
+            const response = await smartFetch('/api/analytics/admin/reward-user', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ user_id: userId, points: parseFloat(points) })

@@ -1,4 +1,5 @@
 'use client'
+import { dedupedFetch } from '@/utils/api-client'
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
@@ -34,7 +35,7 @@ export default function RegisterPage() {
 
     setIsLoading(true)
     try {
-      const response = await fetch('/api/v1/auth/register', {
+      const response = await dedupedFetch('/api/v1/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 

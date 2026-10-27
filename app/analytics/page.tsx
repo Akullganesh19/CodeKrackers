@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 
 import { useState, useEffect } from 'react'
+import { smartFetch } from '@/utils/api'
 
 export default function Analytics() {
   const [mounted, setMounted] = useState(false)
@@ -29,10 +30,10 @@ export default function Analytics() {
       try {
         const token = localStorage.getItem('vsdp_token') || 'dummy_token'
         const [summaryRes, mapRes] = await Promise.all([
-          fetch('http://localhost:8000/api/analytics/dashboard-summary', {
+          smartFetch('http://localhost:8000/api/analytics/dashboard-summary', {
             headers: { 'Authorization': `Bearer ${token}` }
           }),
-          fetch('http://localhost:8000/api/analytics/threat_map', {
+          smartFetch('http://localhost:8000/api/analytics/threat_map', {
             headers: { 'Authorization': `Bearer ${token}` }
           })
         ])

@@ -5,6 +5,7 @@ import logging
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
+from backend.core.events import event_bus
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy import func, case, select
 from sqlalchemy.orm import Session
@@ -18,6 +19,21 @@ import os
 
 logger = logging.getLogger("vas.analytics")
 router = APIRouter()
+
+
+# Simple in-memory tracker for logins
+login_metrics = {
+    "total_logins_today": 0,
+    "last_login_time": None
+}
+
+async def handle_user_login(user_data: dict):
+    logger.info(f"Analytics received user.login event for {user_data.get('email')}")
+    login_metrics["total_logins_today"] += 1
+    login_metrics["last_login_time"] = datetime.now(timezone.utc).isoformat()
+
+event_bus.subscribe("user.login", handle_user_login)
+
 
 
 @router.get("/dashboard-summary")
@@ -66,6 +82,7 @@ async def get_dashboard_summary(
 
     return {
         "stats": {
+            "total_logins_today": login_metrics["total_logins_today"],
             "smishing": type_counts.get("smishing", type_counts.get(ThreatType.SMISHING, 0)),
             "vishing": type_counts.get("vishing", type_counts.get(ThreatType.VISHING, 0)),
             "crypto_scam": type_counts.get("crypto_scam", type_counts.get(ThreatType.CRYPTO_SCAM, 0)),

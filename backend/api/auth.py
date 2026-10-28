@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+import asyncio
 import logging
 import random
 from typing import Any, Optional
@@ -16,6 +17,7 @@ from backend.core.limiter import limiter
 from backend.core import security
 from backend.core.security import get_lockout_time, MAX_LOGIN_ATTEMPTS
 from backend.core.config import settings
+from backend.core.events import event_bus
 from backend.models.orm import User, UserRole
 
 router = APIRouter()
@@ -215,6 +217,12 @@ async def login_access_token_password(
     role_val = user.role.value if hasattr(user.role, 'value') else str(user.role)
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     token = security.create_access_token(subject=str(user.id), role=role_val, expires_delta=access_token_expires)
+
+    asyncio.create_task(event_bus.publish('user.login', {
+        'user_id': str(user.id),
+        'role': role_val,
+        'email': user.email
+    }))
 
     return {
         "access_token": token,

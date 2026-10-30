@@ -10,6 +10,7 @@ from sqlalchemy import func, case, select
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.core.events import event_bus
 from backend.api import deps
 from backend.models.orm import FIR, Threat, User, Blacklist, BlacklistType, ThreatType, ThreatSeverity
 from backend.utils.ai import client as groq_client
@@ -18,6 +19,12 @@ import os
 
 logger = logging.getLogger("vas.analytics")
 router = APIRouter()
+
+async def on_user_login(user_data):
+    logger.info(f"Analytics recorded login for user: {user_data.get('email')} (Role: {user_data.get('role')})")
+    # In a real app we might write this to an analytics table or metrics store
+
+event_bus.subscribe('user.login', on_user_login)
 
 
 @router.get("/dashboard-summary")

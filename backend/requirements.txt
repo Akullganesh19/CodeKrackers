@@ -5,7 +5,7 @@ pydantic-settings
 sqlalchemy[asyncio]
 aiomysql
 python-multipart
-python-jose[cryptography]
+PyJWT
 passlib[bcrypt]
 httpx
 reportlab

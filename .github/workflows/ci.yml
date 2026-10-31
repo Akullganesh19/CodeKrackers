@@ -31,10 +31,10 @@ jobs:
           - 6379:6379
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Set up Python 3.11
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: "3.11"
         cache: 'pip'
@@ -67,7 +67,7 @@ jobs:
         DATABASE_URL: postgresql://postgres:testpassword@localhost:5432/vas_test_db
         SECRET_KEY: testsecretkey1234567890
         PROJECT_NAME: "VAS Test System"
-        API_V1_STR: "/api/v1"
+        API_V1_STR: "/api"
       run: |
         # Ensure we run tests from backend dir so imports resolve correctly
         cd backend && pytest -v

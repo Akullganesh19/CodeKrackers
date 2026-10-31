@@ -48,7 +48,7 @@
 						"url": {
 							"raw": "{{base_url}}/api/threats/",
 							"host": ["{{base_url}}"],
-							"path": ["api", "v1", "threats", ""]
+							"path": ["api", "threats", ""]
 						}
 					}
 				},
@@ -62,7 +62,7 @@
 						"url": {
 							"raw": "{{base_url}}/api/threats/",
 							"host": ["{{base_url}}"],
-							"path": ["api", "v1", "threats", ""]
+							"path": ["api", "threats", ""]
 						}
 					}
 				}
@@ -81,7 +81,7 @@
 						"url": {
 							"raw": "{{base_url}}/api/legal/generate-fir/1",
 							"host": ["{{base_url}}"],
-							"path": ["api", "v1", "legal", "generate-fir", "1"]
+							"path": ["api", "legal", "generate-fir", "1"]
 						}
 					}
 				}
@@ -100,7 +100,7 @@
 						"url": {
 							"raw": "{{base_url}}/api/analytics/dashboard-summary",
 							"host": ["{{base_url}}"],
-							"path": ["api", "v1", "analytics", "dashboard-summary"]
+							"path": ["api", "analytics", "dashboard-summary"]
 						}
 					}
 				}

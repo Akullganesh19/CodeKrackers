@@ -1,0 +1,6 @@
+## YYYY-MM-DD — Authentication Stack Modernization
+**Risk identified:** The backend relies on `passlib` for password hashing and `python-jose` for JWT tokens. Both libraries are effectively abandoned. `passlib`'s last release was in 2020 and its maintainers have been unresponsive. `python-jose` is similarly unmaintained and has known security vulnerabilities that won't be patched. As the ecosystem moves forward (e.g. FastAPI upgrading dependencies), these will break or become major security liabilities.
+**Migration target:** Pure `bcrypt` for password hashing and `PyJWT` for JWT generation and validation, which are actively maintained standard libraries in the modern Python ecosystem.
+**Migrated this session:** Replaced `passlib[bcrypt]` with `bcrypt` directly in `backend/core/security.py` and requirements files. Replaced `python-jose[cryptography]` with `PyJWT` in `backend/core/security.py`, `backend/core/deps.py`, and requirements files.
+**Remaining:** The full backend codebase needs a comprehensive test run to ensure no subtle differences exist in token decoding or hashing edge cases, but the core functionality is now using the new libraries.
+**Next session:** Run integration tests and migrate any remaining instances or plugins relying on old auth dependencies.

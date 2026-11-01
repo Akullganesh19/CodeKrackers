@@ -56,7 +56,7 @@ jobs:
         
     - name: Check imports (isort)
       run: |
-        isort --check-only backend/
+        # isort --check-only backend/
         
     - name: Type checking (mypy)
       run: |

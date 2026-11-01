@@ -2,7 +2,7 @@ import requests
 import time
 
 url = "http://localhost:8000/api/v1/login/access-token"
-data = {"username": "user@example.com", "password": "wrongpassword"}
+data = {"username": "fake@example.com", "password": "wrongpassword"}
 
 print("Testing Rate Limiting (5 per minute limit)...")
 for i in range(1, 8):

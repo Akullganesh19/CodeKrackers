@@ -1,0 +1,7 @@
+## 2024-05-25 — Structlog PII Redaction
+
+**Data traced:** Email addresses and Phone numbers.
+**Exposure found:** Currently, PII like email addresses and phone numbers are logged in plaintext across various points in the application. For instance, `backend/api/users.py` logs `USER_CREATED email=john@example.com role=citizen`, `backend/services/notifier.py` logs OTPs, and `backend/api/auth.py` logs phone numbers or emails during OTP sends/failures. This poses a compliance/data privacy risk where sensitive data is aggregated in plaintext in centralized logs (e.g. `logs/app_YYYY-MM-DD.log`).
+**Fix:** Introduced a custom structlog processor `redact_sensitive_data` in `backend/core/logger.py`. This processor checks `event_dict` key-value pairs (like `password`, `email`, `phone`) and also uses regex to redact PII (emails, phone numbers, SSNs, credit card patterns) within the main string message (`event` key).
+**Coverage confirmed:** The structlog processor masks keys dynamically and sanitizes event strings before they hit the log renderer. Triggered a log output to ensure values like `test@example.com` become `t***@example.com` and phone numbers like `+15551234567` become `***-***-4567`.
+**Still exposed elsewhere:** This redaction only addresses structured logs via `structlog`. Any untracked native `print()` statements or third-party loggers not routed through `structlog` may still leak data, and there's no comprehensive data deletion path (Right to be Forgotten) implemented yet.

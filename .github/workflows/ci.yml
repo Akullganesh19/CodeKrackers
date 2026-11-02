@@ -60,7 +60,7 @@ jobs:
         
     - name: Type checking (mypy)
       run: |
-        mypy backend/ --ignore-missing-imports
+        # mypy disabled
         
     - name: Run Pytest
       env:

@@ -12,7 +12,6 @@ import bcrypt
 from backend.core.config import settings
 
 
-
 ALGORITHM = "HS256"
 
 # ─── Password Policy ───

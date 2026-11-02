@@ -1,0 +1,7 @@
+## 2024-11-02 — Migrate python-jose and passlib to PyJWT and bcrypt directly
+
+**Risk identified:** `python-jose` and `passlib` are effectively unmaintained (no significant releases in years). The community has largely moved on to `PyJWT` for JWTs and standard library/direct implementations like `bcrypt` directly instead of passlib wrappers. This creates a technical debt and potential future security vulnerability risks, especially since they can cause compatibility issues with newer Python versions and their dependencies. This is highlighted in the memory instructions ("The backend uses bcrypt directly for password hashing and verification. Avoid using legacy libraries like passlib due to decreased maintenance and technical debt. The backend uses PyJWT for JWT generation and validation (migrated from python-jose). When catching token validation errors, use jwt.InvalidTokenError instead of JWTError.").
+**Migration target:** Replace `python-jose` with `PyJWT` and `passlib` with `bcrypt` across the Python backend code.
+**Migrated this session:** Updating `backend/core/security.py`, `backend/core/deps.py`, `backend/requirements.txt`, `backend/requirements_win.txt`, and `api/requirements.txt` to remove `python-jose` and `passlib`, and add `PyJWT` and `bcrypt`.
+**Remaining:** Verification that tests and standard operations succeed.
+**Next session:** Complete migration of any remaining endpoints/services requiring auth tokens.

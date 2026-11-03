@@ -154,6 +154,23 @@ export default function Sidebar() {
             <Link
               key={item.name}
               href={item.href}
+              onMouseEnter={() => {
+                if (item.href === '/dashboard' && typeof window !== 'undefined') {
+                  const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+                  // @ts-ignore
+                  if (!window._prefetchCache) window._prefetchCache = {};
+                  // @ts-ignore
+                  if (!window._prefetchCache['/api/analytics/dashboard-summary']) {
+                    // Predictive Prefetching: Fetch data before user clicks
+                    // @ts-ignore
+                    window._prefetchCache['/api/analytics/dashboard-summary'] = fetch('http://localhost:8000/api/analytics/dashboard-summary', { headers: { 'Authorization': `Bearer ${token}` } }).catch(e => {
+                      // @ts-ignore
+                      delete window._prefetchCache['/api/analytics/dashboard-summary'];
+                      console.warn("Prefetch failed:", e);
+                    });
+                  }
+                }
+              }}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg font-mono text-[0.6rem] uppercase tracking-[0.2em] transition-all ${
                 isActive 
                   ? 'bg-[#7c3aed]/10 border border-[#7c3aed]/30 text-[#a78bfa]' 

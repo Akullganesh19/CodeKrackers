@@ -176,9 +176,19 @@ export default function Dashboard() {
     async function fetchSummary() {
       try {
         const token = typeof window !== 'undefined' ? localStorage.getItem('vsdp_token') : null
-        const res = await fetch('http://localhost:8000/api/analytics/dashboard-summary', {
-          headers: { 'Authorization': `Bearer ${token || 'dummy_token'}` }
-        })
+        let res;
+        // @ts-ignore
+        if (typeof window !== 'undefined' && window._prefetchCache && typeof window._prefetchCache['/api/analytics/dashboard-summary'] !== 'undefined') {
+          // @ts-ignore
+          res = await window._prefetchCache['/api/analytics/dashboard-summary'];
+          res = res.clone();
+          // @ts-ignore
+          delete window._prefetchCache['/api/analytics/dashboard-summary'];
+        } else {
+          res = await fetch('http://localhost:8000/api/analytics/dashboard-summary', {
+            headers: { 'Authorization': `Bearer ${token || 'dummy_token'}` }
+          });
+        }
         if (res.ok) {
           const data = await res.json()
           setSummary(data)

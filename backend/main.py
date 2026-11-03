@@ -10,6 +10,9 @@ from .core.database import engine, Base, AsyncSessionLocal
 from .core.security import get_password_hash
 from .models.orm import User
 
+from .core.logger import setup_logging
+setup_logging()
+
 # Initialize FastAPI App
 app = FastAPI(
     title="VSDP - Vishing & Smishing Defense Platform",

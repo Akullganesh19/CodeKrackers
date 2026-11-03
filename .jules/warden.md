@@ -1,0 +1,7 @@
+## 2024-11-13 — Logging PII Exposure
+
+**Data traced:** PII fields (email, phone, password, otp, ssn)
+**Exposure found:** PII fields logged in plaintext in backend application logs via `structlog`. This includes passwords, phone numbers, emails, and OTPs. (e.g. `logger.info("USER_CREATED email=%s role=%s", user.email, user.role.value)`, `logger.info("PHONE_LOOKUP phone=%s...", phone_number)`, `logger.info(f"SIMULATED OTP SENT TO {phone_number}: {otp_code}")`).
+**Fix:** Modified `backend/core/logger.py` to add a custom `redact_sensitive_data` structlog processor that inspects the `event_dict` and structurally masks sensitive fields (email, phone, password, OTP, ssn) by either partial masking or replacing with `***REDACTED***` before logging. Also ensured `setup_logging` is initialized correctly at the top of `backend/main.py`.
+**Coverage confirmed:** The custom redaction function was thoroughly unit-tested on various forms of PII formats (phone numbers starting with `+` or without, different OTP output strings, structured logging values).
+**Still exposed elsewhere:** The focus was solely on the application logs. Analytics/Export APIs might still leak PII if proper data governance isn't applied before data export (e.g. user CSV exports or data warehouse exports). Additionally, if PII reaches un-intercepted exceptions/stacktraces sent to external telemetry (e.g., Sentry), it may still leak there.

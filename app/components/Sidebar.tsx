@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { useAuth } from '@/backend/core/AuthProvider'
 import { motion } from 'framer-motion'
 import NotificationSettings from '@/app/components/NotificationSettings'
+import { Oracle } from '@/backend/core/oracle'
 import { 
   LayoutDashboard, 
   ShieldAlert, 
@@ -154,6 +155,12 @@ export default function Sidebar() {
             <Link
               key={item.name}
               href={item.href}
+              onMouseEnter={() => {
+                if (item.href === '/dashboard' && typeof window !== 'undefined') {
+                  const token = localStorage.getItem('vsdp_token');
+                  Oracle.prefetch('http://localhost:8000/api/analytics/dashboard-summary', token);
+                }
+              }}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg font-mono text-[0.6rem] uppercase tracking-[0.2em] transition-all ${
                 isActive 
                   ? 'bg-[#7c3aed]/10 border border-[#7c3aed]/30 text-[#a78bfa]' 

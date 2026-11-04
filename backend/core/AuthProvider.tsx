@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { getDecodedToken, isTokenExpired, logout as logoutUtil } from '@/backend/core/auth-utils';
+import { Oracle } from '@/backend/core/oracle';
 
 interface AuthContextType {
   user: any | null;
@@ -20,6 +21,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const syncAuthState = () => {
     if (!isTokenExpired()) {
       setUser(getDecodedToken());
+      const localToken = localStorage.getItem('vsdp_token');
+      if (localToken) Oracle.prefetch('http://localhost:8000/api/analytics/dashboard-summary', localToken);
     } else {
       setUser(null);
     }
@@ -27,6 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    Oracle.install();
     syncAuthState();
     // Sync state across tabs if one tab logs out
     window.addEventListener('storage', syncAuthState);
@@ -38,6 +42,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set cookie for middleware access (valid for 7 days)
     document.cookie = `vsdp_token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Strict; Secure`;
     setUser(getDecodedToken());
+      const localToken = localStorage.getItem('vsdp_token');
+      if (localToken) Oracle.prefetch('http://localhost:8000/api/analytics/dashboard-summary', localToken);
   };
 
   const logout = () => {

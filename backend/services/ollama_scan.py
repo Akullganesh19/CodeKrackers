@@ -18,6 +18,7 @@ def ollama_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     """
     Uses local Ollama instance for on-device/private threat analysis.
     """
+    try:
         prompt = f"""
         Analyze this {source_type} for scam/phishing intent.
         Content: "{content}"
@@ -51,3 +52,7 @@ def ollama_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
         else:
             logger.warning(f"Ollama returned status {response.status_code}")
             raise Exception("Ollama service unavailable")
+
+    except Exception as e:
+        logger.error(f"Ollama Scan Error: {e}")
+        raise e

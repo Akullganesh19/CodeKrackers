@@ -66,3 +66,6 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
             "reason": f"Cloud AI: {result.get('reason', 'Analysis complete')}",
             "risk_factors": result.get("risk_factors", [])
         }
+    except Exception as e:
+        logger.error(f"Cloud AI Scan Error: {e}")
+        raise e

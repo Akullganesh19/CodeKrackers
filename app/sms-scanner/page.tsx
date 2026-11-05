@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
 import {
@@ -33,6 +33,35 @@ export default function SMSScannerPage() {
     setMounted(true)
   }, [])
 
+  const predictionCache = useRef<{ [key: string]: Promise<any> }>({})
+
+  useEffect(() => {
+    if (text.length > 15) {
+      const timer = setTimeout(() => {
+        if (!predictionCache.current[text]) {
+          console.log("🛸 Oracle: Predicting user will analyze. Pre-computing scan for:", text.substring(0, 20) + "...")
+          const token = localStorage.getItem('vsdp_token') || 'dummy_token'
+          predictionCache.current[text] = fetch('http://localhost:8000/api/analytics/scan', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ text })
+          }).then(res => {
+            if (!res.ok) throw new Error("Server error")
+            return res.json()
+          }).catch(err => {
+            console.error("🛸 Oracle pre-fetch failed:", err)
+            return null
+          })
+        }
+      }, 400)
+      return () => clearTimeout(timer)
+    }
+  }, [text])
+
+
   const handleAnalyze = async () => {
     if (!text.trim()) return
 
@@ -40,25 +69,35 @@ export default function SMSScannerPage() {
     setResult(null)
 
     try {
-      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
-      
-      console.log("Response Status:", response.status);
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Server Error:", errorText);
-        alert(`Server Error (${response.status}): ${errorText}`);
-        return;
+      let data;
+      if (predictionCache.current[text]) {
+        console.log("🛸 Oracle: Consuming pre-computed AI scan!")
+        data = await predictionCache.current[text];
       }
       
-      const data = await response.json();
+      if (!data) {
+        console.log("🛸 Oracle: Cache miss, fetching normally.")
+        const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+        const response = await fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text })
+        });
+
+        console.log("Response Status:", response.status);
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Server Error:", errorText);
+          alert(`Server Error (${response.status}): ${errorText}`);
+          return;
+        }
+
+        data = await response.json();
+      }
+
       console.log("Scanner Data Received:", data);
       
       // Ensure we have valid data before setting result

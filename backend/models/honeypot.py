@@ -18,7 +18,7 @@ class HoneypotAccess(Base):
     x_forwarded_for = Column(String(255), nullable=True)
 
     # Honeypot endpoint details
-    endpoint = Column(String(256), nullable=False, index=True)  # /api/v1/admin/export-users
+    endpoint = Column(String(256), nullable=False, index=True)  # /api/admin/export-users
     method = Column(String(16), nullable=False)
 
     # Request analysis

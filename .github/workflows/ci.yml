@@ -67,7 +67,7 @@ jobs:
         DATABASE_URL: postgresql://postgres:testpassword@localhost:5432/vas_test_db
         SECRET_KEY: testsecretkey1234567890
         PROJECT_NAME: "VAS Test System"
-        API_V1_STR: "/api/v1"
+        API_V1_STR: "/api"
       run: |
         # Ensure we run tests from backend dir so imports resolve correctly
         cd backend && pytest -v

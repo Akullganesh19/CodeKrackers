@@ -53,7 +53,7 @@ def _get_shared_key() -> bytes:
             # In production, obtain via attestation key exchange
             raise RuntimeError(
                 "No shared key available. Run attestation handshake first. "
-                "Call /api/v1/enclave/attestation to perform key exchange."
+                "Call /api/enclave/attestation to perform key exchange."
             )
     return SHARED_KEY
 

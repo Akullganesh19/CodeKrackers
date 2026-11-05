@@ -18,8 +18,15 @@ from backend.core.security import get_lockout_time, MAX_LOGIN_ATTEMPTS
 from backend.core.config import settings
 from backend.models.orm import User, UserRole
 
+from backend.core.resilience import CircuitBreaker
 router = APIRouter()
 logger = logging.getLogger("vas.auth")
+
+def fallback_send_otp_auth(*args, **kwargs):
+    logger.warning("Fallback send otp triggered")
+    pass
+
+circuit_breaker = CircuitBreaker(fallback=fallback_send_otp_auth)
 
 try:
     redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True)
@@ -66,29 +73,32 @@ async def send_otp(
     if redis_client:
         redis_client.setex(redis_key, settings.OTP_EXPIRE_SECONDS, otp_code)
 
+
+    @circuit_breaker
+    def send_sms():
+        client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+        client.messages.create(
+            body=f"VSDP Security Code: {otp_code}. Valid for 5 minutes. Do not share.",
+            from_=settings.TWILIO_PHONE_NUMBER,
+            to=otp_in.identifier
+        )
+
+    @circuit_breaker
+    def send_email():
+        message = Mail(
+            from_email=settings.FROM_EMAIL,
+            to_emails=otp_in.identifier,
+            subject='VSDP Security Code',
+            plain_text_content=f"Your VSDP security code is: {otp_code}. Valid for 5 minutes. Do not share."
+        )
+        sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
+        sg.send(message)
+
     if "@" not in otp_in.identifier and settings.TWILIO_ACCOUNT_SID and settings.TWILIO_AUTH_TOKEN:
-        try:
-            client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-            client.messages.create(
-                body=f"VSDP Security Code: {otp_code}. Valid for 5 minutes. Do not share.",
-                from_=settings.TWILIO_PHONE_NUMBER,
-                to=otp_in.identifier
-            )
-        except Exception as e:
-            logger.error(f"SMS_GATEWAY_ERROR: Failed to send OTP to {otp_in.identifier}: {e}")
+        send_sms()
 
     if "@" in otp_in.identifier and settings.SENDGRID_API_KEY:
-        try:
-            message = Mail(
-                from_email=settings.FROM_EMAIL,
-                to_emails=otp_in.identifier,
-                subject='VSDP Security Code',
-                plain_text_content=f"Your VSDP security code is: {otp_code}. Valid for 5 minutes. Do not share."
-            )
-            sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
-            sg.send(message)
-        except Exception as e:
-            logger.error(f"EMAIL_GATEWAY_ERROR: Failed to send OTP to {otp_in.identifier}: {e}")
+        send_email()
 
     logger.info(f"SECURITY: Generated OTP for {otp_in.identifier} -> {otp_code}")
     

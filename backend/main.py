@@ -1,3 +1,5 @@
+from .core.logger import setup_logging
+setup_logging()
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .core.database import engine, Base

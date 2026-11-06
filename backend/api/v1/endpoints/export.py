@@ -1,6 +1,7 @@
 """
 Data export endpoints for reports, evidence, and compliance.
 """
+from backend.core.logger import get_logger
 import csv
 import io
 import logging
@@ -15,7 +16,7 @@ from backend.api import deps
 from backend.models.threat import Threat
 from backend.models.user import User
 
-logger = logging.getLogger("vas.export")
+logger = get_logger("vas.export")
 router = APIRouter()
 
 

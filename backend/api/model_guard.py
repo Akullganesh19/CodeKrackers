@@ -11,6 +11,7 @@ Endpoints:
   - POST /models/adversarial-test — Test model robustness against adversarial examples
   - POST /detect/secure-sms — Protected SMS detection with extraction monitoring
 """
+from backend.core.logger import get_logger
 import time
 import hashlib
 import logging
@@ -32,7 +33,7 @@ from backend.services.model_security import (
     ADVERSARIAL_PERTURBATIONS,
 )
 
-logger = logging.getLogger("vas.model_guard")
+logger = get_logger("vas.model_guard")
 router = APIRouter()
 
 

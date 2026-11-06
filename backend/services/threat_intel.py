@@ -1,6 +1,7 @@
 """
 Threat Intelligence Service — aggregates signals from multiple engines.
 """
+from backend.core.logger import get_logger
 import logging
 import re
 from typing import Any, Dict, List, Optional
@@ -8,7 +9,7 @@ from typing import Any, Dict, List, Optional
 from sqlalchemy.orm import Session
 from backend.models.orm import Blacklist as BlacklistEntry, BlacklistType
 
-logger = logging.getLogger("vas.intel")
+logger = get_logger("vas.intel")
 
 # ─── Known scam sender patterns (Indian context) ───
 KNOWN_SCAM_SENDERS = {

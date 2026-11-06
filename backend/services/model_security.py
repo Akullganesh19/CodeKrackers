@@ -8,6 +8,7 @@ Model Security Service — protects AI models from:
 Uses IBM Adversarial Robustness Toolbox (ART) for adversarial training
 and Radioactive Data techniques for model watermarking.
 """
+from backend.core.logger import get_logger
 import os
 import json
 import time
@@ -26,7 +27,7 @@ from sqlalchemy.orm import Session
 
 from backend.models import ModelVersion, ModelInferenceLog
 
-logger = logging.getLogger("vas.model_security")
+logger = get_logger("vas.model_security")
 
 
 # ─── Watermarking ─────────────────────────────────────────────────

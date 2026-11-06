@@ -1,6 +1,7 @@
 """
 User management endpoints with password policy and RBAC.
 """
+from backend.core.logger import get_logger
 import logging
 from typing import Any, List
 
@@ -14,7 +15,7 @@ from backend.schemas.user import UserCreate, User as UserSchema
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-logger = logging.getLogger("vas.users")
+logger = get_logger("vas.users")
 router = APIRouter()
 
 

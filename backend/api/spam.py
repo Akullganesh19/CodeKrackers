@@ -1,6 +1,7 @@
 """
 Spam Shield API — report, check, configure spam filtering.
 """
+from backend.core.logger import get_logger
 import logging
 from typing import Any, List
 
@@ -11,7 +12,7 @@ from backend.api import deps
 from backend.models import User, SpamFilter, SpamReport, SpamLog, SpamType
 from backend.services.spam_shield import check_spam
 
-logger = logging.getLogger("vas.spam_api")
+logger = get_logger("vas.spam_api")
 router = APIRouter()
 
 

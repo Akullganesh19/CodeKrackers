@@ -1,6 +1,7 @@
 """
 Legal endpoints: FIR generation with digital signatures and chain of custody.
 """
+from backend.core.logger import get_logger
 import logging
 from typing import Any, List
 
@@ -14,7 +15,7 @@ from backend.models.user import User, UserRole
 from backend.schemas.legal import FIR as FIRSchema, FIRCreate
 from backend.utils.pdf import generate_fir_pdf
 
-logger = logging.getLogger("vas.legal")
+logger = get_logger("vas.legal")
 router = APIRouter()
 
 

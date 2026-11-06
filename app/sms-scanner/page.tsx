@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
 import {
@@ -19,6 +19,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 export default function SMSScannerPage() {
   const [mounted, setMounted] = useState(false)
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const inFlightRequestsRef = useRef<{ [key: string]: Promise<Response> }>({})
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<null | {
@@ -31,24 +33,33 @@ export default function SMSScannerPage() {
 
   React.useEffect(() => {
     setMounted(true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const handleAnalyze = async () => {
-    if (!text.trim()) return
+  const handleAnalyze = async (analyzeText: string = text) => {
+    if (!analyzeText.trim()) return
 
     setLoading(true)
     setResult(null)
 
     try {
-      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
+      let response;
+      const cachedPromise = inFlightRequestsRef.current[analyzeText];
+      if (cachedPromise) {
+        response = (await cachedPromise).clone();
+        delete inFlightRequestsRef.current[analyzeText]; // Cleanup after consuming
+      } else {
+        const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+        response = await fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text: analyzeText })
+        });
+      }
+
       
       console.log("Response Status:", response.status);
       if (!response.ok) {
@@ -172,7 +183,27 @@ export default function SMSScannerPage() {
               <div className="relative group">
                 <textarea
                   value={text}
-                  onChange={(e) => setText(e.target.value)}
+                  onChange={(e) => {
+                    const newText = e.target.value;
+                    setText(newText);
+                    if (typingTimeoutRef.current) {
+                      clearTimeout(typingTimeoutRef.current);
+                    }
+                    if (newText.trim().length > 10) {
+                      typingTimeoutRef.current = setTimeout(() => {
+                        const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+                        const p = fetch('http://localhost:8000/api/analytics/scan', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                          },
+                          body: JSON.stringify({ text: newText })
+                        });
+                        inFlightRequestsRef.current[newText] = p;
+                      }, 800);
+                    }
+                  }}
                   placeholder="Paste suspicious SMS here..."
                   className="w-full bg-surface/50 border border-white/10 rounded-lg p-5 font-mono text-sm min-height-[140px] focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all placeholder:text-white/10 resize-none h-40"
                 />
@@ -197,7 +228,7 @@ export default function SMSScannerPage() {
               </div>
 
               <button
-                onClick={handleAnalyze}
+                onClick={() => handleAnalyze(text)}
                 disabled={loading || !text.trim()}
                 className="w-full bg-cyan-500 hover:bg-cyan-400 disabled:bg-muted/20 disabled:text-muted/50 text-bg font-black uppercase tracking-widest py-4 rounded-md transition-all flex items-center justify-center gap-3 active:scale-[0.98]"
               >

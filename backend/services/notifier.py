@@ -1,8 +1,16 @@
 import logging
 from twilio.rest import Client
 from backend.core.config import settings
+from backend.core.resilience import CircuitBreaker
 
 logger = logging.getLogger("vas.notifier")
+
+twilio_cb = CircuitBreaker(failure_threshold=2, recovery_timeout=60)
+
+@twilio_cb
+def _send_twilio_message(client, **kwargs):
+    return client.messages.create(**kwargs)
+
 
 def send_threat_alert(phone_number: str, threat_type: str, score: float, original_sender: str):
     """
@@ -23,7 +31,8 @@ def send_threat_alert(phone_number: str, threat_type: str, score: float, origina
             f"⚠️ DO NOT click any links or share OTPs. This message has been logged for evidence."
         )
 
-        message = client.messages.create(
+        message = _send_twilio_message(
+            client,
             body=alert_msg,
             from_=settings.TWILIO_PHONE_NUMBER,
             to=phone_number
@@ -34,6 +43,7 @@ def send_threat_alert(phone_number: str, threat_type: str, score: float, origina
     except Exception as e:
         logger.error(f"Failed to send notification: {e}")
         return False
+
 
 def send_otp(phone_number: str) -> str:
     """
@@ -56,7 +66,8 @@ def send_otp(phone_number: str) -> str:
             "Valid for 5 minutes. DO NOT share this with anyone."
         )
 
-        client.messages.create(
+        _send_twilio_message(
+            client,
             body=msg_body,
             from_=settings.TWILIO_PHONE_NUMBER,
             to=phone_number

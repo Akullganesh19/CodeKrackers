@@ -2,10 +2,47 @@ import logging
 from typing import Dict, Any
 from groq import Groq
 from backend.core.config import settings
+from backend.core.resilience import CircuitBreaker
 from backend.services.ollama_scan import ollama_deep_scan
 import requests
 
 logger = logging.getLogger("vas.ai_scan")
+
+groq_cb = CircuitBreaker(failure_threshold=3, recovery_timeout=60, fallback=lambda content, source_type="sms": {"score_increase": 0.0, "reason": "Cloud AI: Service unavailable (Circuit Open)", "risk_factors": []})
+
+
+@groq_cb
+def _call_groq_api(content: str, source_type: str) -> Dict[str, Any]:
+    client = Groq(api_key=settings.GROQ_API_KEY)
+
+    prompt = f"""
+    Analyze this {source_type} for potential scam/phishing intent.
+    Content: "{content}"
+
+    Provide a JSON response with:
+    1. "is_scam": boolean
+    2. "confidence": float (0-1)
+    3. "reason": string summary
+    4. "risk_factors": list of strings
+    """
+
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {"role": "system", "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection."},
+            {"role": "user", "content": prompt}
+        ],
+        model=settings.GROQ_MODEL,
+        response_format={"type": "json_object"}
+    )
+
+    import json
+    result = json.loads(chat_completion.choices[0].message.content)
+
+    return {
+        "score_increase": round(result.get("confidence", 0.0), 2) if result.get("is_scam") else 0.0,
+        "reason": f"Cloud AI: {result.get('reason', 'Analysis complete')}",
+        "risk_factors": result.get("risk_factors", [])
+    }
 
 def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
     """
@@ -30,36 +67,7 @@ def ai_deep_scan(content: str, source_type: str = "sms") -> Dict[str, Any]:
         return {"score_increase": 0.0, "reason": "AI Scan disabled (No API Key)"}
 
     try:
-        client = Groq(api_key=settings.GROQ_API_KEY)
-        
-        prompt = f"""
-        Analyze this {source_type} for potential scam/phishing intent. 
-        Content: "{content}"
-        
-        Provide a JSON response with:
-        1. "is_scam": boolean
-        2. "confidence": float (0-1)
-        3. "reason": string summary
-        4. "risk_factors": list of strings
-        """
-
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": "You are a cybersecurity expert specializing in Vishing and Smishing detection."},
-                {"role": "user", "content": prompt}
-            ],
-            model=settings.GROQ_MODEL,
-            response_format={"type": "json_object"}
-        )
-
-        import json
-        result = json.loads(chat_completion.choices[0].message.content)
-        
-        return {
-            "score_increase": round(result.get("confidence", 0.0), 2) if result.get("is_scam") else 0.0,
-            "reason": f"Cloud AI: {result.get('reason', 'Analysis complete')}",
-            "risk_factors": result.get("risk_factors", [])
-        }
+        return _call_groq_api(content, source_type)
     except Exception as e:
         logger.error(f"Cloud AI Scan Error: {e}")
-        return {"score_increase": 0.0, "reason": f"AI Scan failed: {e}"}
+        return {"score_increase": 0.0, "reason": f"AI Scan failed: {e}", "risk_factors": []}

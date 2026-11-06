@@ -130,7 +130,7 @@ async def verify_otp(
             email=otp_verify.identifier if "@" in otp_verify.identifier else None,
             phone_number=otp_verify.identifier if "@" not in otp_verify.identifier else None,
             is_active=True,
-            role=UserRole(otp_verify.role)
+            role=UserRole.CITIZEN
         )
         db.add(user)
         db.commit()
@@ -252,7 +252,7 @@ async def register_user(
         email=user_in.email,
         phone_number=user_in.phone_number,
         hashed_password=security.get_password_hash(user_in.password),
-        role=UserRole(user_in.role),
+        role=UserRole.CITIZEN,
         is_active=True
     )
     db.add(new_user)

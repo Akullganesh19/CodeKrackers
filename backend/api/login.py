@@ -1,6 +1,7 @@
 """
 Authentication endpoint with brute-force protection and audit logging.
 """
+from backend.core.logger import get_logger
 import logging
 from datetime import datetime, timedelta, timezone
 from typing import Any
@@ -16,7 +17,7 @@ from backend.core.limiter import limiter
 from backend.models import User
 from backend.schemas.token import Token
 
-logger = logging.getLogger("vas.auth")
+logger = get_logger("vas.auth")
 router = APIRouter()
 
 

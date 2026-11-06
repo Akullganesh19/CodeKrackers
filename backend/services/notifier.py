@@ -1,8 +1,9 @@
+from backend.core.logger import get_logger
 import logging
 from twilio.rest import Client
 from backend.core.config import settings
 
-logger = logging.getLogger("vas.notifier")
+logger = get_logger("vas.notifier")
 
 def send_threat_alert(phone_number: str, threat_type: str, score: float, original_sender: str):
     """

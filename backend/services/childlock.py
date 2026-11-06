@@ -1,6 +1,7 @@
 """
 Child Lock Service — parental controls for calls and messages.
 """
+from backend.core.logger import get_logger
 import logging
 import re
 from datetime import datetime, timezone
@@ -10,7 +11,7 @@ from sqlalchemy.orm import Session
 
 from backend.models.orm import ChildProfile, ChildActivityLog, ChildLockMode
 
-logger = logging.getLogger("vas.childlock")
+logger = get_logger("vas.childlock")
 
 # ─── Indian emergency numbers (always allowed) ───
 EMERGENCY_NUMBERS = [

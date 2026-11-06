@@ -10,6 +10,7 @@ If those links are accessed, we get immediate notification of:
 
 This works like Thinkst Canary / canarytokens.org — self-hosted and free.
 """
+from backend.core.logger import get_logger
 import uuid
 import time
 import json
@@ -23,7 +24,7 @@ from sqlalchemy.orm import Session
 from backend.models.orm import CanaryTrap as CanaryToken
 from backend.core.config import settings
 
-logger = logging.getLogger("vas.canary_service")
+logger = get_logger("vas.canary_service")
 
 
 # ─── Token Generators ─────────────────────────────────────────────

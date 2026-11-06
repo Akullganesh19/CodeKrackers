@@ -1,0 +1,6 @@
+## 2026-05-08 — Plaintext PII/Credential Exfiltration Risk Closed
+**Data traced:** PII (Email, Phone) / Authentication Tokens (OTP, Password, Token)
+**Exposure found:** Sensitive fields (like `email`, `phone`, `password`, `otp`) were being logged in plaintext throughout the application (e.g. `LOGIN_FAILED email=%s ip=%s` or `SPAM_BLOCKED phone=%s`). These logs would propagate plaintext PII into aggregation/error tracking platforms.
+**Fix:** Modified the central logging module (`backend/core/logger.py`) to inject a custom `structlog` processor (`redact_sensitive_data`) that intercepts and safely redacts/masks fields in both keyword arguments (e.g. `password="secret"`) and string-formatted events (e.g. `email=john@example.com`).
+**Coverage confirmed:** The structlog processor natively replaces fields such as email to `j***@example.com` and phone numbers to `***-7890` while completely replacing `password`, `otp`, and `token` values with `[REDACTED]`. I locally verified the behavior using test payloads invoking the `structlog` setup.
+**Still exposed elsewhere:** This closes the active leakage point in the standard JSON/console logs; third-party integrations (like direct Twilio traces or external metrics dumps if they circumvent the standard logger) might still leak data if unredacted.

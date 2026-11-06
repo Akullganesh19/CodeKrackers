@@ -1,8 +1,8 @@
 # Import all models here so that Base has them before being
 # imported by Alembic
 from backend.db.base_class import Base  # noqa
-from backend.models.user import User  # noqa
-from backend.models.threat import Threat  # noqa
+from backend.models.orm import User  # noqa
+from backend.models.orm import Threat  # noqa
 from backend.models.legal import Evidence, FIR  # noqa
 from backend.models.audit import AuditLog  # noqa
 from backend.models.blacklist import BlacklistEntry, ThreatIntelFeed  # noqa

@@ -46,13 +46,13 @@ async def create_user(
         email=user_in.email,
         hashed_password=security.get_password_hash(user_in.password),
         full_name=user_in.full_name,
-        role=user_in.role or UserRole.USER,
+        role=user_in.role or UserRole.CITIZEN,
     )
     db.add(user)
     await db.commit()
     await db.refresh(user)
 
-    logger.info("USER_CREATED email=%s role=%s", user.email, user.role.value)
+    logger.info("CITIZEN_CREATED email=%s role=%s", user.email, user.role.value)
     return user
 
 

@@ -7,8 +7,8 @@ from backend.core import security
 from backend.db.base import Base
 from backend.db.session import SessionLocal, engine
 from backend.models.legal import Evidence, FIR
-from backend.models.threat import Threat, ThreatSeverity, ThreatType
-from backend.models.user import User, UserRole
+from backend.models.orm import Threat, ThreatSeverity, ThreatType
+from backend.models.orm import User, UserRole
 
 
 def init_db() -> None:

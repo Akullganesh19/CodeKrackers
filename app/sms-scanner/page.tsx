@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import Sidebar from '@/components/Sidebar'
 import Topbar from '@/components/Topbar'
 import {
@@ -29,26 +29,75 @@ export default function SMSScannerPage() {
     tags: string[];
   }>(null)
 
+  // Predictive Engine Refs
+  const inFlightRef = useRef<{ [key: string]: Promise<any> }>({});
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
   React.useEffect(() => {
     setMounted(true)
   }, [])
 
+  // 🔮 Oracle: Predictively fetch AI analysis when user stops typing
+  useEffect(() => {
+    const trimmedText = text.trim();
+    if (!trimmedText || trimmedText.length < 10) return;
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    debounceRef.current = setTimeout(() => {
+      if (!inFlightRef.current[trimmedText]) {
+        const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+        console.log("🔮 Oracle predicting next action: pre-computing SMS scan...");
+
+        const promise = fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text: trimmedText })
+        }).then(async res => {
+          if (!res.ok) {
+            const errText = await res.text();
+            throw new Error(`Server Error (${res.status}): ${errText}`);
+          }
+          return res.clone();
+        });
+
+        inFlightRef.current[trimmedText] = promise;
+      }
+    }, 500); // 500ms debounce
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [text]);
+
   const handleAnalyze = async () => {
-    if (!text.trim()) return
+    const trimmedText = text.trim();
+    if (!trimmedText) return
 
     setLoading(true)
     setResult(null)
 
     try {
-      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
+      let response: Response;
+      // 🔮 Oracle: Use pre-computed response if available, instantly removing perceived latency!
+      if (inFlightRef.current[trimmedText]) {
+         console.log("🔮 Oracle: using pre-computed background response!");
+         response = (await inFlightRef.current[trimmedText]).clone();
+      } else {
+        console.log("🔮 Oracle: Cache miss, running normal fetch");
+        const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+        response = await fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text: trimmedText })
+        });
+      }
       
       console.log("Response Status:", response.status);
       if (!response.ok) {

@@ -114,7 +114,7 @@ async def verify_otp(
         )
 
     redis_key = f"otp:{otp_verify.identifier}"
-    stored_code = redis_client.get(redis_key) if redis_client else otp_code # Mock pass if redis down for demo
+    stored_code = redis_client.get(redis_key) if redis_client else None
 
     if not stored_code or otp_verify.code != stored_code:
         if user:
@@ -250,9 +250,9 @@ async def register_user(
 
     new_user = User(
         email=user_in.email,
-        phone_number=user_in.phone_number,
+        phone=user_in.phone_number,
         hashed_password=security.get_password_hash(user_in.password),
-        role=UserRole(user_in.role),
+        role=UserRole.CITIZEN,
         is_active=True
     )
     db.add(new_user)

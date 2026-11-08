@@ -29,36 +29,80 @@ export default function SMSScannerPage() {
     tags: string[];
   }>(null)
 
+  // 🔮 ORACLE: Predictive Pre-computation Cache
+  // Stores in-flight fetch promises so the button click can instantly await them
+  const predictionCache = React.useRef<{ [key: string]: Promise<any> }>({});
+
   React.useEffect(() => {
     setMounted(true)
   }, [])
 
+  // 🔮 ORACLE: Behavioral Prefetch
+  // Anticipate that when a user pastes/types an SMS, they WILL click "Analyze".
+  // Pre-compute the AI scan in the background so it's ready instantly.
+  React.useEffect(() => {
+    const textKey = text.trim();
+    if (textKey.length > 10) {
+      const timer = setTimeout(() => {
+        if (!predictionCache.current[textKey]) {
+          console.log("🔮 Oracle: Predicting analysis. Pre-computing...");
+          const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+          predictionCache.current[textKey] = fetch('http://localhost:8000/api/analytics/scan', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ text: textKey })
+          }).then(async res => {
+            if (!res.ok) throw new Error("Predictive fetch failed");
+            return res.json();
+          }).catch(() => null); // Degrade gracefully on error
+        }
+      }, 400); // 400ms typing debounce
+      return () => clearTimeout(timer);
+    }
+  }, [text]);
+
   const handleAnalyze = async () => {
-    if (!text.trim()) return
+    const textKey = text.trim();
+    if (!textKey) return
 
     setLoading(true)
     setResult(null)
 
     try {
-      const token = localStorage.getItem('vsdp_token') || 'dummy_token';
-      const response = await fetch('http://localhost:8000/api/analytics/scan', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ text })
-      });
-      
-      console.log("Response Status:", response.status);
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Server Error:", errorText);
-        alert(`Server Error (${response.status}): ${errorText}`);
-        return;
+      let data = null;
+
+      // 🔮 ORACLE: Check if we already predicted and pre-computed this result
+      if (predictionCache.current[textKey]) {
+        console.log("🔮 Oracle: Cache hit! Using pre-computed result.");
+        data = await predictionCache.current[textKey];
       }
-      
-      const data = await response.json();
+
+      // Fallback: If no cache hit or prediction failed, run normal fetch
+      if (!data) {
+        const token = localStorage.getItem('vsdp_token') || 'dummy_token';
+        const response = await fetch('http://localhost:8000/api/analytics/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ text: textKey })
+        });
+
+        console.log("Response Status:", response.status);
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Server Error:", errorText);
+          alert(`Server Error (${response.status}): ${errorText}`);
+          return;
+        }
+
+        data = await response.json();
+      }
+
       console.log("Scanner Data Received:", data);
       
       // Ensure we have valid data before setting result

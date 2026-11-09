@@ -62,7 +62,7 @@ function Head({ cur, gesture = null }: { cur: React.RefObject<{x:number;y:number
     
     let targetYaw = smoothX.current * 0.4 + idleYaw
     let targetPitch = smoothY.current * 0.15 + breathing + idlePitch
-    let targetTilt = smoothX.current * 0.08
+    const targetTilt = smoothX.current * 0.08
 
     if (gesture) {
       if (gesture === 'left') { targetYaw = -0.5; targetPitch = 0.2 }
@@ -204,7 +204,7 @@ function Arm({ side, cur, gesture = null }: { side: -1 | 1; cur: React.RefObject
     let targetShX = -0.2 + smoothY.current * 0.3
     let targetShZ = side * (-0.45 + smoothX.current * -0.4 * side) 
     let elbowBend = 0.5 + Math.sqrt(smoothX.current**2 + smoothY.current**2) * 0.4
-    let targetWrZ = smoothX.current * -0.3 * side
+    const targetWrZ = smoothX.current * -0.3 * side
 
     // Gesture logic
     if (gesture) {

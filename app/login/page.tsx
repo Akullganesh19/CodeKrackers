@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { initOracleEngine, predictAndPrefetch } from '@/utils/oracle'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -47,6 +48,8 @@ export default function LoginPage() {
             const data = await res.json();
             localStorage.setItem('vsdp_token', data.access_token);
             localStorage.setItem('vsdp_user', JSON.stringify(data.user));
+            initOracleEngine();
+            predictAndPrefetch('/dashboard', data.access_token);
             router.push('/dashboard');
           } else {
             alert("Login failed: Invalid credentials");

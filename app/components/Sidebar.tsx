@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { initOracleEngine, predictAndPrefetch } from '@/utils/oracle'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/backend/core/AuthProvider'
@@ -29,6 +30,7 @@ const navItems = [
 ]
 
 export default function Sidebar() {
+  useEffect(() => { initOracleEngine(); }, []);
   const pathname = usePathname()
   const { user, logout } = useAuth()
   const [notifications, setNotifications] = useState<Record<string, number>>({
@@ -154,6 +156,7 @@ export default function Sidebar() {
             <Link
               key={item.name}
               href={item.href}
+              onMouseEnter={() => predictAndPrefetch(item.href)}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg font-mono text-[0.6rem] uppercase tracking-[0.2em] transition-all ${
                 isActive 
                   ? 'bg-[#7c3aed]/10 border border-[#7c3aed]/30 text-[#a78bfa]' 

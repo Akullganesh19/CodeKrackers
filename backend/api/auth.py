@@ -50,7 +50,6 @@ class UserRegister(BaseModel):
     role: str = "citizen"
 
 @router.post("/send")
-
 @limiter.limit(settings.RATE_LIMIT_AUTH)
 async def send_otp(
     *,
@@ -180,7 +179,6 @@ async def refresh_access_token(
     return {"access_token": new_access_token, "token_type": "bearer"}
 
 @router.post("/login")
-
 @limiter.limit(settings.RATE_LIMIT_AUTH)
 async def login_access_token_password(
     *,
@@ -230,7 +228,6 @@ async def login_access_token_password(
     }
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
-
 @limiter.limit(settings.RATE_LIMIT_AUTH)
 async def register_user(
     *,

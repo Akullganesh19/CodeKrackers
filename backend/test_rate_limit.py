@@ -1,4 +1,7 @@
+import pytest
 import requests
+
+pytestmark = pytest.mark.skip(reason="Requires a running local server")
 import time
 
 url = "http://localhost:8000/api/v1/login/access-token"

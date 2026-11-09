@@ -1,6 +1,6 @@
 import requests
 
-url = "http://localhost:8000/api/v1/threats/"
+url = "http://localhost:8000/api/threats/"
 headers = {
     "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Nzg3NTI0ODMsInN1YiI6IjMifQ.Ir_8sKSgsQ7oc8UDNi89kM7HTtYYvccqOXH_8NCDmjM",
     "Content-Type": "application/json"

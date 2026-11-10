@@ -1,0 +1,7 @@
+## 2025-02-27 — PII Exfiltration in Application Logs
+
+**Data traced:** PII (Email addresses and Phone numbers) and security tokens (OTPs)
+**Exposure found:** Multiple log statements in plaintext throughout application routes. Specifically `SECURITY: Generated OTP for {identifier} -> {otp_code}` in `backend/api/auth.py`, `SMS scan request from user={id} sender={sender}` in `backend/api/detection.py`, and `SPAM_REPORTED phone={phone}` in `backend/api/spam.py` log out raw PII to structural app logs and the console.
+**Fix:** Created and injected a robust regex-based structural PII redaction layer into `backend/core/logger.py` (`redact_sensitive_data` structlog processor). This processor parses both structured keyword arguments (`event_dict` key-value pairs) matching sensitive key names and deeply inspects the raw `event` string using multiple regexes (email, phone number, and inline OTP arrow patterns). Replaced plain `logging` inside `backend/main.py` by making it explicitly setup logging so it initializes custom configuration on startup, meaning all standard logger output will route securely via structlog.
+**Coverage confirmed:** The structlog processor captures and masks structural fields recursively, and masks inline regex targets.
+**Still exposed elsewhere:** Other arbitrary log statements containing unforeseen PII configurations may not match exact regexes yet. Data deletion endpoint isn't verified in this session.

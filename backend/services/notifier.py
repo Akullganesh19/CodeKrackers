@@ -45,7 +45,6 @@ def send_otp(phone_number: str) -> str:
     
     if not all([settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN, settings.TWILIO_PHONE_NUMBER]):
         logger.warning(f"SIMULATED OTP SENT TO {phone_number}: {otp_code}")
-        print(f"\n[VAS AUTH] SMS OTP for {phone_number}: {otp_code}\n")
         return otp_code
 
     try:

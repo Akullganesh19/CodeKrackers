@@ -1,4 +1,3 @@
-import logging
 import random
 from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
@@ -15,11 +14,13 @@ from backend.api import deps
 from backend.core import security
 from backend.core.config import settings
 from backend.core.limiter import limiter
+from backend.core.logger import get_logger
 from backend.core.security import MAX_LOGIN_ATTEMPTS, get_lockout_time
 from backend.models.orm import User, UserRole
 
 router = APIRouter()
-logger = logging.getLogger("vas.auth")
+
+logger = get_logger("vas.auth")
 
 try:
     redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True)

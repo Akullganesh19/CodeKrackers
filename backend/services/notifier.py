@@ -1,10 +1,9 @@
-import logging
-
 from twilio.rest import Client
 
 from backend.core.config import settings
+from backend.core.logger import get_logger
 
-logger = logging.getLogger("vas.notifier")
+logger = get_logger("vas.notifier")
 
 
 def send_threat_alert(

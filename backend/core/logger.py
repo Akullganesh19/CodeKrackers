@@ -1,15 +1,21 @@
 import logging
+import re
 import sys
 
 import structlog
 
-import re
+_EMAIL_PATTERN = re.compile(
+    r"([a-zA-Z0-9])[a-zA-Z0-9_.+-]*(@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)"
+)
+_PHONE_PATTERN = re.compile(
+    r"(?P<prefix>phone=|to\s+)(?P<number>\+?\d{1,3}[-.\s]?\(?\d{1,4}\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4})",
+    re.IGNORECASE,
+)
 
-_EMAIL_PATTERN = re.compile(r"([a-zA-Z0-9])[a-zA-Z0-9_.+-]*(@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)")
-_PHONE_PATTERN = re.compile(r"(?P<prefix>phone=|to\s+)(?P<number>\+?\d{1,3}[-.\s]?\(?\d{1,4}\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4})", re.IGNORECASE)
 
 def _redact_email_match(match):
     return f"{match.group(1)}***{match.group(2)}"
+
 
 def _mask_phone_match(match):
     prefix = match.group("prefix") or ""
@@ -20,13 +26,22 @@ def _mask_phone_match(match):
         masked_number = "***"
     return f"{prefix}{masked_number}"
 
+
 def redact_pii_processor(logger, log_method, event_dict):
-    sensitive_keys = {"email", "phone", "password", "ssn", "identifier", "otp_code", "phone_number"}
+    sensitive_keys = {
+        "email",
+        "phone",
+        "password",
+        "ssn",
+        "identifier",
+        "otp_code",
+        "phone_number",
+    }
 
     for key, value in list(event_dict.items()):
         if isinstance(key, str) and key.lower() in sensitive_keys:
             if isinstance(value, str):
-                if "@" in value:
+                if "@" in value and _EMAIL_PATTERN.search(value):
                     event_dict[key] = _EMAIL_PATTERN.sub(_redact_email_match, value)
                 else:
                     event_dict[key] = "***"
@@ -73,6 +88,7 @@ def setup_logging(json_logs: bool = True, log_level: int = logging.INFO):
         wrapper_class=structlog.stdlib.BoundLogger,
         cache_logger_on_first_use=True,
     )
+
 
 def get_logger(name: str):
     """
